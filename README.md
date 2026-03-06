@@ -24,3 +24,13 @@
    ```bash
    python main.py
    ```
+### Technology
+
+- Python 3.x
+- Environment: GitHub Codespaces
+- External libraries (e.g. NiceGUI, SQLAlchemy, Pydantic)
+
+---
+
+### 📂 Repository Structure
+   pass
