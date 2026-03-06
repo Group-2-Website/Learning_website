@@ -1,5 +1,15 @@
 # Learing Website for Kids
+### Technology
 
+- Python 3.x
+- Environment: GitHub Codespaces
+- External libraries (e.g. NiceGUI, SQLAlchemy, Pydantic)
+
+---
+
+### 📂 Repository Structure
+   pass
+   
 ## How to Run
 
 ### Project Setup
