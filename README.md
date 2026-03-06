@@ -3,7 +3,7 @@
 
 - Python 3.x
 - Environment: GitHub Codespaces
-- External libraries (e.g. NiceGUI, SQLAlchemy, Pydantic)
+- External libraries (NiceGUI, SQLAlchemy, Pydantic)
 
 ---
 
