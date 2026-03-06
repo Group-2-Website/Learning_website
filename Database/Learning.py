@@ -1,35 +1,43 @@
 import csv
-import sqlite3
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-# open database
-db = sqlite3.connect("learning.db")
-db.execute("""
-CREATE TABLE IF NOT EXISTS flashcard_words(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    english TEXT,
-    german TEXT,
-    article TEXT,
-    meanings TEXT,
-    type TEXT
-)
-""")
+Base = declarative_base()
 
-with open("flashcard_words_cleaned.csv", newline="", encoding="utf-8") as file:
+class DictionaryWord(Base):
+    __tablename__ = "dictionary_words"
+
+    id = Column(Integer, primary_key=True)
+    english = Column(String)
+    german = Column(String)
+    article = Column(String)
+    meanings = Column(String)
+    word_type = Column(String)
+engine = create_engine("sqlite:///learning.db")
+
+Base.metadata.create_all(engine)
+
+Session = sessionmaker(bind=engine)
+session = Session()
+
+
+with open("flashcard_words_cleaned.csv", encoding="utf-8-sig") as file:
+
     reader = csv.DictReader(file)
-    print(reader.fieldnames)
+
     for row in reader:
-        db.execute("""
-            INSERT INTO flashcard_words (english, german, article, meanings, type)
-            VALUES (?, ?, ?, ?, ?)
-        """, (
-            row["english"],
-            row["german"],
-            row["article"],
-            row["meanings"],
-            row["type"]
-        ))
 
-db.commit()
-db.close()
+        word = DictionaryWord(
+            english=row["english"],
+            german=row["german"],
+            article=row["article"],
+            meanings=row["meanings"],
+            word_type=row["type"]
+        )
 
-print("flashcard_words imported")
+        session.add(word)
+
+
+session.commit()
+
+print("dictionary imported")
