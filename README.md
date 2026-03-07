@@ -1,6 +1,6 @@
 # Learing Website for Kids
 ### Technology
-
+ 
 - Python 3.x
 - Environment: GitHub Codespaces
 - External libraries (NiceGUI, SQLAlchemy, Pydantic)
