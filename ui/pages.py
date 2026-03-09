@@ -14,6 +14,7 @@ def home():
     build_home_page()
 
 
+
 def _register_subject(subject):
     slug = subject.url_slug
 
