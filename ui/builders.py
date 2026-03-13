@@ -129,11 +129,18 @@ def add_global_css():
         box-shadow: 0 6px 18px rgba(0,0,0,0.12);
       }
 
-      /* ── Page layout ── */
+      
       .page-content {
         max-width: 900px;  /* ← max width of content on all pages  */
-        margin: 40px auto; /* ← top gap from topbar on all pages   */
+        margin: 50px ; /* ← top gap from topbar on all pages   */
         padding: 0 px;   /* ← left/right edge gap on all pages   */
+      }
+      
+      
+      .page-content1 {
+        max-width: 900px;  /* ← max width of content on all pages  */
+        margin: 40px auto; /* ← top gap from topbar on all pages   */
+        padding: 018 px;   /* ← left/right edge gap on all pages   */
       }
 
       .page-title {
@@ -279,7 +286,7 @@ def build_home_page() -> None:
     """Render the home / subject-selection page."""
     _apply_bg('/images/Home_page.png')
     from subjects import SUBJECTS
-    with ui.element("div").classes("page-content"):
+    with ui.element("div").classes("page-content1"):
         ui.label("Choose a subject to start your learning adventure.").classes("text-body1")
         with ui.element("div").style(
             "display:flex;flex-wrap:wrap;justify-content:center;margin-top:90px;"
@@ -320,7 +327,7 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
     url = topic.page_background_image()
     if url:
         _apply_bg(url)
-    with ui.element("div").classes("page-content"):
+    with ui.element("div").classes("page-content1"):
         _build_page_header(
             f"/{subject.url_slug}", f"Back to {subject.name}",
             f"{topic.icon}  {topic.name}", "What would you like to do?"
@@ -364,7 +371,7 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
                 "font-weight:800;font-size:18px;color:#60435F;margin-bottom:16px;"
             )
             with ui.element("div").style(
-                "display:grid;grid-template-columns:repeat(3,1fr);gap:16px;"
+                "display:grid;grid-template-columns:repeat(2,1fr);gap:16px;"
             ):
                 for i, (title, explanation) in enumerate(steps, start=1):
                     visual = topic.step_visual_html(i - 1)
@@ -435,7 +442,6 @@ def build_quiz_page(subject: Subject, topic: Topic) -> None:
         state["question"], state["answer"] = topic.generate_question()
         state["checked"] = False
         question_label.text = state["question"]
-        feedback_label.text = ""
         answer_input_holder[0].value = ""
         answer_input_holder[0].run_method("focus")
         if visual_holder:
@@ -445,9 +451,18 @@ def build_quiz_page(subject: Subject, topic: Topic) -> None:
         """Check current answer then advance."""
         check_answer()
         _advance()
+    def finish_quiz():
+        check_answer()
+        score   = state["score"]
+        attempts = state["attempts"]
+        dest = (
+            f"/{subject.url_slug}/{topic.name.lower()}/results"
+            f"?score={score}&attempts={attempts}"
+        )
+        ui.navigate.to(dest)
 
     back_dest = f"/{subject.url_slug}/{topic.name.lower()}"
-    with ui.element("div").classes("page-content"):
+    with ui.element("div").classes("page-content1"):
         _build_page_header(back_dest, f"Back to {topic.name}", f"📝  {topic.name} Quiz", "")
 
         with ui.element("div").classes("mode-card").style("max-width:560px;margin:0;"):
@@ -476,8 +491,13 @@ def build_quiz_page(subject: Subject, topic: Topic) -> None:
                 ui.button("Next →", on_click=next_question) \
                     .props("rounded") \
                     .style("background:#f3e8ff;color:#60435F;font-weight:700;")
-                ui.button("💡 Hint", on_click=show_hint) \
+                ui.button("Hint", on_click=show_hint) \
+                    .props("rounded") \
+                    .style("background:#fffbe6;color:#b45309;font-weight:700;")
+                ui.button(" End", on_click=finish_quiz) \
                     .props("rounded") \
                     .style("background:#fffbe6;color:#b45309;font-weight:700;")
 
             feedback_label = ui.label("")
+
+

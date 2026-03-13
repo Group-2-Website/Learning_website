@@ -48,7 +48,7 @@ class Fractions(Topic):
 
     _DENOMINATORS = [2, 3, 4, 5, 6, 8, 10]
 
-    # ── question generation ──────────────────────────────────────────────────
+    #  question generation
 
     def generate_question(self) -> tuple[str, str]:
         denom = random.choice(self._DENOMINATORS)
