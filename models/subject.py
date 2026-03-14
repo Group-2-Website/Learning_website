@@ -8,3 +8,7 @@ class Subject:
     name: str = ""
     url_slug: str = ""
     topics: list[Topic] = []
+
+    def page_background_image(self) -> str:
+        """Optional: return a URL for a semi-transparent background image on learn/quiz pages."""
+        return ""

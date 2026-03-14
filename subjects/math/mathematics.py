@@ -5,28 +5,60 @@ from models.subject import Subject
 from models.topic import Topic
 
 
-def _fraction_svg(numerator: int, denominator: int, size: int = 120, color: str = "#FF8C69") -> str:
-    """Return an inline SVG of a pie chart representing numerator/denominator."""
+def _pie_slice_paths(
+    denominator: int,
+    size: int,
+    radius_padding: int,
+    fill_for_slice,
+    *,
+    stroke: str,
+    stroke_width: str,
+    large_arc_flag: int,
+    extra_attrs_for_slice=None,
+) -> str:
+    """Build SVG path elements for a denominator-sliced pie."""
     cx = cy = size // 2
-    r = cx - 6
+    r = cx - radius_padding
     slices = []
 
     for i in range(denominator):
         start_angle = math.radians(90 + 360 * i / denominator)
-        end_angle   = math.radians(90 + 360 * (i + 1) / denominator)
+        end_angle = math.radians(90 + 360 * (i + 1) / denominator)
         x1 = cx + r * math.cos(start_angle)
         y1 = cy - r * math.sin(start_angle)
         x2 = cx + r * math.cos(end_angle)
         y2 = cy - r * math.sin(end_angle)
-        fill = color if i < numerator else "#f3f3f3"
-        large = 1 if (1 / denominator) > 0.5 else 0
+
+        extra_attrs = ""
+        if extra_attrs_for_slice is not None:
+            attrs = extra_attrs_for_slice(i)
+            if attrs:
+                extra_attrs = f" {attrs}"
+
         slices.append(
-            f'<path d="M{cx},{cy} L{x1:.2f},{y1:.2f} A{r},{r} 0 {large},0 {x2:.2f},{y2:.2f} Z" '
-            f'fill="{fill}" stroke="#60435F" stroke-width="1.5"/>'
+            f'<path{extra_attrs} d="M{cx},{cy} L{x1:.2f},{y1:.2f} A{r},{r} 0 {large_arc_flag},0 {x2:.2f},{y2:.2f} Z" '
+            f'fill="{fill_for_slice(i)}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
         )
 
+    return "".join(slices)
+
+
+def _fraction_svg(numerator: int, denominator: int, size: int = 120, color: str = "#FF8C69") -> str:
+    """Return an inline SVG of a pie chart representing numerator/denominator."""
+    cx = cy = size // 2
+    large = 1 if (1 / denominator) > 0.5 else 0
+
+    paths = _pie_slice_paths(
+        denominator,
+        size,
+        radius_padding=6,
+        fill_for_slice=lambda slice_index: color if slice_index < numerator else "#f3f3f3",
+        stroke="#60435F",
+        stroke_width="1.5",
+        large_arc_flag=large,
+    )
+
     label = f"{numerator}/{denominator}"
-    paths = "".join(slices)
     return (
         f'<svg width="{size}" height="{size + 20}" xmlns="http://www.w3.org/2000/svg">'
         f'{paths}'
@@ -262,6 +294,42 @@ class Fractions(Topic):
     def paint_visual_html(self) -> str:
         """Render fraction-specific paint cards with one circle per card."""
 
+        def _blank_paint_circle_svg(denominator: int, size: int = 180) -> str:
+            paths = _pie_slice_paths(
+                denominator,
+                size,
+                radius_padding=8,
+                fill_for_slice=lambda _slice_index: "#ffffff",
+                stroke="#60435F",
+                stroke_width="2",
+                large_arc_flag=0,
+                extra_attrs_for_slice=lambda slice_index: f'class="paint-slice" data-slice="{slice_index}"',
+            )
+
+            return (
+                f'<svg width="{size}" height="{size}" viewBox="0 0 {size} {size}" '
+                f'xmlns="http://www.w3.org/2000/svg">{paths}</svg>'
+            )
+
+        targets = [(1, 2), (2, 3), (2, 7)]
+        pages = []
+        for idx, (num, den) in enumerate(targets, start=1):
+            pages.append(
+                f'<div class="paint-page" data-page="{idx}" '
+                f'style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0;">'
+                f'<div style="font-size:20px;font-weight:800;color:#60435F;">'
+                f'Paint {num}/{den}'
+                f'</div>'
+                f'<div data-target-num="{num}" data-target-den="{den}">{_blank_paint_circle_svg(den)}</div>'
+                f'</div>'
+            )
+        return (
+            '<div class="fractions-paint-pages" '
+            'style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;">'
+            + "".join(pages)
+            + "</div>"
+        )
+
 
 class Math(Subject):
     name = "Math"
@@ -269,3 +337,6 @@ class Math(Subject):
     topics: list[Topic] = [
         Fractions(),
     ]
+
+    def page_background_image(self) -> str:
+        return "/images/Math_back.png"
