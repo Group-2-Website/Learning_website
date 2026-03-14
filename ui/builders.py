@@ -284,7 +284,7 @@ def _build_page_header(back_dest: str, back_label: str, title: str, subtitle: st
 
 def build_home_page() -> None:
     """Render the home / subject-selection page."""
-    _apply_bg('/images/Math_back.png')
+    _apply_bg('/images/Home_page.png')
     from subjects import SUBJECTS
     with ui.element("div").classes("page-content1"):
         ui.label("Choose a subject to start your learning adventure.").classes("text-body1")

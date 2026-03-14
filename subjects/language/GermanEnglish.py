@@ -6,6 +6,7 @@ from models.topic import Topic
 
 class GermanEnglish(Topic):
     name = "German-English"
+    has_learning= False
 
 class Language(Subject):
     name = "Language"
