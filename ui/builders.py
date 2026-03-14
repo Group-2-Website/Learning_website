@@ -129,14 +129,14 @@ def add_global_css():
         box-shadow: 0 6px 18px rgba(0,0,0,0.12);
       }
 
-      
+
       .page-content {
         max-width: 900px;  /* ← max width of content on all pages  */
         margin: 50px ; /* ← top gap from topbar on all pages   */
         padding: 0 px;   /* ← left/right edge gap on all pages   */
       }
-      
-      
+
+
       .page-content1 {
         max-width: 900px;  /* ← max width of content on all pages  */
         margin: 40px auto; /* ← top gap from topbar on all pages   */
@@ -265,7 +265,7 @@ def _apply_bg(url: str) -> None:
         content: '';
         position: fixed;
         inset: 0;
-        background: rgba(255,255,255,0.85);
+        background: rgba(255,255,255,0.55);
         z-index: 0;
         pointer-events: none;
       }}
@@ -284,12 +284,12 @@ def _build_page_header(back_dest: str, back_label: str, title: str, subtitle: st
 
 def build_home_page() -> None:
     """Render the home / subject-selection page."""
-    _apply_bg('/images/Home_page.png')
+    _apply_bg('/images/Math_back.png')
     from subjects import SUBJECTS
     with ui.element("div").classes("page-content1"):
         ui.label("Choose a subject to start your learning adventure.").classes("text-body1")
         with ui.element("div").style(
-            "display:flex;flex-wrap:wrap;justify-content:center;margin-top:90px;"
+            "display:flex;flex-wrap:wrap;justify-content:center;margin-top:70px;"
         ):
             for subject in SUBJECTS:
                 dest = f"/{subject.url_slug}"
@@ -350,7 +350,14 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
                     ui.label("📖").classes("mode-icon")
                     ui.label("Learning").classes("mode-title")
                     ui.label("Read step-by-step explanations.").classes("mode-desc")
-
+            if topic.has_painting:
+                draw_dest = f"/{subject.url_slug}/{topic.name.lower()}/paint"
+                with ui.element("div").classes("mode-card").on(
+                    "click", lambda d=draw_dest: ui.navigate.to(d)
+                ):
+                    ui.label("🎨").classes("mode-icon")
+                    ui.label("Painting").classes("mode-title")
+                    ui.label("Paint your understanding!").classes("mode-desc")
 
 def build_learn_page(subject: Subject, topic: Topic) -> None:
     """Render the learning/explanation page for any topic."""
@@ -362,14 +369,11 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
     with ui.element("div").classes("page-content"):
         _build_page_header(
             back_dest, f"Back to {topic.name}",
-            f"📖  Learn {topic.name}", topic.learn_page_subtitle()
+            f"Learn how to deal with {topic.name}", ""
         )
 
         steps = topic.learning_steps()
         if steps:
-            ui.label("What each part means:").style(
-                "font-weight:800;font-size:18px;color:#60435F;margin-bottom:16px;"
-            )
             with ui.element("div").style(
                 "display:grid;grid-template-columns:repeat(2,1fr);gap:16px;"
             ):
@@ -379,7 +383,6 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
                         if visual:
                             ui.html(visual)
                         ui.html(
-                            f'<span class="step-number">{i}</span>'
                             f'<strong>{title}</strong>'
                         )
                         ui.label(explanation).style(
@@ -392,7 +395,230 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
                 "background:linear-gradient(135deg,#60435F,#D67AB5);color:#f3f1f1;"
                 "font-weight:700;margin-top:24px;"
             )
+def build_paint_page(subject: Subject, topic: Topic) -> None:
+    back_dest = f"/{subject.url_slug}/{topic.name.lower()}"
+    with ui.element("div").classes("page-content"):
+        _build_page_header(
+            back_dest, f"Back to {topic.name}",
+            "", ""
+        )
 
+        with ui.element("div").style("display:flex;flex-direction:column;gap:14px;align-items:flex-start;"):
+            with ui.element("div").style("flex:1;"):
+                visual = topic.paint_visual_html()
+                if visual:
+                    ui.html(visual)
+
+            # Floating palette starts on the right and can be dragged with the handle.
+            with ui.element("div").props("id=paint-palette").style(
+                "position:fixed;right:24px;top:50%;transform:translateY(-50%);"
+                "display:flex;flex-direction:column;gap:10px;align-items:center;"
+                "padding:10px 12px;background:#f3f1f1;border-radius:14px;"
+                "box-shadow:0 6px 16px rgba(96,67,95,0.2);z-index:50;"
+            ):
+                ui.html(
+                    '<div id="paint-palette-handle" '
+                    'style="font-size:14px;font-weight:700;color:#60435F;cursor:grab;'
+                    'user-select:none;padding:2px 8px;border-radius:10px;background:#ede9fe;">'
+                    'Move</div>'
+                )
+                with ui.element("div").style("display:flex;flex-direction:column;gap:10px;"):
+                    palette_colors = [
+                        ("#FF8C69", True),  # (color, selected)
+                        ("#7EC88A", False),
+                        ("#6BBFFF", False),
+                        ("#FFAD05", False),
+                        ("#D67AB1", False),
+                    ]
+                    for color, selected in palette_colors:
+                        border = "3px solid #60435F" if selected else "2px solid #d1d5db"
+                        selected_attr = "true" if selected else "false"
+                        ui.html(
+                            f'<button type="button" data-paint-color="{color}" '
+                            f'data-selected="{selected_attr}" '
+                            f'style="width:38px;height:38px;border-radius:999px;'
+                            f'border:{border};background:{color};cursor:pointer;"></button>'
+                        )
+
+            with ui.element("div").style(
+                "display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));"
+                "gap:14px;width:min(95vw,1100px);"
+            ):
+
+                for i in range(3):
+                    ui.html(
+                        f'<div style="padding:10px;background:#fff;border-radius:16px;'
+                        'box-shadow:0 8px 24px rgba(96,67,95,50);">'
+                        f'<div style="font-weight:700;color:#60435F;font-size:14px;'
+                        '<canvas class="paint-canvas" width="900" height="600" '
+                        'style="display:block;width:100%;height:100%;background:#fff;'
+                        'border:3px solid #e5e7eb;border-radius:12px;touch-action:none;cursor:crosshair;'
+                        "></canvas>"
+                        "</div>"
+                    )
+
+    ui.add_body_html("""
+    <script>
+    (function () {
+      window.__kidslearnPaintColor = window.__kidslearnPaintColor || '#FF8C69';
+
+      const selectPaletteButton = function (button) {
+        document.querySelectorAll('[data-paint-color]').forEach(function (item) {
+          item.dataset.selected = 'false';
+          item.style.border = '2px solid #d1d5db';
+        });
+        button.dataset.selected = 'true';
+        button.style.border = '3px solid #60435F';
+      };
+
+      if (!window.__kidslearnPaletteBound) {
+        window.__kidslearnPaletteBound = true;
+        document.addEventListener('click', function (event) {
+          const palette = event.target.closest('[data-paint-color]');
+          if (!palette) return;
+          window.__kidslearnPaintColor = palette.dataset.paintColor;
+          selectPaletteButton(palette);
+        });
+      }
+
+      const bindPaletteDrag = function () {
+        const palette = document.getElementById('paint-palette');
+        const handle = document.getElementById('paint-palette-handle');
+        if (!palette || !handle || palette.dataset.dragBound === 'true') return;
+        palette.dataset.dragBound = 'true';
+
+        let dragging = false;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        const clamp = function (value, min, max) {
+          return Math.min(Math.max(value, min), max);
+        };
+
+        const setPalettePosition = function (left, top) {
+          const rect = palette.getBoundingClientRect();
+          const maxLeft = Math.max(0, window.innerWidth - rect.width);
+          const maxTop = Math.max(0, window.innerHeight - rect.height);
+          palette.style.left = clamp(left, 0, maxLeft) + 'px';
+          palette.style.top = clamp(top, 0, maxTop) + 'px';
+          palette.style.right = 'auto';
+          palette.style.transform = 'none';
+        };
+
+        handle.addEventListener('pointerdown', function (event) {
+          const rect = palette.getBoundingClientRect();
+          dragging = true;
+          offsetX = event.clientX - rect.left;
+          offsetY = event.clientY - rect.top;
+          handle.style.cursor = 'grabbing';
+          handle.setPointerCapture(event.pointerId);
+          event.preventDefault();
+        });
+
+        handle.addEventListener('pointermove', function (event) {
+          if (!dragging) return;
+          setPalettePosition(event.clientX - offsetX, event.clientY - offsetY);
+        });
+
+        const stopDragging = function (event) {
+          if (!dragging) return;
+          dragging = false;
+          handle.style.cursor = 'grab';
+          if (event && handle.hasPointerCapture(event.pointerId)) {
+            handle.releasePointerCapture(event.pointerId);
+          }
+        };
+
+        handle.addEventListener('pointerup', stopDragging);
+        handle.addEventListener('pointercancel', stopDragging);
+        window.addEventListener('resize', function () {
+          if (!palette.style.left || !palette.style.top) return;
+          setPalettePosition(parseFloat(palette.style.left), parseFloat(palette.style.top));
+        });
+      };
+
+      const pointFromEvent = function (canvas, event) {
+        const rect = canvas.getBoundingClientRect();
+        const width = rect.width || 1;
+        const height = rect.height || 1;
+        const scaleX = canvas.width / width;
+        const scaleY = canvas.height / height;
+        return {
+          x: (event.clientX - rect.left) * scaleX,
+          y: (event.clientY - rect.top) * scaleY,
+        };
+      };
+
+      const bindCanvases = function () {
+        document.querySelectorAll('.paint-canvas').forEach(function (canvas) {
+          if (canvas.dataset.bound === 'true') return;
+          canvas.dataset.bound = 'true';
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+
+          let drawing = false;
+
+          canvas.addEventListener('pointerdown', function (event) {
+            drawing = true;
+            canvas.setPointerCapture(event.pointerId);
+            const p = pointFromEvent(canvas, event);
+            const pressure = event.pressure && event.pressure > 0 ? event.pressure : 0.5;
+            ctx.lineWidth = 4 + (pressure * 8);
+            ctx.strokeStyle = window.__kidslearnPaintColor;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p.x + 0.01, p.y + 0.01);
+            ctx.stroke();
+          });
+
+          canvas.addEventListener('pointermove', function (event) {
+            if (!drawing) return;
+            const p = pointFromEvent(canvas, event);
+            const pressure = event.pressure && event.pressure > 0 ? event.pressure : 0.5;
+            ctx.lineWidth = 4 + (pressure * 8);
+            ctx.strokeStyle = window.__kidslearnPaintColor;
+            ctx.lineTo(p.x, p.y);
+            ctx.stroke();
+          });
+
+          const stopDrawing = function (event) {
+            if (!drawing) return;
+            drawing = false;
+            ctx.closePath();
+            if (event && canvas.hasPointerCapture(event.pointerId)) {
+              canvas.releasePointerCapture(event.pointerId);
+            }
+          };
+
+          canvas.addEventListener('pointerup', stopDrawing);
+          canvas.addEventListener('pointercancel', stopDrawing);
+          canvas.addEventListener('pointerleave', stopDrawing);
+        });
+      };
+
+      bindCanvases();
+      bindPaletteDrag();
+      requestAnimationFrame(function () {
+        bindCanvases();
+        bindPaletteDrag();
+      });
+      setTimeout(function () {
+        bindCanvases();
+        bindPaletteDrag();
+      }, 100);
+    })();
+    </script>
+    """)
+
+    body_html = topic.paint_body_html()
+    if body_html:
+        ui.add_body_html(body_html)
 
 def build_quiz_page(subject: Subject, topic: Topic) -> None:
     """Render the interactive quiz page for any topic."""
@@ -434,7 +660,7 @@ def build_quiz_page(subject: Subject, topic: Topic) -> None:
         score_label.text = f"Score: {state['score']} / {state['attempts']}"
 
     def show_hint():
-        feedback_label.text = f"💡  Hint: the answer is {state['answer']}"
+        feedback_label.text = f" Hint: the answer is {state['answer']}"
         feedback_label.classes(replace="quiz-feedback-wrong")
 
     def _advance():
@@ -484,6 +710,8 @@ def build_quiz_page(subject: Subject, topic: Topic) -> None:
             )
             answer_input_holder.append(answer_input)
 
+            feedback_label = ui.label("").classes("quiz-feedback-wrong")
+
             with ui.row().style("gap:12px;flex-wrap:wrap;justify-content:center;"):
                 ui.button("Check ✓", on_click=check_answer) \
                     .props("rounded") \
@@ -494,10 +722,6 @@ def build_quiz_page(subject: Subject, topic: Topic) -> None:
                 ui.button("Hint", on_click=show_hint) \
                     .props("rounded") \
                     .style("background:#fffbe6;color:#b45309;font-weight:700;")
-                ui.button(" End", on_click=finish_quiz) \
+                ui.button("Finish Quiz", on_click=finish_quiz) \
                     .props("rounded") \
-                    .style("background:#fffbe6;color:#b45309;font-weight:700;")
-
-            feedback_label = ui.label("")
-
-
+                    .style("background:#fee2e2;color:#7f1d1d;font-weight:700;")

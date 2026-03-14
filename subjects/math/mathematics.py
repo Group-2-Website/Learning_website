@@ -39,6 +39,7 @@ def _fraction_svg(numerator: int, denominator: int, size: int = 120, color: str 
 class Fractions(Topic):
     name = "Fractions"
     has_learning = True
+    has_painting  = True
 
     def learn_page_subtitle(self) -> str:
         return "Each circle shows a whole split into equal parts — that's a fraction!"
@@ -87,7 +88,7 @@ class Fractions(Topic):
 
         return question, answer
 
-    # ── visual ───────────────────────────────────────────────────────────────
+    # visual
 
     @staticmethod
     def _circles_for_fraction(num: int, den: int, color: str, size: int = 110) -> str:
@@ -127,11 +128,11 @@ class Fractions(Topic):
             f'flex-wrap:wrap;margin:8px 0;">{joined}</div>'
         )
 
-    # ── learning steps ───────────────────────────────────────────────────────
+    # learning steps
 
     def learning_steps(self) -> list[tuple[str, str]]:
         return [
-            # ── 3 intro cards ──────────────────────────────────────────────
+            # 3 intro cards
             ("What is a fraction?",
              "A fraction shows part of a whole. The bottom number (denominator) is how many equal pieces. "
              "The top number (numerator) is how many pieces you have."),
@@ -142,7 +143,11 @@ class Fractions(Topic):
              "To multiply fractions, multiply top × top and bottom × bottom. "
              "To divide, flip the second fraction and then multiply."),
 
-            # ── 10 addition / subtraction examples ────────────────────────
+            # 10 addition / subtraction examples
+            (
+                "Adding and subtracting fractions",
+                "It is easy when they have the same denominator.",
+            ),
             ("➕ Example 1",  "1/4 + 1/4 = 2/4 = 1/2 — same denominator, just add the tops."),
             ("➕ Example 2",  "2/6 + 1/6 = 3/6 = 1/2 — three sixths is the same as one half!"),
             ("➕ Example 3",  "3/8 + 3/8 = 6/8 = 3/4 — always simplify by dividing by the common factor."),
@@ -155,11 +160,19 @@ class Fractions(Topic):
             ("➖ Example 10", "9/10 − 4/10 = 5/10 = 1/2 — five tenths is the same as one half."),
 
             # ── 10 multiplication / division examples ─────────────────────
+            (
+                "✖️ Multiplying fractions",
+                "Find a fraction of a fraction: multiply top × top and bottom × bottom.",
+            ),
             ("✖️ Example 1",  "1/2 × 1/2 = 1/4 — multiply tops: 1×1=1; bottoms: 2×2=4."),
             ("✖️ Example 2",  "2/3 × 3/4 = 6/12 = 1/2 — simplify by dividing top and bottom by 6."),
             ("✖️ Example 3",  "3/4 × 2/3 = 6/12 = 1/2 — same as above, order does not matter!"),
             ("✖️ Example 4",  "1/3 × 1/3 = 1/9 — a third of a third is a ninth."),
             ("✖️ Example 5",  "2/5 × 5/6 = 10/30 = 1/3 — simplify 10 and 30 by dividing by 10."),
+            (
+                "➗ Dividing fractions",
+                "Ask how many of the second fraction fit into the first one, then flip and multiply.",
+            ),
             ("➗ Example 6",  "1/2 ÷ 1/4 = 1/2 × 4/1 = 4/2 = 2 — flip the second fraction then multiply."),
             ("➗ Example 7",  "3/4 ÷ 3/8 = 3/4 × 8/3 = 24/12 = 2 — the answer is 2 whole circles!"),
             ("➗ Example 8",  "2/3 ÷ 1/3 = 2/3 × 3/1 = 6/3 = 2 — how many thirds fit in two thirds? Two!"),
@@ -169,45 +182,55 @@ class Fractions(Topic):
 
     def step_visual_html(self, step_index: int) -> str:
         """Return a visual for each learning card."""
-        colors = ["#7EC88A", "#FFAD05", "#6BBFFF", "#FF8C69", "#D67AB1",
-                  "#7EC88A", "#FFAD05", "#6BBFFF", "#FF8C69", "#D67AB1",
-                  "#7EC88A", "#FFAD05", "#6BBFFF", "#FF8C69", "#D67AB1",
-                  "#7EC88A", "#FFAD05", "#6BBFFF", "#FF8C69", "#D67AB1",
-                  "#7EC88A", "#FFAD05", "#6BBFFF"]
+        colors = ["#7EC88A", "#FFAD05", "#6BBFFF", "#FF8C69", "#D67AB1"]
         color = colors[step_index % len(colors)]
+
+        def render_pair(a_n: int, a_d: int, b_n: int, b_d: int, op: str) -> str:
+            svg_a = _fraction_svg(a_n, a_d, size=80, color=color)
+            svg_b = _fraction_svg(b_n, b_d, size=80, color="#FFAD05" if color != "#FFAD05" else "#7EC88A")
+            sep = f'<span style="font-size:22px;font-weight:800;color:#a83432;">{op}</span>'
+            return f'<div style="display:flex;align-items:center;gap:4px;">{svg_a}{sep}{svg_b}</div>'
 
         # intro cards 0-2: plain circles showing halves/thirds/quarters
         if step_index < 3:
             denom = step_index + 2
             return _fraction_svg(1, denom, size=90, color=color)
 
-        # +/- examples: index 3-12  (examples 1-10)
-        if step_index < 13:
-            ex = step_index - 3   # 0..9
-            add_examples = [
-                (1,4,1,4), (2,6,1,6), (3,8,3,8), (1,3,1,3), (4,10,3,10),
-                (3,4,1,4), (5,6,2,6), (7,8,3,8), (4,5,1,5), (9,10,4,10),
-            ]
-            a_n, a_d, b_n, b_d = add_examples[ex]
-            op = "+" if ex < 5 else "−"
-            svg_a = _fraction_svg(a_n, a_d, size=80, color=color)
-            svg_b = _fraction_svg(b_n, b_d, size=80, color="#FFAD05" if color != "#FFAD05" else "#7EC88A")
-            sep = f'<span style="font-size:22px;font-weight:800;color:#a83432;">{op}</span>'
-            return f'<div style="display:flex;align-items:center;gap:4px;">{svg_a}{sep}{svg_b}</div>'
+        # section header card
+        if step_index == 3:
+            return render_pair(1, 4, 1, 4, "+")
 
-        # ×/÷ examples: index 13-22 (examples 1-10)
-        mul_examples = [
-            (1,2,1,2,'×'), (2,3,3,4,'×'), (3,4,2,3,'×'), (1,3,1,3,'×'), (2,5,5,6,'×'),
-            (1,2,1,4,'÷'), (3,4,3,8,'÷'), (2,3,1,3,'÷'), (5,6,5,12,'÷'), (1,4,1,8,'÷'),
+        # +/- examples: indices 4-13 (examples 1-10)
+        add_examples = [
+            (1, 4, 1, 4, "+"), (2, 6, 1, 6, "+"), (3, 8, 3, 8, "+"), (1, 3, 1, 3, "+"), (4, 10, 3, 10, "+"),
+            (3, 4, 1, 4, "−"), (5, 6, 2, 6, "−"), (7, 8, 3, 8, "−"), (4, 5, 1, 5, "−"), (9, 10, 4, 10, "−"),
         ]
-        ex = step_index - 13
-        if ex < 0 or ex >= len(mul_examples):
-            return ""
-        a_n, a_d, b_n, b_d, op = mul_examples[ex]
-        svg_a = _fraction_svg(a_n, a_d, size=80, color=color)
-        svg_b = _fraction_svg(b_n, b_d, size=80, color="#FFAD05" if color != "#FFAD05" else "#7EC88A")
-        sep = f'<span style="font-size:22px;font-weight:800;color:#a83432;">{op}</span>'
-        return f'<div style="display:flex;align-items:center;gap:4px;">{svg_a}{sep}{svg_b}</div>'
+        if 4 <= step_index <= 13:
+            return render_pair(*add_examples[step_index - 4])
+
+        # multiplication section header card
+        if step_index == 14:
+            return render_pair(1, 2, 1, 2, "×")
+
+        # × examples: indices 15-19 (examples 1-5)
+        mul_examples = [
+            (1, 2, 1, 2, "×"), (2, 3, 3, 4, "×"), (3, 4, 2, 3, "×"), (1, 3, 1, 3, "×"), (2, 5, 5, 6, "×"),
+        ]
+        if 15 <= step_index <= 19:
+            return render_pair(*mul_examples[step_index - 15])
+
+        # division section header card
+        if step_index == 20:
+            return render_pair(1, 2, 1, 4, "÷")
+
+        # ÷ examples: indices 21-25 (examples 6-10)
+        div_examples = [
+            (1, 2, 1, 4, "÷"), (3, 4, 3, 8, "÷"), (2, 3, 1, 3, "÷"), (5, 6, 5, 12, "÷"), (1, 4, 1, 8, "÷"),
+        ]
+        if 21 <= step_index <= 25:
+            return render_pair(*div_examples[step_index - 21])
+
+        return ""
 
     def check_answer(self, user: str, correct: str) -> tuple[bool, str]:
         """Accept any numerically equivalent form: 2/4, 1/2, 0.5, 4/8 etc."""
@@ -236,6 +259,9 @@ class Fractions(Topic):
         c = _parse(correct)
         return u == c, ""
 
+    def paint_visual_html(self) -> str:
+        """Render fraction-specific paint cards with one circle per card."""
+
 
 class Math(Subject):
     name = "Math"
@@ -243,8 +269,3 @@ class Math(Subject):
     topics: list[Topic] = [
         Fractions(),
     ]
-
-
-
-
-

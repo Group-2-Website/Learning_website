@@ -4,10 +4,10 @@ from nicegui import ui
 
 from models.subject import Subject
 from models.topic import Topic
-from subjects import SUBJECTS
 from ui.builders import (add_global_css, build_topbar, build_home_page,
                          build_subject_topics_page, build_topic_mode_page,
-                         build_quiz_page, build_learn_page, _apply_bg, _build_page_header)
+                         build_quiz_page, build_learn_page,build_paint_page,
+                         _apply_bg, _build_page_header)
 
 
 @ui.page('/')
@@ -61,6 +61,14 @@ def _register_topic(subject, topic):
             build_learn_page(_s, _t)
 
 
+    if topic.has_painting:
+        @ui.page(f'/{slug}/{topic_slug}/paint')
+        def topic_paint_page(_s=subject, _t=topic):
+            add_global_css()
+            build_topbar()
+            build_paint_page(_s, _t)
+
+
 def build_quiz_results_page(subject: Subject, topic: Topic, score: int, attempts: int) -> None:
     """Render the quiz results page."""
     url = topic.page_background_image()
@@ -88,13 +96,13 @@ def build_quiz_results_page(subject: Subject, topic: Topic, score: int, attempts
             "max-width:520px;margin:40px auto;gap:18px;align-items:center;"
         ):
             ui.label(msg).style(
-                f"font-size:24px;font-weight:800;color:{color};text-align:center;"
+                f"font-size:24px;font-weight:800;color:#f97316;text-align:center;"
             )
             ui.label(f"Your score: {score} / {attempts}").style(
-                "font-size:36px;font-weight:800;color:#f97316;"
+                "font-size:36px;font-weight:800;color:#60435F;"
             )
             ui.label(f"{pct}%").style(
-                f"font-size:48px;font-weight:900;color:{color};"
+                f"font-size:48px;font-weight:900;color:#60435F;"
             )
 
             with ui.row().style("gap:16px;flex-wrap:wrap;justify-content:center;margin-top:12px;"):
@@ -104,7 +112,7 @@ def build_quiz_results_page(subject: Subject, topic: Topic, score: int, attempts
                         "background:linear-gradient(135deg,#60435F,#D67AB5);"
                         "color:white;font-weight:700;font-size:15px;"
                     )
-                ui.button("🏠  Back to Topic", on_click=lambda: ui.navigate.to(back_dest)) \
+                ui.button("Back to Topic", on_click=lambda: ui.navigate.to(back_dest)) \
                     .props("rounded") \
                     .style(
                         "background:#f3e8ff;color:#60435F;font-weight:700;font-size:15px;"
