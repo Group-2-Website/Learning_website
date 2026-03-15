@@ -13,31 +13,66 @@ class DictionaryWord(Base):
     article = Column(String)
     meanings = Column(String)
     word_type = Column(String)
+
+class Operation(Base):
+    __tablename__ = "operations"
+
+    id = Column(Integer, primary_key=True)
+    content_type=Column(String)
+    topic = Column(String)
+    item_type = Column(String)
+    title = Column(String)
+    explanation = Column(String)
+    expression = Column(String)
+    answer = Column(String)
 engine = create_engine("sqlite:///learning.db")
 
-Base.metadata.create_all(engine)
+
 
 Session = sessionmaker(bind=engine)
-session = Session()
+Base.metadata.create_all(engine)
+def import_dictionary_words():
+    session = Session()
+    with open("flashcard_words_cleaned.csv", encoding="utf-8-sig") as file:
 
+        reader = csv.DictReader(file)
 
-with open("flashcard_words_cleaned.csv", encoding="utf-8-sig") as file:
+        for row in reader:
 
-    reader = csv.DictReader(file)
+            word = DictionaryWord(
+                english=row["english"],
+                german=row["german"],
+                article=row["article"],
+                meanings=row["meanings"],
+                word_type=row["type"]
+            )
 
-    for row in reader:
+            session.add(word)
+    session.commit()
 
-        word = DictionaryWord(
-            english=row["english"],
-            german=row["german"],
-            article=row["article"],
-            meanings=row["meanings"],
-            word_type=row["type"]
-        )
+    print("dictionary imported")
+def import_operations():
+     session = Session()
 
-        session.add(word)
+     with open("operations.csv", encoding="utf-8-sig") as file:
+         reader = csv.DictReader(file)
 
+         for row in reader:
+             operation = Operation(
+             content_type=row["content_type"],
+             topic=row["topic"],
+             item_type=row["item_type"],
+             title=row["title"],
+             explanation=row["explanation"],
+             expression=row["expression"],
+             answer=row["answer"],
+             )
 
-session.commit()
+             session.add(operation)
+         session.commit()
+         session.close()
+         print("operations imported")
 
-print("dictionary imported")
+if __name__ == "__main__":
+ import_dictionary_words()
+ import_operations()

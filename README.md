@@ -52,32 +52,40 @@ The application also includes a database layer for storing vocabulary/flashcard 
 
 ```
 Learning_website/
-├── main.py                          # App entry point — global CSS, topbar, home page,
-│                                    #   and auto-registration of all subject/topic routes
-├── requirements.txt                 # Python dependencies (nicegui, sqlalchemy)
+├── main.py                          # App entry point
+├── requirements.txt                 # Python dependencies
 ├── README.md                        # Project documentation
 │
-├── subjects/                        # Subject & topic definitions
-│   ├── __init__.py                  # SUBJECTS list — register new subjects here
-│   ├── base.py                      # Abstract base classes (Subject, Topic) and
-│   │                                #   shared page-builders:
-│   │                                #     build_subject_topics_page()
-│   │                                #     build_topic_mode_page()
-│   │                                #     build_learn_page()
-│   │                                #     build_quiz_page()
+├── Database/                        # Database models, data files, and SQLite DB
+│   ├── Learning.py                  # SQLAlchemy models and CSV import logic
+│   ├── flashcard_words_cleaned.csv  # Vocabulary source data
+│   ├── operations.csv               # Additional learning operations data
+│   └── learning.db                  # SQLite database file
+│
+├── images/                          # Backgrounds, icons and other images
+│   └── icons/
+├── models/                          # Core subject/topic data models
+│   ├── subject.py
+│   └── topic.py
+│
+├── subjects/                        # Subject definitions and content
+│   ├── __init__.py                  # Registers available subjects
+│   ├── language/
+│   │   └── GermanEnglish.py         # Language subject content
 │   └── math/
-│       ├── __init__.py
-│       └── topics.py                # Math subject + Fractions topic
-│                                    #   (question generator, learning steps, image)
+│       └── mathematics.py           # Math subject content
 │
-├── Database/
-│   ├── Learning.py                  # SQLAlchemy models & CSV import script
-│   │                                #   (DictionaryWord — english/german/article/meanings/type)
-│   ├── learning.db                  # SQLite database file
-│   └── flashcard_words_cleaned.csv  # Vocabulary data source (English ↔ German)
-│
-└── images/
-    └── franction.png                # Fraction circles illustration (used on the learn page)
+└── ui/                              # NiceGUI page builders and shared UI code
+    └── pages/
+        ├── __init__.py              # Registers subject with topics, called from main
+        ├── common.py                # Shared styling, topbar, and common UI helpers
+        ├── home.py                  # Home page
+        ├── learn.py                 # Learning mode page
+        ├── paint.py                 # Drawing/paint page 
+        ├── quiz.py                  # Quiz page
+        ├── quiz_results.py          # Quiz results page
+        ├── subject.py               # Subject page (e.g. Math)
+        └── topic.py                 # Topic page (e.g Math > Fractions)
 ```
 
 ---
@@ -88,13 +96,14 @@ Learning_website/
 
 Routes are generated automatically at startup. For every `Subject` registered in `subjects/__init__.py`, `main.py` registers:
 
-| URL pattern                          | Page                          |
-|--------------------------------------|-------------------------------|
-| `/`                                  | Home — subject selector       |
-| `/{subject}`                         | Topic selector for a subject  |
-| `/{subject}/{topic}`                 | Mode selector (Quiz / Learn)  |
-| `/{subject}/{topic}/quiz`            | Interactive quiz              |
-| `/{subject}/{topic}/learn`           | Step-by-step learning page    |
+| URL pattern                | Page                         |
+|----------------------------|------------------------------|
+| `/`                        | Home — subject selector      |
+| `/{subject}`               | Topic selector for a subject |
+| `/{subject}/{topic}`       | Mode selector (Quiz / Learn) |
+| `/{subject}/{topic}/quiz`  | Interactive quiz             |
+| `/{subject}/{topic}/learn` | Step-by-step learning page   |
+| `/{subject}/{topic}/paint` | Having fun with paintin      |
 
 ### Adding a New Subject
 
@@ -109,6 +118,7 @@ All pages and routes are created automatically — no changes to `main.py` neede
 
 ## Current Subjects & Topics
 
+TODO: updating is required after the last version of the code.
 | Subject | Topic      | Quiz | Learning |
 |---------|------------|------|----------|
 | Math    | Fractions  | ✅   | ✅       |

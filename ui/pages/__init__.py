@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from nicegui import ui
 
-from ui.builders import (add_global_css, build_topbar, build_home_page,
-                         build_subject_topics_page, build_topic_mode_page,
-                         build_quiz_page, build_learn_page, build_paint_page,
-                         build_quiz_results_page)
+from ui.pages.common import add_global_css, build_topbar
+from ui.pages.home import build_home_page
+from ui.pages.learn import build_learn_page
+from ui.pages.paint import build_paint_page
+from ui.pages.quiz import build_quiz_page
+from ui.pages.quiz_results import build_quiz_results_page
+from ui.pages.topic import build_topic_mode_page
+from ui.pages.subject import build_subject_page
 
 
 @ui.page('/')
@@ -15,22 +19,21 @@ def home():
     build_home_page()
 
 
-
-def _register_subject(subject):
+def register_subject(subject):
     slug = subject.url_slug
 
     @ui.page(f'/{slug}')
     def subject_page(_s=subject):
         add_global_css()
         build_topbar()
-        build_subject_topics_page(_s)
+        build_subject_page(_s)
 
     for topic in subject.topics:
         _register_topic(subject, topic)
 
 
 def _register_topic(subject, topic):
-    slug       = subject.url_slug
+    slug = subject.url_slug
     topic_slug = topic.name.lower()
 
     @ui.page(f'/{slug}/{topic_slug}')
@@ -58,7 +61,6 @@ def _register_topic(subject, topic):
             build_topbar()
             build_learn_page(_s, _t)
 
-
     if topic.has_painting:
         @ui.page(f'/{slug}/{topic_slug}/paint')
         def topic_paint_page(_s=subject, _t=topic):
@@ -66,4 +68,6 @@ def _register_topic(subject, topic):
             build_topbar()
             build_paint_page(_s, _t)
 
+
+__all__ = ['register_subject']
 

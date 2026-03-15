@@ -73,19 +73,71 @@ class Fractions(Topic):
     has_learning = True
     has_painting  = True
 
-    def learn_page_subtitle(self) -> str:
-        return "Each circle shows a whole split into equal parts — that's a fraction!"
-
     def page_background_image(self) -> str:
         return "/images/Background.png"
 
     _DENOMINATORS = [2, 3, 4, 5, 6, 8, 10]
 
-    #  question generation
+    def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
+        return {
+            "operation": [
+                ("all", "All operations"),
+                ("add_sub", "Addition + Subtraction"),
+                ("mul_div", "Multiplication + Division"),
+                ("add", "Addition only"),
+                ("sub", "Subtraction only"),
+                ("mul", "Multiplication only"),
+                ("div", "Division only"),
+            ],
+            "difficulty": [
+                ("mixed", "Mixed"),
+                ("easy", "Easy"),
+                ("medium", "Medium"),
+                ("hard", "Hard"),
+            ],
+        }
 
-    def generate_question(self) -> tuple[str, str]:
-        denom = random.choice(self._DENOMINATORS)
-        op    = random.choice(["+", "-", "×", "÷"])
+    def default_quiz_filters(self) -> dict[str, str]:
+        return {"operation": "all", "difficulty": "mixed"}
+
+    def sanitize_quiz_filters(self, selected: dict[str, str]) -> dict[str, str]:
+        definitions = self.quiz_filter_definitions()
+        defaults = self.default_quiz_filters()
+        cleaned: dict[str, str] = {}
+        for filter_name, options in definitions.items():
+            valid_values = {value for value, _ in options}
+            fallback = defaults.get(filter_name, options[0][0])
+            value = selected.get(filter_name, fallback)
+            cleaned[filter_name] = value if value in valid_values else fallback
+        return cleaned
+
+    def set_operation_filter(self, mode: str) -> None:
+        # Backward-compatible helper used by older UI code.
+        filters = self.default_quiz_filters()
+        filters["operation"] = mode
+        self._legacy_filters = self.sanitize_quiz_filters(filters)
+
+    def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
+        effective_filters = self.sanitize_quiz_filters(filters or getattr(self, "_legacy_filters", {}))
+
+        operation_groups = {
+            "all": ["+", "-", "×", "÷"],
+            "add_sub": ["+", "-"],
+            "mul_div": ["×", "÷"],
+            "add": ["+"],
+            "sub": ["-"],
+            "mul": ["×"],
+            "div": ["÷"],
+        }
+        denominators_by_difficulty = {
+            "mixed": self._DENOMINATORS,
+            "easy": [2, 3, 4, 5],
+            "medium": [4, 5, 6, 8],
+            "hard": [6, 8, 10],
+        }
+
+        op = random.choice(operation_groups[effective_filters["operation"]])
+        denom = random.choice(denominators_by_difficulty[effective_filters["difficulty"]])
 
         if op in ("+", "-"):
             a = random.randint(1, denom - 1)
@@ -96,10 +148,10 @@ class Fractions(Topic):
                     a = min(a + 1, denom - 1)
             num_result = a + b if op == "+" else a - b
             common = math.gcd(abs(num_result), denom)
-            r_num  = num_result // common
-            r_den  = denom   // common
+            r_num = num_result // common
+            r_den = denom // common
             question = f"{a}/{denom} {op} {b}/{denom} = ?"
-            answer   = str(r_num) if r_den == 1 else f"{r_num}/{r_den}"
+            answer = str(r_num) if r_den == 1 else f"{r_num}/{r_den}"
 
         else:  # × or ÷
             a_num = random.randint(1, denom - 1)
@@ -116,7 +168,7 @@ class Fractions(Topic):
             r_num //= common
             r_den //= common
             question = f"{a_num}/{a_den} {op} {b_num}/{b_den} = ?"
-            answer   = str(r_num) if r_den == 1 else f"{r_num}/{r_den}"
+            answer = str(r_num) if r_den == 1 else f"{r_num}/{r_den}"
 
         return question, answer
 

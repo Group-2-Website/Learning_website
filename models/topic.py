@@ -4,13 +4,24 @@ from __future__ import annotations
 class Topic:
     """Base class for a single topic within a subject (e.g. Fractions)."""
     name: str = ""
-    icon: str = ""
     has_learning: bool = True
     has_painting: bool = False
 
-    def generate_question(self) -> tuple[str, str]:
+    def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
         """Return (question_text, correct_answer) as strings."""
         raise NotImplementedError
+
+    def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
+        """Optional quiz filters: {filter_name: [(value, label), ...]} for UI menus."""
+        return {}
+
+    def default_quiz_filters(self) -> dict[str, str]:
+        """Default selected filter values for this topic."""
+        return {}
+
+    def sanitize_quiz_filters(self, selected: dict[str, str]) -> dict[str, str]:
+        """Validate and normalize filter selections from the UI."""
+        return selected
 
     def learning_steps(self) -> list[tuple[str, str]]:
         """Return a list of (title, explanation) tuples."""
