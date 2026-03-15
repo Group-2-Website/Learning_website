@@ -45,7 +45,7 @@ def _pie_slice_paths(
 
 def _fraction_svg(numerator: int, denominator: int, size: int = 120, color: str = "#FF8C69") -> str:
     """Return an inline SVG of a pie chart representing numerator/denominator."""
-    cx = cy = size // 2
+    cx = size // 2
     large = 1 if (1 / denominator) > 0.5 else 0
 
     paths = _pie_slice_paths(
@@ -331,11 +331,19 @@ class Fractions(Topic):
         )
 
 
+class Operation(Topic):
+    name = "Operations"
+    def page_background_image(self) -> str:
+        return "/images/Math_back.png"
+
+
 class Math(Subject):
     name = "Math"
     url_slug = "math"
+    icon = "/images/icons/notebook.svg"
     topics: list[Topic] = [
         Fractions(),
+        Operation(),
     ]
 
     def page_background_image(self) -> str:

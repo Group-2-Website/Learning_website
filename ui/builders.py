@@ -104,7 +104,7 @@ def add_global_css():
         cursor: pointer;
         transition: transform .2s ease, box-shadow .2s ease;
         box-shadow: 0 4px 14px rgba(96,67,95,0.18);
-        margin: 12px;
+        margin: 20px;
         
       }
 
@@ -123,12 +123,31 @@ def add_global_css():
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
+        font-size: 30px;
         font-weight: 700;
         color: #D67AB5;
         text-align: center;
         padding: 10px;
         box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      }
+
+      .subject-circle-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+      }
+
+      .subject-icon {
+        width: 72px;
+        height: 72px;
+        object-fit: contain;
+      }
+
+      .subject-label {
+        line-height: 1.2;
+        max-width: 250px;
       }
 
 
@@ -191,8 +210,6 @@ def add_global_css():
         box-shadow: 0 8px 24px rgba(96,67,95,0.20);
       }
 
-      .mode-icon { font-size: 48px; }
-
       .mode-title {
         font-size: 20px;
         font-weight: 800;
@@ -252,6 +269,19 @@ def add_global_css():
       }
 
       .back-btn:hover { text-decoration: underline; }
+    
+      
+      .btn-svg-icon .q-btn__content::before {
+         content: '';
+         width:26px;
+         height:26px;
+         flex:0026px;
+         margin:3px;
+         background-image: var(--icon);
+         background-repeat: no-repeat;
+         background-position: center;
+         background-size: contain;
+         }
     </style>
     """)
 
@@ -483,7 +513,7 @@ def build_home_page() -> None:
     """Render the home / subject-selection page."""
     _apply_bg('/images/Home_page.png')
     from subjects import SUBJECTS
-    with ui.element("div").classes("page-content1"):
+    with (ui.element("div").classes("page-content1")):
         ui.label("Choose a subject to start your learning adventure.").classes("text-body1")
         with ui.element("div").style(
             "display:flex;flex-wrap:wrap;justify-content:center;margin-top:70px;"
@@ -493,9 +523,12 @@ def build_home_page() -> None:
                 with ui.element("div").classes("circle-wrapper").on(
                     "click", lambda d=dest: ui.navigate.to(d)
                 ):
-                    with ui.element("div").classes("circle-outer"):
-                        with ui.element("div").classes("circle-inner"):
-                            ui.label(subject.name).classes("text-center")
+                 with ui.element("div").classes("circle-outer"):
+                     with ui.element("div").classes("circle-inner"):
+                        with ui.element("div").classes("subject-circle-content"):
+                            ui.label(subject.name).classes("text-center subject-label")
+                            ui.image(subject.icon).classes("subject-icon")
+
 
 
 def build_subject_topics_page(subject: Subject) -> None:
@@ -516,9 +549,8 @@ def build_subject_topics_page(subject: Subject) -> None:
                     "click", lambda d=dest: ui.navigate.to(d)
                 ):
                     with ui.element("div").classes("circle-outer"):
-                        with ui.element("div").classes("circle-middle"):
-                            with ui.element("div").classes("circle-inner"):
-                                ui.label(topic.name)
+                        with ui.element("div").classes("circle-inner"):
+                            ui.label(topic.name).classes("text-center")
 
 
 def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
@@ -537,7 +569,7 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
             with ui.element("div").classes("mode-card").on(
                 "click", lambda d=quiz_dest: ui.navigate.to(d)
             ):
-                ui.label("📝").classes("mode-icon")
+                ui.html('<img src="/images/icons/test.svg" style="width:80px;height:80px;object-fit:contain;">')
                 ui.label("Quiz").classes("mode-title")
                 ui.label("Answer questions and test yourself!").classes("mode-desc")
 
@@ -546,7 +578,7 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
                 with ui.element("div").classes("mode-card").on(
                     "click", lambda d=learn_dest: ui.navigate.to(d)
                 ):
-                    ui.label("📖").classes("mode-icon")
+                    ui.html('<img src="/images/icons/read.svg" style="width:80px;height:80px;object-fit:contain;">')
                     ui.label("Learning").classes("mode-title")
                     ui.label("Read step-by-step explanations.").classes("mode-desc")
             if topic.has_painting:
@@ -554,7 +586,7 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
                 with ui.element("div").classes("mode-card").on(
                     "click", lambda d=draw_dest: ui.navigate.to(d)
                 ):
-                    ui.label("🎨").classes("mode-icon")
+                    ui.html('<img src="/images/icons/colored-pencils.svg" style="width:80px;height:80px;object-fit:contain;">')
                     ui.label("Painting").classes("mode-title")
                     ui.label("Paint your understanding!").classes("mode-desc")
 
@@ -778,9 +810,10 @@ def build_quiz_page(subject: Subject, topic: Topic) -> None:
                 ui.button("Skip →", on_click=next_question) \
                     .props("rounded") \
                     .style("background:#f3e8ff;color:#60435F;font-weight:700;")
-                ui.button("Hint", on_click=show_hint) \
+                ui.button("   Hint", on_click=show_hint) \
                     .props("rounded") \
-                    .style("background:#fffbe6;color:#b45309;font-weight:700;")
+                    .classes("btn-svg-icon") \
+                    .style("--icon: url('/images/icons/machine-learning.svg');background:#fffbe6;color:#b45309;font-weight:700;")
                 ui.button("Finish Quiz", on_click=finish_quiz) \
                     .props("rounded") \
                     .style("background:#fee2e2;color:#7f1d1d;font-weight:700;")
@@ -831,6 +864,7 @@ def build_quiz_results_page(subject: Subject, topic: Topic, score: int, attempts
                     )
                 ui.button("Back to Topic", on_click=lambda: ui.navigate.to(back_dest)) \
                     .props("rounded") \
+                    .classes("btn-svg-icon") \
                     .style(
-                        "background:#f3e8ff;color:#60435F;font-weight:700;font-size:15px;"
+                        "--icon: url('/images/icons/daycare.svg'); background:#f3e8ff;color:#60435F;font-weight:700;font-size:15px;"
                     )

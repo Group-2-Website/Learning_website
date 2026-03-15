@@ -7,6 +7,8 @@ class Subject:
     """Base class for a subject (e.g. Math, Science, Language)."""
     name: str = ""
     url_slug: str = ""
+    icon: str = ""
+
     topics: list[Topic] = []
 
     def page_background_image(self) -> str:

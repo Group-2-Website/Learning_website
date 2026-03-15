@@ -6,11 +6,12 @@ from models.topic import Topic
 
 class GermanEnglish(Topic):
     name = "German-English"
-    has_learning= False
+
 
 class Language(Subject):
     name = "Language"
     url_slug = "language"
+    icon="/images/icons/Stack-of-books.svg"
     topics: list[Topic] = [
         GermanEnglish(),
     ]
