@@ -59,19 +59,18 @@ def build_paint_page(subject: Subject, topic: Topic) -> None:
 
             with ui.element("div").style(
                 "display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));"
-                "gap:60px;width:min(95vw,1400px);"
+                "gap:40px;width:min(95vw,1400px);"
             ):
                 for i in range(3):
                     ui.html(
                         '<div class="paint-card"'
-                        'style="padding:80px;background:#fff;border-radius:32px;border:3px solid #60435f99;'
+                        'style="background:#fff;border-radius:32px;border:3px solid #60435f99;'
                         'box-shadow:0 8px 24px rgba(96,67,95,0.8);display:flex;flex-direction:column;gap:10px;">'
                         f'<div class="paint-instruction" data-paint-instruction="{i}" '
-            
-                        'style="font-weight:800;text-align:center;color:#60435F;font-size:20px;">'
+                        'style="padding:10px;font-weight:800;text-align:center;color:#60435F;font-size:30px;">'
                         '</div>'
                         '<div class="paint-area" '
-                        'style="position:relative;height:400px;background:#fff;'
+                        'style="position:relative;height:600px;background:#fff;'
                         'border-radius:18px;overflow:hidden;">'
                         f'<div class="paint-target-slot" data-paint-slot="{i}" '
                         'style="position:absolute;inset:0;display:flex;justify-content:center;align-items:center;'
@@ -128,15 +127,15 @@ def paint_body_html() -> None:
               const page = pages[index];
               if (!page) return;
 
-              // Keep the original instruction text from the topic HTML (e.g. "Page 2: Paint 2/3").
+              // Keep the original instruction text from the topic HTML (e.g. "Paint 2/3").
               const pageInstruction = page.firstElementChild ? page.firstElementChild.textContent.trim() : '';
               if (instructions[index] && pageInstruction) {
                 instructions[index].textContent = pageInstruction;
               }
 
-              const target = page.querySelector('[data-target-num][data-target-den]') || page;
-              slot.dataset.bound = 'true';
-              slot.appendChild(target.cloneNode(true));
+              const target = page.querySelector('[data-target-num][data-target-den]') || page; slot.dataset.bound = 'true';
+              const cloned = target.cloneNode(true); cloned.querySelectorAll('img').forEach(function (img) { img.style.width = 'min(92%,720px)'; img.style.maxWidth = '720px'; img.style.height = 'auto'; });
+              slot.appendChild(cloned);
 
               const meta = target.querySelector('[data-target-num][data-target-den]') || target;
               if (instructions[index] && !pageInstruction && meta && meta.dataset.targetNum && meta.dataset.targetDen) {

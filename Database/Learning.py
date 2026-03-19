@@ -52,26 +52,26 @@ def import_dictionary_words():
 
     print("dictionary imported")
 def import_operations():
-     session = Session()
+    session = Session()
 
-     with open("operations.csv", encoding="utf-8-sig") as file:
-         reader = csv.DictReader(file)
+    with open("operations.csv", encoding="utf-8-sig") as file:
+     reader = csv.DictReader(file)
 
-         for row in reader:
-             operation = Operation(
-             content_type=row["content_type"],
-             topic=row["topic"],
-             item_type=row["item_type"],
-             title=row["title"],
-             explanation=row["explanation"],
-             expression=row["expression"],
-             answer=row["answer"],
-             )
+     for row in reader:
+         operation = Operation(
+         content_type=row["content_type"],
+         topic=row["topic"],
+         item_type=row["item_type"],
+         title=row["title"],
+         explanation=row["explanation"],
+         expression=row["expression"],
+         answer=row["answer"],
+         )
 
-             session.add(operation)
-         session.commit()
-         session.close()
-         print("operations imported")
+         session.add(operation)
+     session.commit()
+     session.close()
+     print("operations imported")
 
 if __name__ == "__main__":
  import_dictionary_words()

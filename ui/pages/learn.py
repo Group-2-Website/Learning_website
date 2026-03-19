@@ -25,7 +25,7 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
             with ui.element("div").style(
                 "display:grid;grid-template-columns:repeat(2,1fr);gap:16px;"
             ):
-                for i, (title, explanation) in enumerate(steps, start=1):
+                for i, (title, explanation, expression, answer) in enumerate(steps, start=1):
                     visual = topic.step_visual_html(i - 1)
                     with ui.element("div").classes("mode-card").style("gap:8px;"):
                         if visual:
@@ -36,6 +36,14 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
                         ui.label(explanation).style(
                             "margin-top:4px;color:#555;font-size:14px;line-height:1.6;text-align:center;"
                         )
+                        if expression:
+                            ui.label(f"Expression: {expression}").style(
+                                "margin-top:4px;color:#333;font-size:13px;line-height:1.4;text-align:center;"
+                            )
+                        if answer:
+                            ui.label(f"Answer: {answer}").style(
+                                "margin-top:2px;color:#1a7f37;font-size:13px;line-height:1.4;text-align:center;"
+                            )
 
         ui.button("Ready? Take the Quiz →", on_click=lambda d=quiz_dest: ui.navigate.to(d)) \
             .props("rounded") \

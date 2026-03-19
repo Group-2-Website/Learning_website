@@ -1,8 +1,65 @@
 from __future__ import annotations
 import random
 import math
+import sqlite3
+import os
+
+
 from models.subject import Subject
 from models.topic import Topic
+
+
+def _load_steps_from_db(topic_name: str | None = None) -> list[dict[str, str]]:
+    """Load learning steps from the project SQLite database."""
+    project_root = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    candidate_db_paths = [
+        os.path.join(project_root, "learning.db"),
+        os.path.join(project_root, "Database", "learning.db"),
+    ]
+
+    # Prefer DB files that exist; still keep candidates for clearer debug output.
+    db_paths = [path for path in candidate_db_paths if os.path.exists(path)] or candidate_db_paths
+
+    table_candidates = ("learning_steps", "operations")
+
+    def _table_exists(conn: sqlite3.Connection, table_name: str) -> bool:
+        row = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name = ? LIMIT 1",
+            (table_name,),
+        ).fetchone()
+        return row is not None
+
+    for db_path in db_paths:
+        try:
+            with sqlite3.connect(db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                table_name = next((t for t in table_candidates if _table_exists(conn, t)), None)
+                if not table_name:
+                    continue
+
+                base_query = (
+                    "SELECT content_type, topic, item_type, title, explanation, expression, answer "
+                    f"FROM {table_name}"
+                )
+
+                rows = []
+                if topic_name:
+                    rows = conn.execute(
+                        base_query + " WHERE lower(topic) = lower(?) ORDER BY rowid",
+                        (topic_name,),
+                    ).fetchall()
+
+                # Some datasets store sub-topics (addition, division, ...). If a strict
+                # topic filter is empty, return the table's ordered rows instead.
+                if not rows:
+                    rows = conn.execute(base_query + " ORDER BY rowid").fetchall()
+
+                return [dict(row) for row in rows]
+        except Exception as e:
+            print(f"[DEBUG] DB error ({db_path}): {e}")
+
+    print(f"[DEBUG] DB error: no supported table found in {db_paths}")
+    return []
 
 
 def _pie_slice_paths(
@@ -14,7 +71,7 @@ def _pie_slice_paths(
     stroke: str,
     stroke_width: str,
     large_arc_flag: int,
-    extra_attrs_for_slice=None,
+    extra_attrs_for_slice = None,
 ) -> str:
     """Build SVG path elements for a denominator-sliced pie."""
     cx = cy = size // 2
@@ -214,54 +271,39 @@ class Fractions(Topic):
 
     # learning steps
 
-    def learning_steps(self) -> list[tuple[str, str]]:
+    def learning_steps(self) -> list[tuple[str, str, str, str]]:
         return [
             # 3 intro cards
-            ("What is a fraction?",
-             "A fraction shows part of a whole. The bottom number (denominator) is how many equal pieces. "
-             "The top number (numerator) is how many pieces you have."),
-            ("Same denominator rule",
-             "To add or subtract fractions, the denominators must be the same. "
-             "Keep the denominator, and add or subtract only the numerators!"),
-            ("Multiply & Divide rule",
-             "To multiply fractions, multiply top × top and bottom × bottom. "
-             "To divide, flip the second fraction and then multiply."),
+            ("What is a fraction?", "A fraction shows part of a whole. The bottom number (denominator) is how many equal pieces.", "The top number (numerator) is how many pieces you have.", ""),
+            ("Same denominator rule", "To add or subtract fractions, the denominators must be the same.", "Keep the denominator, and add or subtract only the numerators!", ""),
+            ("Multiply & Divide rule", "To multiply fractions, multiply top × top and bottom × bottom.", "To divide, flip the second fraction and then multiply.", ""),
 
             # 10 addition / subtraction examples
-            (
-                "Adding and subtracting fractions",
-                "It is easy when they have the same denominator.",
-            ),
-            ("➕ Example 1",  "1/4 + 1/4 = 2/4 = 1/2 — same denominator, just add the tops."),
-            ("➕ Example 2",  "2/6 + 1/6 = 3/6 = 1/2 — three sixths is the same as one half!"),
-            ("➕ Example 3",  "3/8 + 3/8 = 6/8 = 3/4 — always simplify by dividing by the common factor."),
-            ("➕ Example 4",  "1/3 + 1/3 = 2/3 — two thirds of a whole."),
-            ("➕ Example 5",  "4/10 + 3/10 = 7/10 — the denominator stays 10."),
-            ("➖ Example 6",  "3/4 − 1/4 = 2/4 = 1/2 — subtract the tops, keep the bottom."),
-            ("➖ Example 7",  "5/6 − 2/6 = 3/6 = 1/2 — three sixths simplifies to one half."),
-            ("➖ Example 8",  "7/8 − 3/8 = 4/8 = 1/2 — divide both by 4 to simplify."),
-            ("➖ Example 9",  "4/5 − 1/5 = 3/5 — three fifths remaining."),
-            ("➖ Example 10", "9/10 − 4/10 = 5/10 = 1/2 — five tenths is the same as one half."),
+            ("Adding and subtracting fractions", "It is easy when they have the same denominator.", "", ""),
+            ("➕ Example 1", "1/4 + 1/4 = 2/4 = 1/2 — same denominator, just add the tops.", "1/4 + 1/4", "1/2"),
+            ("➕ Example 2", "2/6 + 1/6 = 3/6 = 1/2 — three sixths is the same as one half!", "2/6 + 1/6", "1/2"),
+            ("➕ Example 3", "3/8 + 3/8 = 6/8 = 3/4 — always simplify by dividing by the common factor.", "3/8 + 3/8", "3/4"),
+            ("➕ Example 4", "1/3 + 1/3 = 2/3 — two thirds of a whole.", "1/3 + 1/3", "2/3"),
+            ("➕ Example 5", "4/10 + 3/10 = 7/10 — the denominator stays 10.", "4/10 + 3/10", "7/10"),
+            ("➖ Example 6", "3/4 − 1/4 = 2/4 = 1/2 — subtract the tops, keep the bottom.", "3/4 - 1/4", "1/2"),
+            ("➖ Example 7", "5/6 − 2/6 = 3/6 = 1/2 — three sixths simplifies to one half.", "5/6 - 2/6", "1/2"),
+            ("➖ Example 8", "7/8 − 3/8 = 4/8 = 1/2 — divide both by 4 to simplify.", "7/8 - 3/8", "1/2"),
+            ("➖ Example 9", "4/5 − 1/5 = 3/5 — three fifths remaining.", "4/5 - 1/5", "3/5"),
+            ("➖ Example 10", "9/10 − 4/10 = 5/10 = 1/2 — five tenths is the same as one half.", "9/10 - 4/10", "1/2"),
 
-            # ── 10 multiplication / division examples ─────────────────────
-            (
-                "✖️ Multiplying fractions",
-                "Find a fraction of a fraction: multiply top × top and bottom × bottom.",
-            ),
-            ("✖️ Example 1",  "1/2 × 1/2 = 1/4 — multiply tops: 1×1=1; bottoms: 2×2=4."),
-            ("✖️ Example 2",  "2/3 × 3/4 = 6/12 = 1/2 — simplify by dividing top and bottom by 6."),
-            ("✖️ Example 3",  "3/4 × 2/3 = 6/12 = 1/2 — same as above, order does not matter!"),
-            ("✖️ Example 4",  "1/3 × 1/3 = 1/9 — a third of a third is a ninth."),
-            ("✖️ Example 5",  "2/5 × 5/6 = 10/30 = 1/3 — simplify 10 and 30 by dividing by 10."),
-            (
-                "➗ Dividing fractions",
-                "Ask how many of the second fraction fit into the first one, then flip and multiply.",
-            ),
-            ("➗ Example 6",  "1/2 ÷ 1/4 = 1/2 × 4/1 = 4/2 = 2 — flip the second fraction then multiply."),
-            ("➗ Example 7",  "3/4 ÷ 3/8 = 3/4 × 8/3 = 24/12 = 2 — the answer is 2 whole circles!"),
-            ("➗ Example 8",  "2/3 ÷ 1/3 = 2/3 × 3/1 = 6/3 = 2 — how many thirds fit in two thirds? Two!"),
-            ("➗ Example 9",  "5/6 ÷ 5/12 = 5/6 × 12/5 = 60/30 = 2 — flip and multiply."),
-            ("➗ Example 10", "1/4 ÷ 1/8 = 1/4 × 8/1 = 8/4 = 2 — two eighths fit in every quarter."),
+            # multiplication / division examples
+            ("✖️ Multiplying fractions", "Find a fraction of a fraction: multiply top × top and bottom × bottom.", "", ""),
+            ("✖️ Example 1", "1/2 × 1/2 = 1/4 — multiply tops: 1×1=1; bottoms: 2×2=4.", "1/2 * 1/2", "1/4"),
+            ("✖️ Example 2", "2/3 × 3/4 = 6/12 = 1/2 — simplify by dividing top and bottom by 6.", "2/3 * 3/4", "1/2"),
+            ("✖️ Example 3", "3/4 × 2/3 = 6/12 = 1/2 — same as above, order does not matter!", "3/4 * 2/3", "1/2"),
+            ("✖️ Example 4", "1/3 × 1/3 = 1/9 — a third of a third is a ninth.", "1/3 * 1/3", "1/9"),
+            ("✖️ Example 5", "2/5 × 5/6 = 10/30 = 1/3 — simplify 10 and 30 by dividing by 10.", "2/5 * 5/6", "1/3"),
+            ("➗ Dividing fractions", "Ask how many of the second fraction fit into the first one, then flip and multiply.", "", ""),
+            ("➗ Example 6", "1/2 ÷ 1/4 = 1/2 × 4/1 = 4/2 = 2 — flip the second fraction then multiply.", "1/2 / 1/4", "2"),
+            ("➗ Example 7", "3/4 ÷ 3/8 = 3/4 × 8/3 = 24/12 = 2 — the answer is 2 whole circles!", "3/4 / 3/8", "2"),
+            ("➗ Example 8", "2/3 ÷ 1/3 = 2/3 × 3/1 = 6/3 = 2 — how many thirds fit in two thirds? Two!", "2/3 / 1/3", "2"),
+            ("➗ Example 9", "5/6 ÷ 5/12 = 5/6 × 12/5 = 60/30 = 2 — flip and multiply.", "5/6 / 5/12", "2"),
+            ("➗ Example 10", "1/4 ÷ 1/8 = 1/4 × 8/1 = 8/4 = 2 — two eighths fit in every quarter.", "1/4 / 1/8", "2"),
         ]
 
     def step_visual_html(self, step_index: int) -> str:
@@ -385,8 +427,125 @@ class Fractions(Topic):
 
 class Operation(Topic):
     name = "Operations"
+    has_painting = True
     def page_background_image(self) -> str:
         return "/images/Math_back.png"
+
+    def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
+        return {
+            "operation": [
+                ("all", "All operations"),
+                ("add_sub", "Addition + Subtraction"),
+                ("mul_div", "Multiplication + Division"),
+                ("add", "Addition only"),
+                ("sub", "Subtraction only"),
+                ("mul", "Multiplication only"),
+                ("div", "Division only"),
+            ],
+            "difficulty": [
+                ("mixed", "Mixed"),
+                ("easy", "Easy"),
+                ("medium", "Medium"),
+                ("hard", "Hard"),
+            ],
+        }
+
+    def default_quiz_filters(self) -> dict[str, str]:
+        return {"operation": "all", "difficulty": "mixed"}
+
+    def sanitize_quiz_filters(self, selected: dict[str, str]) -> dict[str, str]:
+        definitions = self.quiz_filter_definitions()
+        defaults = self.default_quiz_filters()
+        cleaned: dict[str, str] = {}
+        for filter_name, options in definitions.items():
+            valid_values = {value for value, _ in options}
+            fallback = defaults.get(filter_name, options[0][0])
+            value = selected.get(filter_name, fallback)
+            cleaned[filter_name] = value if value in valid_values else fallback
+        return cleaned
+
+    def set_operation_filter(self, mode: str) -> None:
+        # Backward-compatible helper used by older UI code.
+        filters = self.default_quiz_filters()
+        filters["operation"] = mode
+        self._legacy_filters = self.sanitize_quiz_filters(filters)
+
+    def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
+        effective_filters = self.sanitize_quiz_filters(filters or getattr(self, "_legacy_filters", {}))
+
+        operation_groups = {
+            "all": ["+", "-", "×", "÷"],
+            "add_sub": ["+", "-"],
+            "mul_div": ["×", "÷"],
+            "add": ["+"],
+            "sub": ["-"],
+            "mul": ["×"],
+            "div": ["÷"],
+        }
+        digit_by_difficulty = {
+            "mixed": (1,1000),
+            "easy": range(1,12),
+            "medium": range(12,100),
+            "hard": range(100,1000),
+        }
+
+        op = random.choice(operation_groups[effective_filters["operation"]])
+        digit = random.choice(digit_by_difficulty[effective_filters["difficulty"]])
+
+        if op in ("+", "-"):
+            a = random.randint(1, digit)
+            b = random.randint(1, digit)
+            if op == "-":
+                a, b = max(a, b), min(a, b)
+            question = f"{a} {op} {b} = ?"
+            num_result = a + b if op == "+" else a - b
+        elif op == "×":
+            a = random.randint(1, digit)
+            b = random.randint(1, digit)
+            question = f"{a} {op} {b} = ?"
+            num_result = a * b
+        else:
+            num_result = random.randint(1, digit)
+            b = random.randint(1, max(1, digit))
+            a = b * num_result
+            question = f"{a} {op} {b} = ?"
+        return question, str(num_result)
+
+    def learning_steps(self) -> list[tuple[str, str, str, str]]:
+        """Load steps from learning.db for topic `Operations`, returning title, explanation, expression, and answer."""
+        steps = _load_steps_from_db("operation")
+        if steps:
+            return [
+                (
+                    row.get("title") or "",
+                    row.get("explanation") or "",
+                    row.get("expression") or "",
+                    row.get("answer") or ""
+                )
+                for row in steps
+            ]
+        return [
+            ("", "", "", "")
+        ]
+
+    def paint_visual_html(self) -> str:
+         targets = ["/images/Operation_painting1.png", "/images/Operation_painting1.png", "/images/Operation_painting2.png"]
+         pages = []
+         for idx, image_path in enumerate(targets, start=1):
+             pages.append(
+             f'<div class="paint-page" data-page="{idx}" '
+             f'style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0;">'
+             f'<div style="font-size:20px;font-weight:800;color:#60435F;">'
+             f'</div>'
+             f'<img src="{image_path}" alt="operation {idx}" style="max-width:220px;height:auto;" />'
+             f'</div>'
+             )
+         return (
+         '<div class="operations-paint-pages" '
+         'style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;">'
+         + "".join(pages)
+         + "</div>"
+         )
 
 
 class Math(Subject):

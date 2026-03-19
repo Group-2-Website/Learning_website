@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 
 class Topic:
     """Base class for a single topic within a subject (e.g. Fractions)."""
@@ -23,7 +25,7 @@ class Topic:
         """Validate and normalize filter selections from the UI."""
         return selected
 
-    def learning_steps(self) -> list[tuple[str, str]]:
+    def learning_steps(self) -> list[tuple[str, str, str, str]]:
         """Return a list of (title, explanation) tuples."""
         return []
 
