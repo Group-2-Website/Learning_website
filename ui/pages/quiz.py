@@ -14,7 +14,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         _apply_bg(url)
 
     active_filters = topic.sanitize_quiz_filters(initial_filters or topic.default_quiz_filters())
-
+    num_questions = int(active_filters.get("number of questions", 10))
     question_text, correct_answer = topic.generate_question(active_filters)
     state = {
         "question": question_text,
@@ -23,6 +23,8 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         "attempts": 0,
         "checked":  False,
         "filters": dict(active_filters),
+        "asked":   0,
+        "num_questions": num_questions,
     }
 
     visual_holder: list = []
@@ -49,7 +51,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
             feedback_label.text = f"Oops! The answer was {state['answer']}"
             feedback_label.classes(replace="quiz-feedback-wrong")
         score_label.text = f"Score: {state['score']} / {state['attempts']}"
-        ui.timer(2.0, _advance, once=True)
+        ui.timer(1.4, _advance, once=True)
 
     def show_hint():
         feedback_label.text = f" Hint: the answer is {state['answer']}"
@@ -57,6 +59,10 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
     def _advance():
         """Load a new question without checking."""
+        state["asked"] += 1
+        if state["asked"] >= state["num_questions"]:
+            finish_quiz()
+            return
         state["question"], state["answer"] = topic.generate_question(state["filters"])
         state["checked"] = False
         question_label.text = state["question"]
@@ -99,7 +105,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
                 ui.input(placeholder="Your Answer")
                 .props("outlined rounded")
                 .style("width:260px;font-size:18px;")
-                .on("keydown.enter", next_question)
+                .on("keydown.enter", check_answer)
             )
             answer_input_holder.append(answer_input)
 

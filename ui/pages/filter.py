@@ -79,4 +79,3 @@ def build_quiz_filter_page(subject: Subject, topic: Topic) -> None:
                         "padding:12px 40px;margin-top:24px;"
                     )
 
-
