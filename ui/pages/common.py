@@ -169,7 +169,7 @@ def add_global_css():
       }
 
       .page-subtitle {
-        color: #734962;
+        color: #eb4034;
         font-size: 26px;
         font-weight: 600;
         margin-bottom: 36px;

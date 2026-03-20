@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from nicegui import ui
+from starlette.requests import Request
 
 from ui.pages.common import add_global_css, build_topbar
 from ui.pages.home import build_home_page
@@ -10,6 +11,7 @@ from ui.pages.quiz import build_quiz_page
 from ui.pages.quiz_results import build_quiz_results_page
 from ui.pages.topic import build_topic_mode_page
 from ui.pages.subject import build_subject_page
+from ui.pages.filter import build_quiz_filter_page
 
 
 @ui.page('/')
@@ -42,11 +44,18 @@ def _register_topic(subject, topic):
         build_topbar()
         build_topic_mode_page(_s, _t)
 
-    @ui.page(f'/{slug}/{topic_slug}/quiz')
-    def topic_quiz_page(_s=subject, _t=topic):
+    @ui.page(f'/{slug}/{topic_slug}/filter')
+    def topic_filter_page(_s=subject, _t=topic):
         add_global_css()
         build_topbar()
-        build_quiz_page(_s, _t)
+        build_quiz_filter_page(_s, _t)
+
+    @ui.page(f'/{slug}/{topic_slug}/quiz')
+    def topic_quiz_page(request: Request, _s=subject, _t=topic):
+        add_global_css()
+        build_topbar()
+        filters = dict(request.query_params)
+        build_quiz_page(_s, _t, filters)
 
     @ui.page(f'/{slug}/{topic_slug}/results')
     def topic_results_page(score: int = 0, attempts: int = 0, _s=subject, _t=topic):
@@ -70,4 +79,3 @@ def _register_topic(subject, topic):
 
 
 __all__ = ['register_subject']
-

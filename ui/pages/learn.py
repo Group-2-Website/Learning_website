@@ -1,7 +1,5 @@
 from __future__ import annotations
-
 from nicegui import ui
-
 from models.subject import Subject
 from models.topic import Topic
 from ui.pages.common import _apply_bg, _build_page_header
@@ -34,15 +32,15 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
                             f'<strong>{title}</strong>'
                         )
                         ui.label(explanation).style(
-                            "margin-top:4px;color:#555;font-size:14px;line-height:1.6;text-align:center;"
+                            "margin-top:4px;color:#555;font-size:18px;line-height:1.6;text-align:center;"
                         )
                         if expression:
-                            ui.label(f"Expression: {expression}").style(
-                                "margin-top:4px;color:#333;font-size:13px;line-height:1.4;text-align:center;"
+                            ui.label(f" {expression}").style(
+                                "margin-top:4px;color:#333;font-size:15px;line-height:1.4;text-align:center;"
                             )
                         if answer:
                             ui.label(f"Answer: {answer}").style(
-                                "margin-top:2px;color:#1a7f37;font-size:13px;line-height:1.4;text-align:center;"
+                                "margin-top:2px;color:#1a7f37;font-size:15px;line-height:1.4;text-align:center;"
                             )
 
         ui.button("Ready? Take the Quiz →", on_click=lambda d=quiz_dest: ui.navigate.to(d)) \

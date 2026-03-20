@@ -1,7 +1,5 @@
 from __future__ import annotations
-
 from nicegui import ui
-
 from models.subject import Subject
 from models.topic import Topic
 from ui.pages.common import _apply_bg, _build_page_header
@@ -19,9 +17,9 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
         )
 
         with ui.element("div").classes("mode-grid"):
-            quiz_dest = f"/{subject.url_slug}/{topic.name.lower()}/quiz"
+            quiz_filter_dest = f"/{subject.url_slug}/{topic.name.lower()}/filter"
             with ui.element("div").classes("mode-card").on(
-                "click", lambda d=quiz_dest: ui.navigate.to(d)
+                "click", lambda d=quiz_filter_dest: ui.navigate.to(d)
             ):
                 ui.html('<img src="/images/icons/test.svg" style="width:80px;height:80px;object-fit:contain;">')
                 ui.label("Quiz").classes("mode-title")

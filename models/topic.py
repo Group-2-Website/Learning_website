@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
-
 
 class Topic:
     """Base class for a single topic within a subject (e.g. Fractions)."""
@@ -10,7 +8,7 @@ class Topic:
     has_painting: bool = False
 
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
-        """Return (question_text, correct_answer) as strings."""
+        """Return (question_text, correct_answer) as strings. Optional filters argument for compatibility."""
         raise NotImplementedError
 
     def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
@@ -22,8 +20,16 @@ class Topic:
         return {}
 
     def sanitize_quiz_filters(self, selected: dict[str, str]) -> dict[str, str]:
-        """Validate and normalize filter selections from the UI."""
-        return selected
+        """Validate and normalize filter selections against quiz_filter_definitions."""
+        definitions = self.quiz_filter_definitions()
+        defaults = self.default_quiz_filters()
+        cleaned: dict[str, str] = {}
+        for filter_name, options in definitions.items():
+            valid_values = {value for value, _ in options}
+            fallback = defaults.get(filter_name, options[0][0])
+            value = selected.get(filter_name, fallback)
+            cleaned[filter_name] = value if value in valid_values else fallback
+        return cleaned
 
     def learning_steps(self) -> list[tuple[str, str, str, str]]:
         """Return a list of (title, explanation) tuples."""

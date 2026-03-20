@@ -1,9 +1,6 @@
 from __future__ import annotations
-
 from typing import cast, Any
-
 from nicegui import ui
-
 from ui.pages.common import _apply_bg
 
 

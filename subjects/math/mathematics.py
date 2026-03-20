@@ -152,21 +152,11 @@ class Fractions(Topic):
                 ("medium", "Medium"),
                 ("hard", "Hard"),
             ],
+            "number of questions": [(str(n), f"{n} questions") for n in [5, 10, 15, 20]],
         }
 
     def default_quiz_filters(self) -> dict[str, str]:
-        return {"operation": "all", "difficulty": "mixed"}
-
-    def sanitize_quiz_filters(self, selected: dict[str, str]) -> dict[str, str]:
-        definitions = self.quiz_filter_definitions()
-        defaults = self.default_quiz_filters()
-        cleaned: dict[str, str] = {}
-        for filter_name, options in definitions.items():
-            valid_values = {value for value, _ in options}
-            fallback = defaults.get(filter_name, options[0][0])
-            value = selected.get(filter_name, fallback)
-            cleaned[filter_name] = value if value in valid_values else fallback
-        return cleaned
+        return {"operation": "all", "difficulty": "mixed", "number of questions": "10"}
 
     def set_operation_filter(self, mode: str) -> None:
         # Backward-compatible helper used by older UI code.
@@ -448,24 +438,15 @@ class Operation(Topic):
                 ("medium", "Medium"),
                 ("hard", "Hard"),
             ],
+            "number of questions": [(str(n), f"{n} questions") for n in [5, 10, 15, 20]],
+
+            "row": [(str(i), f"Row {i}") for i in range(1, 13)],
         }
 
     def default_quiz_filters(self) -> dict[str, str]:
-        return {"operation": "all", "difficulty": "mixed"}
-
-    def sanitize_quiz_filters(self, selected: dict[str, str]) -> dict[str, str]:
-        definitions = self.quiz_filter_definitions()
-        defaults = self.default_quiz_filters()
-        cleaned: dict[str, str] = {}
-        for filter_name, options in definitions.items():
-            valid_values = {value for value, _ in options}
-            fallback = defaults.get(filter_name, options[0][0])
-            value = selected.get(filter_name, fallback)
-            cleaned[filter_name] = value if value in valid_values else fallback
-        return cleaned
+        return {"operation": "all", "difficulty": "mixed", "number of questions": "10"}
 
     def set_operation_filter(self, mode: str) -> None:
-        # Backward-compatible helper used by older UI code.
         filters = self.default_quiz_filters()
         filters["operation"] = mode
         self._legacy_filters = self.sanitize_quiz_filters(filters)
@@ -491,8 +472,14 @@ class Operation(Topic):
 
         op = random.choice(operation_groups[effective_filters["operation"]])
         digit = random.choice(digit_by_difficulty[effective_filters["difficulty"]])
+        row = int(effective_filters.get("row", 1))
 
-        if op in ("+", "-"):
+        if op == "×" and effective_filters["difficulty"] == "easy":
+            a = row
+            b = random.randint(1, 12)
+            question = f"{a} × {b} = ?"
+            num_result = a * b
+        elif op in ("+", "-"):
             a = random.randint(1, digit)
             b = random.randint(1, digit)
             if op == "-":
@@ -502,18 +489,17 @@ class Operation(Topic):
         elif op == "×":
             a = random.randint(1, digit)
             b = random.randint(1, digit)
-            question = f"{a} {op} {b} = ?"
+            question = f"{a} × {b} = ?"
             num_result = a * b
         else:
             num_result = random.randint(1, digit)
             b = random.randint(1, max(1, digit))
             a = b * num_result
-            question = f"{a} {op} {b} = ?"
+            question = f"{a} ÷ {b} = ?"
         return question, str(num_result)
 
     def learning_steps(self) -> list[tuple[str, str, str, str]]:
-        """Load steps from learning.db for topic `Operations`, returning title, explanation, expression, and answer."""
-        steps = _load_steps_from_db("operation")
+        steps = _load_steps_from_db("operations_2")
         if steps:
             return [
                 (
@@ -529,23 +515,23 @@ class Operation(Topic):
         ]
 
     def paint_visual_html(self) -> str:
-         targets = ["/images/Operation_painting1.png", "/images/Operation_painting1.png", "/images/Operation_painting2.png"]
-         pages = []
-         for idx, image_path in enumerate(targets, start=1):
-             pages.append(
-             f'<div class="paint-page" data-page="{idx}" '
-             f'style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0;">'
-             f'<div style="font-size:20px;font-weight:800;color:#60435F;">'
-             f'</div>'
-             f'<img src="{image_path}" alt="operation {idx}" style="max-width:220px;height:auto;" />'
-             f'</div>'
-             )
-         return (
-         '<div class="operations-paint-pages" '
-         'style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;">'
-         + "".join(pages)
-         + "</div>"
-         )
+        targets = ["/images/Operation_painting1.png", "/images/Operation_painting1.png", "/images/Operation_painting2.png"]
+        pages = []
+        for idx, image_path in enumerate(targets, start=1):
+            pages.append(
+                f'<div class="paint-page" data-page="{idx}" '
+                f'style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0;">'
+                f'<div style="font-size:20px;font-weight:800;color:#60435F;">'
+                f'</div>'
+                f'<img src="{image_path}" alt="operation {idx}" style="max-width:220px;height:auto;" />'
+                f'</div>'
+            )
+        return (
+            '<div class="operations-paint-pages" '
+            'style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;">'
+            + "".join(pages)
+            + "</div>"
+        )
 
 
 class Math(Subject):
