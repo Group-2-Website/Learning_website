@@ -1,732 +1,719 @@
-english,german,article,meanings,type
-evening,Abend,der,evening,noun
-dinner,Abendessen,das,dinner,noun
-department,Abteilung,die,department,noun
-address,Adresse,die,address,noun
-analysis,Analyse,die,analysis,noun
-view,Ansicht,die,view,noun
-effort,Anstrengung,die,effort,noun
-answer,Antwort,die,answer; reply,noun
-lawyer,Anwalt,der,lawyer,noun
-suit,Anzug,der,suit,noun
-apple,Apfel,der,apple,noun
-apricot,Aprikose,die,apricot,noun
-april,April,der,april,noun
-work,Arbeit,die,work; job; labor,noun
-worker,Arbeiter,der,worker,noun
-architect,Architekt,der,architect,noun
-arm,Arm,der,arm,noun
-army,Armee,die,army,noun
-doctor,Arzt,der,doctor; physician,noun
-attention,Aufmerksamkeit,die,attention,noun
-record,Aufzeichnung,die,record,noun
-eye,Auge,die,eye,noun
-august,August,der,august,noun
-car,Auto,das,car,noun
-author,Autor,der,author,noun
-baby,Baby,der,baby,noun
-bathroom,Badezimmer,das,bathroom,noun
-station,Bahnhof,der,station,noun
-platform,Bahnsteig,der,platform,noun
-banana,Banane,die,banana,noun
-bank,Bank,der,bank,noun
-battery,Batterie,die,battery,noun
-belly,Bauch,der,belly,noun
-farmer,Bauer,der,farmer,noun
-farm,Bauernhof,der,farm,noun
-tree,Baum,das,tree,noun
-leg,Bein,der,leg,noun
-example,Beispiel,der,example,noun
-mountain,Berg,der,mountain,noun
-report,Bericht,der,report,noun
-meeting,Besprechung,die,meeting; discussion,noun
-order,Bestellung,die,order,noun
-amount,Betrag,der,amount,noun
-bed,Bett,das,bed,noun
-library,Bibliothek,der,library,noun
-beer,Bier,der,beer,noun
-screen,Bildschirm,der,screen,noun
-education,Bildung,die,education,noun
-pear,Birne,die,pear,noun
-flower,Blume,die,flower,noun
-blouse,Bluse,die,blouse,noun
-blood,Blut,der,blood,noun
-soil,Boden,der,soil,noun
-boat,Boot,der,boat,noun
-letter,Brief,der,letter (mail),noun
-stamp,Briefmarke,die,stamp,noun
-glasses,Brille,die,glasses,noun
-bread,Brot,das,bread; loaf,noun
-brother,Bruder,der,brother,noun
-chest,Brust,der,chest,noun
-bridge,Brücke,die,bridge,noun
-book,Buch,das,book,noun
-bus,Bus,der,bus,noun
-butter,Butter,der,butter,noun
-office,Büro,der,office,noun
-chance,Chance,die,chance,noun
-boss,Chef,der,boss,noun
-computer,Computer,der,computer; PC,noun
-file,Datei,der,file,noun
-data,Daten,der,data,noun
-thumb,Daumen,der,thumb,noun
-ceiling,Decke,die,ceiling,noun
-design,Design,der,design,noun
-German,Deutsch,das,German (language),noun
-december,Dezember,der,december,noun
-service,Dienst,der,service,noun
-tuesday,Dienstag,der,tuesday,noun
-thing,Ding,der,thing,noun
-discussion,Diskussion,die,discussion,noun
-thursday,Donnerstag,der,thursday,noun
-village,Dorf,das,village,noun
-printer,Drucker,der,printer,noun
-email,E-Mail,die,email; e-mail message,noun
-effect,Effekt,der,effect,noun
-ambition,Ehrgeiz,der,ambition,noun
-egg,Ei,der,egg,noun
-attitude,Einstellung,die,attitude,noun
-ice,Eis,der,ice,noun
-elbow,Ellenbogen,der,elbow,noun
-parent,Elternteil,der,parent,noun
-energy,Energie,die,energy,noun
-English,Englisch,,English (language),noun
-distance,Entfernung,die,distance,noun
-decision,Entscheidung,die,decision,noun
-strawberry,Erdbeere,die,strawberry,noun
-earth,Erde,die,earth,noun
-experience,Erfahrung,die,experience,noun
-success,Erfolg,der,success,noun
-result,Ergebnis,der,result,noun
-memory,Erinnerung,die,memory,noun
-food,Essen,das,food; meal,noun
-vinegar,Essig,der,vinegar,noun
-factory,Fabrik,die,factory,noun
-driver,Fahrer,der,driver,noun
-bike,Fahrrad,das,bicycle; bike,noun
-case,Fall,der,case,noun
-family,Familie,die,family; relatives,noun
-color,Farbe,die,color,noun
-february,Februar,der,february,noun
-field,Feld,der,field,noun
-rock,Felsen,der,rock,noun
-window,Fenster,das,window,noun
-fire,Feuer,der,fire,noun
-finger,Finger,der,finger,noun
-company,Firma,das,company,noun
-fish,Fisch,der,fish,noun
-bottle,Flasche,die,bottle,noun
-meat,Fleisch,der,meat,noun
-flight,Flug,der,flight,noun
-airport,Flughafen,der,airport,noun
-river,Fluss,der,river,noun
-photo,Foto,der,photo,noun
-question,Frage,die,question,noun
-woman,Frau,die,woman; wife; Mrs.,noun
-friday,Freitag,der,friday,noun
-friend,Freund,der,friend; boyfriend,noun
-friend (female),Freundin,die,friend; girlfriend,noun
-breakfast,Frühstück,der,breakfast,noun
-foot,Fuss,der,foot,noun
-floor,Fussboden,der,floor,noun
-fork,Gabel,der,fork,noun
-garden,Garten,der,garden,noun
-area,Gebiet,der,area,noun
-building,Gebäude,die,building,noun
-danger,Gefahr,der,danger,noun
-secret,Geheimnis,der,secret,noun
-brain,Gehirn,der,brain,noun
-money,Geld,das,money; cash,noun
-wallet,Geldbörse,die,wallet,noun
-opportunity,Gelegenheit,die,opportunity,noun
-history,Geschichte,die,history,noun
-store,Geschäft,das,store; shop; business,noun
-society,Gesellschaft,die,society,noun
-law,Gesetz,der,law,noun
-habit,Gewohnheit,die,habit,noun
-glass,Glas,der,glass,noun
-reason,Grund,der,reason,noun
-group,Gruppe,die,group,noun
-cucumber,Gurke,die,cucumber,noun
-belt,Gürtel,der,belt,noun
-hair,Haar,der,hair,noun
-neck,Hals,der,neck,noun
-necklace,Halskette,die,necklace,noun
-hand,Hand,der,hand,noun
-gloves,Handschuhe,die,gloves,noun
-phone,Handy,das,phone; mobile,noun
-capital,Hauptstadt,der,capital,noun
-house,Haus,das,house; home (building),noun
-skin,Haut,der,skin,noun
-shirt,Hemd,der,shirt,noun
-heart,Herz,der,heart,noun
-help,Hilfe,die,help; assistance,noun
-sky,Himmel,der,sky,noun
-honey,Honig,der,honey,noun
-pants,Hose,die,pants,noun
-hotel,Hotel,der,hotel,noun
-dog,Hund,der,dog,noun
-hat,Hut,der,hat,noun
-chicken,Hähnchen,das,chicken,noun
-idea,Idee,die,idea,noun
-industry,Industrie,die,industry,noun
-information,Information,die,information,noun
-engineer,Ingenieur,die,engineer,noun
-island,Insel,der,island,noun
-interest,Interesse,die,interest,noun
-internet,Internet,der,internet,noun
-jacket,Jacke,die,jacket,noun
-year,Jahr,das,year,noun
-january,Januar,der,january,noun
-jeans,Jeans,der,jeans,noun
-job,Job,der,job; part-time job,noun
-journalist,Journalist,der,journalist,noun
-july,Juli,der,july,noun
-boy,Junge,die,boy,noun
-june,Juni,der,june,noun
-coffee,Kaffee,der,coffee,noun
-camera,Kamera,der,camera,noun
-hoodie,Kapuzensweatshirt,der,hoodie,noun
-carrot,Karotte,die,carrot,noun
-map,Karte,die,map,noun
-potato,Kartoffel,der,potato,noun
-cat,Katze,die,cat,noun
-cookie,Keks,der,cookie,noun
-waiter,Kellner,der,waiter,noun
-child,Kind,das,child; kid,noun
-church,Kirche,die,church,noun
-cherry,Kirsche,die,cherry,noun
-pillow,Kissen,der,pillow,noun
-box,Kiste,die,box,noun
-class,Klasse,die,class,noun
-dress,Kleid,der,dress,noun
-clothes,Kleidung,die,clothes,noun
-climate,Klima,das,climate,noun
-knee,Knie,die,knee,noun
-garlic,Knoblauch,der,garlic,noun
-bone,Knochen,das,bone,noun
-chef,Koch,der,chef,noun
-compass,Kompass,der,compass,noun
-account,Konto,der,account,noun
-control,Kontrolle,die,control,noun
-head,Kopf,der,head,noun
-copy,Kopie,die,copy,noun
-hospital,Krankenhaus,das,hospital,noun
-nurse,Krankenschwester,der,nurse,noun
-disease,Krankheit,die,disease,noun
-war,Krieg,der,war,noun
-cake,Kuchen,das,cake,noun
-pen,Kugelschreiber,der,pen,noun
-culture,Kultur,die,culture,noun
-customer,Kunde,die,customer,noun
-course,Kurs,der,course,noun
-cheese,Käse,der,cheese,noun
-kitchen,Küche,die,kitchen,noun
-artist,Künstler,der,artist,noun
-charger,Ladegerät,der,charger,noun
-lamp,Lampe,die,lamp,noun
-country,Land,der,country,noun
-teacher,Lehrer,der,teacher,noun
-performance,Leistung,die,performance,noun
-spoon,Löffel,der,spoon,noun
-solution,Lösung,die,solution,noun
-power,Macht,der,power,noun
-stomach,Magen,der,stomach,noun
-may,Mai,der,may,noun
-manager,Manager,der,manager,noun
-man,Mann,der,man; husband,noun
-coat,Mantel,der,coat,noun
-market,Markt,der,market,noun
-machine,Maschine,die,machine,noun
-material,Material,der,material,noun
-mouse,Maus,der,mouse,noun
-medicine,Medizin,die,medicine,noun
-sea,Meer,der,sea,noun
-opinion,Meinung,die,opinion,noun
-melon,Melone,die,melon,noun
-people,Menschen,das,people,noun
-knife,Messer,der,knife,noun
-milk,Milch,die,milk,noun
-lunch,Mittagessen,der,lunch,noun
-wednesday,Mittwoch,der,wednesday,noun
-moment,Moment,das,moment,noun
-month,Monat,der,month,noun
-moon,Mond,der,moon,noun
-monday,Montag,der,monday,noun
-morning,Morgen,der,morning; tomorrow (as noun),noun
-mouth,Mund,der,mouth,noun
-music,Musik,die,music,noun
-musician,Musiker,der,musician,noun
-mother,Mutter,der,mother,noun
-march,März,der,march,noun
-cap,Mütze,die,cap,noun
-message,Nachricht,die,message; news,noun
-news,Nachrichten,der,news,noun
-night,Nacht,die,night,noun
-name,Name,die,name,noun
-nose,Nase,die,nose,noun
-nature,Natur,die,nature,noun
-fog,Nebel,der,fog,noun
-level,Niveau,der,level,noun
-november,November,der,november,noun
-pasta,Nudeln,der,pasta,noun
-ear,Ohr,der,ear,noun
-earring,Ohrring,der,earring,noun
-october,Oktober,der,october,noun
-operation,Operation,die,operation,noun
-folder,Ordner,der,folder,noun
-organization,Organisation,die,organization,noun
-ocean,Ozean,der,ocean,noun
-package,Paket,der,package,noun
-paper,Papier,das,paper,noun
-park,Park,der,park,noun
-partner,Partner,der,partner,noun
-party,Party,der,party,noun
-password,Passwort,der,password,noun
-person,Person,die,person; individual,noun
-pan,Pfanne,die,pan,noun
-pepper,Pfeffer,der,pepper,noun
-peach,Pfirsich,der,peach,noun
-plant,Pflanze,die,plant,noun
-plum,Pflaume,die,plum,noun
-pilot,Pilot,der,pilot,noun
-police,Polizei,der,police,noun
-position,Position,die,position,noun
-price,Preis,der,price; award,noun
-problem,Problem,das,problem; issue,noun
-product,Produkt,der,product,noun
-project,Projekt,der,project,noun
-process,Prozess,der,process,noun
-sweater,Pullover,der,sweater,noun
-space,Raum,das,space,noun
-bill,Rechnung,die,bill,noun
-rule,Regel,der,rule,noun
-rain,Regen,der,rain,noun
-umbrella,Regenschirm,der,umbrella,noun
-government,Regierung,die,government,noun
-rice,Reis,der,rice,noun
-journey,Reise,die,journey,noun
-restaurant,Restaurant,das,restaurant,noun
-judge,Richter,der,judge,noun
-direction,Richtung,die,direction,noun
-beef,Rindfleisch,der,beef,noun
-ring,Ring,der,ring,noun
-skirt,Rock,der,skirt,noun
-backpack,Rucksack,der,backpack,noun
-back,Rücken,der,back,noun
-salad,Salat,der,salad,noun
-salt,Salz,der,salt,noun
-saturday,Samstag,der,saturday,noun
-sand,Sand,der,sand,noun
-damage,Schaden,der,damage,noun
-scarf,Schal,der,scarf,noun
-actor,Schauspieler,der,actor,noun
-battle,Schlacht,der,battle,noun
-bedroom,Schlafzimmer,der,bedroom,noun
-key,Schlüssel,der,key; wrench,noun
-snow,Schnee,der,snow,noun
-desk,Schreibtisch,der,desk,noun
-writer,Schriftsteller,der,writer,noun
-shoes,Schuhe,die,shoes,noun
-school,Schule,die,school,noun
-shoulder,Schulter,der,shoulder,noun
-pork,Schweinefleisch,der,pork,noun
-sister,Schwester,der,sister,noun
-student,Schüler,der,student,noun
-lake,See,die,lake,noun
-side,Seite,die,side,noun
-september,September,der,september,noun
-shorts,Shorts,der,shorts,noun
-safety,Sicherheit,die,safety,noun
-situation,Situation,die,situation,noun
-socks,Socken,der,socks,noun
-soldier,Soldat,der,soldier,noun
-sun,Sonne,die,sun,noun
-sunday,Sonntag,der,sunday,noun
-mirror,Spiegel,der,mirror,noun
-player,Spieler,der,player,noun
-sport,Sport,der,sport,noun
-language,Sprache,die,language; speech,noun
-city,Stadt,die,city; town,noun
-stone,Stein,der,stone,noun
-star,Stern,der,star,noun
-boots,Stiefel,der,boots,noun
-pen,Stift,der,pen; pencil,noun
-voice,Stimme,die,voice,noun
-beach,Strand,der,beach,noun
-street,Strasse,die,street,noun
-street,Straße,die,street; road,noun
-argument,Streit,der,argument,noun
-chair,Stuhl,der,chair,noun
-storm,Sturm,der,storm,noun
-soup,Suppe,die,soup,noun
-system,System,der,system,noun
-t-shirt,T-Shirt,der,t-shirt,noun
-board,Tafel,der,board,noun
-day,Tag,der,day,noun
-valley,Tal,der,valley,noun
-bag,Tasche,die,bag,noun
-cup,Tasse,die,cup,noun
-keyboard,Tastatur,die,keyboard,noun
-team,Team,der,team,noun
-tea,Tee,der,tea,noun
-phone,Telefon,der,phone,noun
-plate,Teller,der,plate,noun
-temperature,Temperatur,die,temperature,noun
-appointment,Termin,der,appointment; date,noun
-ticket,Ticket,das,ticket; pass,noun
-animal,Tier,der,animal,noun
-table,Tisch,der,table; desk,noun
-tomato,Tomate,die,tomato,noun
-pot,Topf,der,pot,noun
-pie,Torte,die,pie,noun
-grape,Traube,die,grape,noun
-dream,Traum,das,dream,noun
-door,Tür,die,door,noun
-watch,Uhr,der,watch,noun
-environment,Umwelt,der,environment,noun
-accident,Unfall,der,accident,noun
-university,Universität,die,university; college,noun
-cause,Ursache,die,cause,noun
-father,Vater,der,father,noun
-crime,Verbrechen,das,crime,noun
-agreement,Vereinbarung,die,agreement,noun
-bird,Vogel,der,bird,noun
-benefit,Vorteil,der,benefit,noun
-growth,Wachstum,das,growth,noun
-choice,Wahl,der,choice,noun
-truth,Wahrheit,die,truth,noun
-forest,Wald,der,forest,noun
-wall,Wand,der,wall,noun
-water,Wasser,das,water,noun
-watermelon,Wassermelone,die,watermelon,noun
-website,Webseite,die,website,noun
-wine,Wein,der,wine,noun
-world,Welt,der,world,noun
-value,Wert,der,value,noun
-weather,Wetter,das,weather,noun
-wind,Wind,der,wind,noun
-science,Wissenschaft,die,science,noun
-week,Woche,die,week,noun
-apartment,Wohnung,die,apartment; flat,noun
-cloud,Wolke,die,cloud,noun
-word,Wort,der,word,noun
-sausage,Wurst,der,sausage,noun
-payment,Zahlung,die,payment,noun
-tooth,Zahn,der,tooth,noun
-crosswalk,Zebrastreifen,der,crosswalk,noun
-toe,Zeh,der,toe,noun
-time,Zeit,die,time,noun
-magazine,Zeitschrift,der,magazine,noun
-newspaper,Zeitung,die,newspaper,noun
-goal,Ziel,der,goal,noun
-room,Zimmer,das,room,noun
-lemon,Zitrone,die,lemon,noun
-sugar,Zucker,der,sugar,noun
-train,Zug,der,train,noun
-tongue,Zunge,die,tongue,noun
-purpose,Zweck,der,purpose,noun
-onion,Zwiebel,der,onion,noun
-doctor (female),Ärztin,die,doctor; physician,noun
-oil,Öl,der,oil,noun
-cancel,abbrechen,,cancel,verb
-accept,akzeptieren,,accept,verb
-arrive,ankommen,,arrive,verb
-call,anrufen,,call,verb
-to answer,antworten,,answer; reply,verb
-to work,arbeiten,,work,verb
-wake,aufwachen,,wake,verb
-build,bauen,,build,verb
-cover,bedecken,,cover,verb
-finish,beenden,,finish,verb
-begin,beginnen,,begin,verb
-keep,behalten,,keep,verb
-get,bekommen,,get,verb
-use,benutzen,,use,verb
-describe,beschreiben,,describe,verb
-visit,besuchen,,visit,verb
-enter,betreten,,enter,verb
-move,bewegen,,move,verb
-to pay,bezahlen,,pay,verb
-stay,bleiben,,stay,verb
-to need,brauchen,,need; require,verb
-break,brechen,,break,verb
-bring,bringen,,bring,verb
-think,denken,,think,verb
-invite,einladen,,invite,verb
-discover,entdecken,,discover,verb
-decide,entscheiden,,decide,verb
-receive,erhalten,,receive,verb
-remember,erinnern,,remember,verb
-explain,erklären,,explain,verb
-allow,erlauben,,allow,verb
-tell,erzählen,,tell,verb
-to eat,essen,,eat,verb
-drive,fahren,,drive,verb
-find,finden,,find,verb
-fly,fliegen,,fly,verb
-continue,fortsetzen,,continue,verb
-to ask,fragen,,ask; inquire,verb
-feel,fühlen,,feel,verb
-give,geben,,give,verb
-to go,gehen,,go; walk,verb
-win,gewinnen,,win,verb
-believe,glauben,,believe,verb
-to have,haben,,have; possess,verb
-hate,hassen,,hate,verb
-to help,helfen,,help; assist,verb
-add,hinzufügen,,add,verb
-hope,hoffen,,hope,verb
-to hear,hören,,hear; listen,verb
-to buy,kaufen,,buy; purchase,verb
-cook,kochen,,cook,verb
-to come,kommen,,come,verb
-cost,kosten,,cost,verb
-laugh,lachen,,laugh,verb
-live,leben,,live,verb
-teach,lehren,,teach,verb
-borrow,leihen,,borrow,verb
-to learn,lernen,,learn; study,verb
-to read,lesen,,read,verb
-to love,lieben,,love,verb
-smile,lächeln,,smile,verb
-to do,machen,,do; make,verb
-to like,mögen,,like,verb
-take,nehmen,,take,verb
-organize,organisieren,,organize,verb
-plan,planen,,plan,verb
-talk,reden,,talk,verb
-clean,reinigen,,clean,verb
-travel,reisen,,travel,verb
-ride,reiten,,ride,verb
-run,rennen,,run,verb
-repair,reparieren,,repair,verb
-to say,sagen,,say; tell,verb
-look,schauen,,look,verb
-sleep,schlafen,,sleep,verb
-close,schliessen,,close,verb
-to close,schließen,,close; shut,verb
-cut,schneiden,,cut,verb
-to write,schreiben,,write,verb
-swim,schwimmen,,swim,verb
-to see,sehen,,see; watch,verb
-to be,sein,,be; exist,verb
-send,senden,,send,verb
-sit,sitzen,,sit,verb
-play,spielen,,play,verb
-to speak,sprechen,,speak; talk,verb
-start,starten,,start,verb
-stand,stehen,,stand,verb
-die,sterben,,die,verb
-stop,stoppen,,stop,verb
-to study,studieren,,study (at university),verb
-dance,tanzen,,dance,verb
-meet,treffen,,meet,verb
-to drink,trinken,,drink,verb
-do,tun,,do,verb
-support,unterstützen,,support,verb
-forget,vergessen,,forget,verb
-sell,verkaufen,,sell,verb
-leave,verlassen,,leave,verb
-lend,verleihen,,lend,verb
-lose,verlieren,,lose,verb
-promise,versprechen,,promise,verb
-try,versuchen,,try,verb
-grow,wachsen,,grow,verb
-wait,warten,,wait,verb
-wash,waschen,,wash,verb
-cry,weinen,,cry,verb
-become,werden,,become,verb
-disagree,widersprechen,,disagree,verb
-know,wissen,,know,verb
-to want,wollen,,want,verb
-choose,wählen,,choose,verb
-draw,zeichnen,,draw,verb
-show,zeigen,,show,verb
-listen,zuhören,,listen,verb
-return,zurückkehren,,return,verb
-agree,zustimmen,,agree,verb
-change,ändern,,change,verb
-to open,öffnen,,open,verb
-old,alt,,old,adj
-easy,einfach,,easy; simple,adj
-happy,glücklich,,happy,adj
-big,groß,,big; large,adj
-good,gut,,good; well,adj
-hot,heiß,,hot,adj
-cold,kalt,,cold,adj
-small,klein,,small; little,adj
-new,neu,,new,adj
-bad,schlecht,,bad; poor,adj
-difficult,schwierig,,difficult; hard,adj
-sad,traurig,,sad,adj
-zero,,,zero,numeral
-but,aber,,but,conjunction
-eight,acht,,eight,numeral
-eighteen,achtzehn,,eighteen,numeral
-eighty,achtzig,,eighty,numeral
-than,als,,than,conjunction
-old,alt,,old,adjective
-most,am meisten,,most,adverb
-different,anders,,different,adjective
-poor,arm,,poor,adjective
-on,auf,,on,preposition
-soon,bald,,soon,adverb
-at,bei,,at,preposition
-popular,beliebt,,popular,adjective
-famous,berühmt,,famous,adjective
-busy,beschäftigt,,busy,adjective
-better,besser,,better,adjective
-best,beste,,best,adjective
-cheap,billig,,cheap,adjective
-blue,blau,,blue,adjective
-brown,braun,,brown,adjective
-that,das,,that,pronoun
-your,dein,,your,pronoun
-fat,dick,,fat,adjective
-this,dies,,this,pronoun
-these,diese,,these,pronoun
-there,dort,,there,adverb
-three,drei,,three,numeral
-thirty,dreissig,,thirty,numeral
-thirteen,dreizehn,,thirteen,numeral
-you,du,,you,pronoun
-dark,dunkel,,dark,adjective
-through,durch,,through,preposition
-easy,einfach,,easy,adjective
-one,eins,,one,numeral
-eleven,elf,,eleven,numeral
-he,er,,he,pronoun
-it,es,,it,pronoun
-lazy,faul,,lazy,adjective
-free,frei,,free,adjective
-friendly,freundlich,,friendly,adjective
-fresh,frisch,,fresh,adjective
-early,früh,,early,adjective
-able,fähig,,able,adjective
-five,fünf,,five,numeral
-fifteen,fünfzehn,,fifteen,numeral
-fifty,fünfzig,,fifty,numeral
-for,für,,for,preposition
-against,gegen,,against,preposition
-yellow,gelb,,yellow,adjective
-yesterday,gestern,,yesterday,adverb
-healthy,gesund,,healthy,adjective
-happy,glücklich,,happy,adjective
-gold,golden,,gold,adjective
-gray,grau,,gray,adjective
-big,gross,,big,adjective
-great,grossartig,,great,adjective
-green,grün,,green,adjective
-good,gut,,adjective,
-hard,hart,,adjective,
-hot,heiss,,adjective,
-bright,hell,,adjective,
-today,heute,,adverb,
-here,hier,,adverb,
-behind,hinter,,preposition,
-high,hoch,,high,adjective
-hundred,hundert,,hundred,numeral
-ugly,hässlich,,ugly,adjective
-I,ich,,I,pronoun
-him,ihn,,him,pronoun
-their,ihr,,their,pronoun
-in,in,,in,preposition
-interesting,interessant,,interesting,adjective
-those,jene,,those,pronoun
-now,jetzt,,now,adverb
-young,jung,,young,adjective
-cold,kalt,,cold,adjective
-small,klein,,small,adjective
-sick,krank,,sick,adjective
-short,kurz,,short,adjective
-long,lang,,long,adjective
-slowly,langsam,,slowly,adverb
-slow,langsam,,slow,adjective
-loud,laut,,loud,adjective
-empty,leer,,empty,adjective
-light,leicht,,light,adjective
-quiet,leise,,quiet,adjective
-purple,lila,,purple,adjective
-more,mehr,,more,adverb
-my,mein,,my,pronoun
-me,mich,,me,pronoun
-with,mit,,with,preposition
-modern,modern,,modern,adjective
-tomorrow,morgen,,tomorrow,adverb
-tired,müde,,tired,adjective
-after,nach,,after,preposition
-wet,nass,,wet,adjective
-nice,nett,,nice,adjective
-new,neu,,new,adjective
-nine,neun,,nine,numeral
-nineteen,neunzehn,,nineteen,numeral
-ninety,neunzig,,ninety,numeral
-still,noch,,still,adverb
-although,obwohl,,although,conjunction
-or,oder,,or,conjunction
-without,ohne,,without,preposition
-orange,orange,,orange,adjective
-rich,reich,,rich,adjective
-right,richtig,,right,adjective
-pink,rosa,,pink,adjective
-red,rot,,red,adjective
-bad,schlecht,,bad,adjective
-narrow,schmal,,narrow,adjective
-fast,schnell,,fast,adverb
-quick,schnell,,quick,adjective
-already,schon,,already,adverb
-weak,schwach,,weak,adjective
-black,schwarz,,black,adjective
-heavy,schwer,,heavy,adjective
-difficult,schwierig,,difficult,adjective
-beautiful,schön,,beautiful,adjective
-six,sechs,,six,numeral
-sixteen,sechzehn,,sixteen,numeral
-sixty,sechzig,,sixty,numeral
-very,sehr,,very,adverb
-his,sein,,his,pronoun
-safe,sicher,,safe,adjective
-she,sie,,she,pronoun
-seven,sieben,,seven,numeral
-seventeen,siebzehn,,seventeen,numeral
-seventy,siebzig,,seventy,numeral
-silver,silbern,,silver,adjective
-so,so,,so,conjunction
-late,spät,,late,adjective
-strong,stark,,strong,adjective
-thousand,tausend,,thousand,numeral
-dead,tot,,dead,adjective
-sad,traurig,,sad,adjective
-dry,trocken,,dry,adjective
-turquoise,türkis,,turquoise,adjective
-and,und,,and,conjunction
-us,uns,,us,pronoun
-our,unser,,our,pronoun
-under,unter,,under,preposition
-four,vier,,four,numeral
-fourteen,vierzehn,,fourteen,numeral
-forty,vierzig,,forty,numeral
-full,voll,,full,adjective
-from,von,,from,preposition
-before,vor,,before,preposition
-warm,warm,,warm,adjective
-soft,weich,,soft,adjective
-because,weil,,because,conjunction
-white,weiss,,white,adjective
-less,weniger,,less,adverb
-if,wenn,,if,conjunction
-important,wichtig,,important,adjective
-again,wieder,,again,adverb
-we,wir,,we,pronoun
-during,während,,during,preposition
-while,während,,while,conjunction
-angry,wütend,,angry,adjective
-ten,zehn,,ten,numeral
-to,zu,,to,preposition
-twenty,zwanzig,,twenty,numeral
-two,zwei,,two,numeral
-between,zwischen,,between,preposition
-twelve,zwölf,,twelve,numeral
-over,über,,over,preposition
-everywhere,überall,,everywhere,adverb
+id,english,german,article_german,french,article_french,meanings,type,topic
+1,evening,Abend,der,soir,le,evening,noun,Time
+2,dinner,Abendessen,das,dîner,le,dinner,noun,Food & Drinks
+3,department,Abteilung,die,département,le,department,noun,Work & Education
+4,address,Adresse,die,adresse,l',address,noun,Communication
+5,analysis,Analyse,die,analyse,l',analysis,noun,Work & Education
+6,view,Ansicht,die,vue,la,view,noun,Communication
+7,effort,Anstrengung,die,effort,l',effort,noun,Work & Education
+8,answer,Antwort,die,réponse,la,answer; reply,noun,Communication
+9,lawyer,Anwalt,der,avocat,l',lawyer,noun,People & Professions
+10,suit,Anzug,der,costume,le,suit,noun,Clothing & Accessories
+11,apple,Apfel,der,pomme,la,apple,noun,Food & Drinks
+12,apricot,Aprikose,die,abricot,l',apricot,noun,Food & Drinks
+13,april,April,der,avril,,april,noun,Time
+14,work,Arbeit,die,travail,le,work; job; labor,noun,Work & Education
+15,worker,Arbeiter,der,ouvrier,l',worker,noun,People & Professions
+16,architect,Architekt,der,architecte,l',architect,noun,People & Professions
+17,arm,Arm,der,bras,le,arm,noun,Body & Health
+18,army,Armee,die,armée,l',army,noun,Society & Politics
+19,doctor,Arzt,der,médecin,le,doctor; physician,noun,People & Professions
+20,attention,Aufmerksamkeit,die,attention,l',attention,noun,Work & Education
+21,record,Aufzeichnung,die,enregistrement,l',record,noun,Work & Education
+22,eye,Auge,die,œil,l',eye,noun,Body & Health
+23,august,August,der,août,,august,noun,Time
+24,car,Auto,das,voiture,la,car,noun,City & Transport
+25,author,Autor,der,auteur,l',author,noun,People & Professions
+26,baby,Baby,der,bébé,le,baby,noun,People & Professions
+27,bathroom,Badezimmer,das,salle de bain,la,bathroom,noun,Home
+28,station,Bahnhof,der,gare,la,station,noun,City & Transport
+29,platform,Bahnsteig,der,quai,le,platform,noun,City & Transport
+30,banana,Banane,die,banane,la,banana,noun,Food & Drinks
+31,bank,Bank,der,banque,la,bank,noun,Work & Education
+32,battery,Batterie,die,batterie,la,battery,noun,Technology
+33,belly,Bauch,der,ventre,le,belly,noun,Body & Health
+34,farmer,Bauer,der,fermier,le,farmer,noun,People & Professions
+35,farm,Bauernhof,der,ferme,la,farm,noun,City & Transport
+36,tree,Baum,das,arbre,l',tree,noun,Nature & Weather
+37,leg,Bein,der,jambe,la,leg,noun,Body & Health
+38,example,Beispiel,der,exemple,l',example,noun,Work & Education
+39,mountain,Berg,der,montagne,la,mountain,noun,Nature & Weather
+40,report,Bericht,der,rapport,le,report,noun,Work & Education
+41,meeting,Besprechung,die,réunion,la,meeting; discussion,noun,Work & Education
+42,order,Bestellung,die,commande,la,order,noun,Work & Education
+43,amount,Betrag,der,montant,le,amount,noun,Work & Education
+44,bed,Bett,das,lit,le,bed,noun,Home
+45,library,Bibliothek,der,bibliothèque,la,library,noun,City & Transport
+46,beer,Bier,der,bière,la,beer,noun,Food & Drinks
+47,screen,Bildschirm,der,écran,l',screen,noun,Technology
+48,education,Bildung,die,éducation,l',education,noun,Work & Education
+49,pear,Birne,die,poire,la,pear,noun,Food & Drinks
+50,flower,Blume,die,fleur,la,flower,noun,Nature & Weather
+51,blouse,Bluse,die,chemisier,le,blouse,noun,Clothing & Accessories
+52,blood,Blut,der,sang,le,blood,noun,Body & Health
+53,soil,Boden,der,sol,le,soil,noun,Nature & Weather
+54,boat,Boot,der,bateau,le,boat,noun,City & Transport
+55,letter,Brief,der,lettre,la,letter (mail),noun,Communication
+56,stamp,Briefmarke,die,timbre,le,stamp,noun,Communication
+57,glasses,Brille,die,lunettes,les,glasses,noun,Clothing & Accessories
+58,bread,Brot,das,pain,le,bread; loaf,noun,Food & Drinks
+59,brother,Bruder,der,frère,le,brother,noun,People & Professions
+60,chest,Brust,der,poitrine,la,chest,noun,Body & Health
+61,bridge,Brücke,die,pont,le,bridge,noun,City & Transport
+62,book,Buch,das,livre,le,book,noun,Work & Education
+63,bus,Bus,der,bus,le,bus,noun,City & Transport
+64,butter,Butter,der,beurre,le,butter,noun,Food & Drinks
+65,office,Büro,der,bureau,le,office,noun,Work & Education
+66,chance,Chance,die,chance,la,chance,noun,Grammar & Connectors
+67,boss,Chef,der,chef,le,boss,noun,Work & Education
+68,computer,Computer,der,ordinateur,l',computer; PC,noun,Technology
+69,file,Datei,der,fichier,le,file,noun,Technology
+70,data,Daten,der,données,les,data,noun,Technology
+71,thumb,Daumen,der,pouce,le,thumb,noun,Body & Health
+72,ceiling,Decke,die,plafond,le,ceiling,noun,Home
+73,design,Design,der,design,le,design,noun,Work & Education
+74,German,Deutsch,das,allemand,l',German (language),noun,Work & Education
+75,december,Dezember,der,décembre,,december,noun,Time
+76,service,Dienst,der,service,le,service,noun,Work & Education
+77,tuesday,Dienstag,der,mardi,,tuesday,noun,Time
+78,thing,Ding,der,chose,la,thing,noun,Grammar & Connectors
+79,discussion,Diskussion,die,discussion,la,discussion,noun,Communication
+80,thursday,Donnerstag,der,jeudi,,thursday,noun,Time
+81,village,Dorf,das,village,le,village,noun,City & Transport
+82,printer,Drucker,der,imprimante,l',printer,noun,Technology
+83,email,E-Mail,die,e-mail,l',email; e-mail message,noun,Technology
+84,effect,Effekt,der,effet,l',effect,noun,Work & Education
+85,ambition,Ehrgeiz,der,ambition,l',ambition,noun,Work & Education
+86,egg,Ei,der,œuf,l',egg,noun,Food & Drinks
+87,attitude,Einstellung,die,attitude,l',attitude,noun,Work & Education
+88,ice,Eis,der,glace,la,ice,noun,Nature & Weather
+89,elbow,Ellenbogen,der,coude,le,elbow,noun,Body & Health
+90,parent,Elternteil,der,parent,le,parent,noun,People & Professions
+91,energy,Energie,die,énergie,l',energy,noun,Technology
+92,English,Englisch,,anglais,l',English (language),noun,Work & Education
+93,distance,Entfernung,die,distance,la,distance,noun,Nature & Weather
+94,decision,Entscheidung,die,décision,la,decision,noun,Work & Education
+95,strawberry,Erdbeere,die,fraise,la,strawberry,noun,Food & Drinks
+96,earth,Erde,die,terre,la,earth,noun,Nature & Weather
+97,experience,Erfahrung,die,expérience,l',experience,noun,Work & Education
+98,success,Erfolg,der,succès,le,success,noun,Work & Education
+99,result,Ergebnis,der,résultat,le,result,noun,Work & Education
+100,memory,Erinnerung,die,souvenir,le,memory,noun,Body & Health
+101,food,Essen,das,nourriture,la,food; meal,noun,Food & Drinks
+102,vinegar,Essig,der,vinaigre,le,vinegar,noun,Food & Drinks
+103,factory,Fabrik,die,usine,l',factory,noun,City & Transport
+104,driver,Fahrer,der,conducteur,le,driver,noun,City & Transport
+105,bike,Fahrrad,das,vélo,le,bicycle; bike,noun,City & Transport
+106,case,Fall,der,cas,le,case,noun,Society & Politics
+107,family,Familie,die,famille,la,family; relatives,noun,People & Professions
+108,color,Farbe,die,couleur,la,color,noun,Adjectives
+109,february,Februar,der,février,,february,noun,Time
+110,field,Feld,der,champ,le,field,noun,Nature & Weather
+111,rock,Felsen,der,rocher,le,rock,noun,Nature & Weather
+112,window,Fenster,das,fenêtre,la,window,noun,Home
+113,fire,Feuer,der,feu,le,fire,noun,Nature & Weather
+114,finger,Finger,der,doigt,le,finger,noun,Body & Health
+115,company,Firma,das,entreprise,l',company,noun,Work & Education
+116,fish,Fisch,der,poisson,le,fish,noun,Food & Drinks
+117,bottle,Flasche,die,bouteille,la,bottle,noun,Food & Drinks
+118,meat,Fleisch,der,viande,la,meat,noun,Food & Drinks
+119,flight,Flug,der,vol,le,flight,noun,City & Transport
+120,airport,Flughafen,der,aéroport,l',airport,noun,City & Transport
+121,river,Fluss,der,rivière,la,river,noun,Nature & Weather
+122,photo,Foto,der,photo,la,photo,noun,Technology
+123,question,Frage,die,question,la,question,noun,Communication
+124,woman,Frau,die,femme,la,woman; wife; Mrs.,noun,People & Professions
+125,friday,Freitag,der,vendredi,,friday,noun,Time
+126,friend,Freund,der,ami,l',friend; boyfriend,noun,People & Professions
+127,friend (female),Freundin,die,amie,l',friend; girlfriend,noun,People & Professions
+128,breakfast,Frühstück,der,petit-déjeuner,le,breakfast,noun,Food & Drinks
+129,foot,Fuss,der,pied,le,foot,noun,Body & Health
+130,floor,Fussboden,der,sol,le,floor,noun,Home
+131,fork,Gabel,der,fourchette,la,fork,noun,Food & Drinks
+132,garden,Garten,der,jardin,le,garden,noun,Home
+133,area,Gebiet,der,zone,la,area,noun,Nature & Weather
+134,building,Gebäude,die,bâtiment,le,building,noun,Home
+135,danger,Gefahr,der,danger,le,danger,noun,Society & Politics
+136,secret,Geheimnis,der,secret,le,secret,noun,Communication
+137,brain,Gehirn,der,cerveau,le,brain,noun,Body & Health
+138,money,Geld,das,argent,l',money; cash,noun,Work & Education
+139,wallet,Geldbörse,die,portefeuille,le,wallet,noun,Clothing & Accessories
+140,opportunity,Gelegenheit,die,opportunité,l',opportunity,noun,Work & Education
+141,history,Geschichte,die,histoire,l',history,noun,Work & Education
+142,store,Geschäft,das,magasin,le,store; shop; business,noun,City & Transport
+143,society,Gesellschaft,die,société,la,society,noun,Society & Politics
+144,law,Gesetz,der,loi,la,law,noun,Society & Politics
+145,habit,Gewohnheit,die,habitude,l',habit,noun,Work & Education
+146,glass,Glas,der,verre,le,glass,noun,Food & Drinks
+147,reason,Grund,der,raison,la,reason,noun,Grammar & Connectors
+148,group,Gruppe,die,groupe,le,group,noun,People & Professions
+149,cucumber,Gurke,die,concombre,le,cucumber,noun,Food & Drinks
+150,belt,Gürtel,der,ceinture,la,belt,noun,Clothing & Accessories
+151,hair,Haar,der,cheveux,les,hair,noun,Body & Health
+152,neck,Hals,der,cou,le,neck,noun,Body & Health
+153,necklace,Halskette,die,collier,le,necklace,noun,Clothing & Accessories
+154,hand,Hand,der,main,la,hand,noun,Body & Health
+155,gloves,Handschuhe,die,gants,les,gloves,noun,Clothing & Accessories
+156,phone,Handy,das,téléphone,le,phone; mobile,noun,Technology
+157,capital,Hauptstadt,der,capitale,la,capital,noun,City & Transport
+158,house,Haus,das,maison,la,house; home (building),noun,Home
+159,skin,Haut,der,peau,la,skin,noun,Body & Health
+160,shirt,Hemd,der,chemise,la,shirt,noun,Clothing & Accessories
+161,heart,Herz,der,cœur,le,heart,noun,Body & Health
+162,help,Hilfe,die,aide,l',help; assistance,noun,Communication
+163,sky,Himmel,der,ciel,le,sky,noun,Nature & Weather
+164,honey,Honig,der,miel,le,honey,noun,Food & Drinks
+165,pants,Hose,die,pantalon,le,pants,noun,Clothing & Accessories
+166,hotel,Hotel,der,hôtel,l',hotel,noun,City & Transport
+167,dog,Hund,der,chien,le,dog,noun,Nature & Weather
+168,hat,Hut,der,chapeau,le,hat,noun,Clothing & Accessories
+169,chicken,Hähnchen,das,poulet,le,chicken,noun,Food & Drinks
+170,idea,Idee,die,idée,l',idea,noun,Communication
+171,industry,Industrie,die,industrie,l',industry,noun,Work & Education
+172,information,Information,die,information,l',information,noun,Communication
+173,engineer,Ingenieur,die,ingénieur,l',engineer,noun,People & Professions
+174,island,Insel,der,île,l',island,noun,Nature & Weather
+175,interest,Interesse,die,intérêt,l',interest,noun,Work & Education
+176,internet,Internet,der,internet,l',internet,noun,Technology
+177,jacket,Jacke,die,veste,la,jacket,noun,Clothing & Accessories
+178,year,Jahr,das,année,l',year,noun,Time
+179,january,Januar,der,janvier,,january,noun,Time
+180,jeans,Jeans,der,jean,le,jeans,noun,Clothing & Accessories
+181,job,Job,der,emploi,l',job; part-time job,noun,Work & Education
+182,journalist,Journalist,der,journaliste,le,journalist,noun,People & Professions
+183,july,Juli,der,juillet,,july,noun,Time
+184,boy,Junge,die,garçon,le,boy,noun,People & Professions
+185,june,Juni,der,juin,,june,noun,Time
+186,coffee,Kaffee,der,café,le,coffee,noun,Food & Drinks
+187,camera,Kamera,der,appareil photo,l',camera,noun,Technology
+188,hoodie,Kapuzensweatshirt,der,sweat à capuche,le,hoodie,noun,Clothing & Accessories
+189,carrot,Karotte,die,carotte,la,carrot,noun,Food & Drinks
+190,map,Karte,die,carte,la,map,noun,City & Transport
+191,potato,Kartoffel,der,pomme de terre,la,potato,noun,Food & Drinks
+192,cat,Katze,die,chat,le,cat,noun,Nature & Weather
+193,cookie,Keks,der,biscuit,le,cookie,noun,Food & Drinks
+194,waiter,Kellner,der,serveur,le,waiter,noun,People & Professions
+195,child,Kind,das,enfant,l',child; kid,noun,People & Professions
+196,church,Kirche,die,église,l',church,noun,City & Transport
+197,cherry,Kirsche,die,cerise,la,cherry,noun,Food & Drinks
+198,pillow,Kissen,der,oreiller,l',pillow,noun,Home
+199,box,Kiste,die,boîte,la,box,noun,Home
+200,class,Klasse,die,classe,la,class,noun,Work & Education
+201,dress,Kleid,der,robe,la,dress,noun,Clothing & Accessories
+202,clothes,Kleidung,die,vêtements,les,clothes,noun,Clothing & Accessories
+203,climate,Klima,das,climat,le,climate,noun,Nature & Weather
+204,knee,Knie,die,genou,le,knee,noun,Body & Health
+205,garlic,Knoblauch,der,ail,l',garlic,noun,Food & Drinks
+206,bone,Knochen,das,os,l',bone,noun,Body & Health
+207,chef,Koch,der,cuisinier,le,chef,noun,People & Professions
+208,compass,Kompass,der,boussole,la,compass,noun,City & Transport
+209,account,Konto,der,compte,le,account,noun,Technology
+210,control,Kontrolle,die,contrôle,le,control,noun,Work & Education
+211,head,Kopf,der,tête,la,head,noun,Body & Health
+212,copy,Kopie,die,copie,la,copy,noun,Communication
+213,hospital,Krankenhaus,das,hôpital,l',hospital,noun,Body & Health
+214,nurse,Krankenschwester,der,infirmière,l',nurse,noun,People & Professions
+215,disease,Krankheit,die,maladie,la,disease,noun,Body & Health
+216,war,Krieg,der,guerre,la,war,noun,Society & Politics
+217,cake,Kuchen,das,gâteau,le,cake,noun,Food & Drinks
+218,pen,Kugelschreiber,der,stylo,le,pen,noun,Work & Education
+219,culture,Kultur,die,culture,la,culture,noun,Work & Education
+220,customer,Kunde,die,client,le,customer,noun,Work & Education
+221,course,Kurs,der,cours,le,course,noun,Work & Education
+222,cheese,Käse,der,fromage,le,cheese,noun,Food & Drinks
+223,kitchen,Küche,die,cuisine,la,kitchen,noun,Home
+224,artist,Künstler,der,artiste,l',artist,noun,People & Professions
+225,charger,Ladegerät,der,chargeur,le,charger,noun,Technology
+226,lamp,Lampe,die,lampe,la,lamp,noun,Home
+227,country,Land,der,pays,le,country,noun,City & Transport
+228,teacher,Lehrer,der,professeur,le,teacher,noun,People & Professions
+229,performance,Leistung,die,performance,la,performance,noun,Work & Education
+230,spoon,Löffel,der,cuillère,la,spoon,noun,Food & Drinks
+231,solution,Lösung,die,solution,la,solution,noun,Work & Education
+232,power,Macht,der,pouvoir,le,power,noun,Society & Politics
+233,stomach,Magen,der,estomac,l',stomach,noun,Body & Health
+234,may,Mai,der,mai,,may,noun,Time
+235,manager,Manager,der,manager,le,manager,noun,People & Professions
+236,man,Mann,der,homme,l',man; husband,noun,People & Professions
+237,coat,Mantel,der,manteau,le,coat,noun,Clothing & Accessories
+238,market,Markt,der,marché,le,market,noun,City & Transport
+239,machine,Maschine,die,machine,la,machine,noun,Technology
+240,material,Material,der,matériau,le,material,noun,Work & Education
+241,mouse,Maus,der,souris,la,mouse,noun,Technology
+242,medicine,Medizin,die,médicament,le,medicine,noun,Body & Health
+243,sea,Meer,der,mer,la,sea,noun,Nature & Weather
+244,opinion,Meinung,die,opinion,l',opinion,noun,Communication
+245,melon,Melone,die,melon,le,melon,noun,Food & Drinks
+246,people,Menschen,das,gens,les,people,noun,People & Professions
+247,knife,Messer,der,couteau,le,knife,noun,Food & Drinks
+248,milk,Milch,die,lait,le,milk,noun,Food & Drinks
+249,lunch,Mittagessen,der,déjeuner,le,lunch,noun,Food & Drinks
+250,wednesday,Mittwoch,der,mercredi,,wednesday,noun,Time
+251,moment,Moment,das,moment,le,moment,noun,Time
+252,month,Monat,der,mois,le,month,noun,Time
+253,moon,Mond,der,lune,la,moon,noun,Nature & Weather
+254,monday,Montag,der,lundi,,monday,noun,Time
+255,morning,Morgen,der,matin,le,morning; tomorrow (as noun),noun,Time
+256,mouth,Mund,der,bouche,la,mouth,noun,Body & Health
+257,music,Musik,die,musique,la,music,noun,Work & Education
+258,musician,Musiker,der,musicien,le,musician,noun,People & Professions
+259,mother,Mutter,der,mère,la,mother,noun,People & Professions
+260,march,März,der,mars,,march,noun,Time
+261,cap,Mütze,die,casquette,la,cap,noun,Clothing & Accessories
+262,message,Nachricht,die,message,le,message; news,noun,Communication
+263,news,Nachrichten,der,nouvelles,les,news,noun,Work & Education
+264,night,Nacht,die,nuit,la,night,noun,Time
+265,name,Name,die,nom,le,name,noun,Communication
+266,nose,Nase,die,nez,le,nose,noun,Body & Health
+267,nature,Natur,die,nature,la,nature,noun,Nature & Weather
+268,fog,Nebel,der,brouillard,le,fog,noun,Nature & Weather
+269,level,Niveau,der,niveau,le,level,noun,Work & Education
+270,november,November,der,novembre,,november,noun,Time
+271,pasta,Nudeln,der,pâtes,les,pasta,noun,Food & Drinks
+272,ear,Ohr,der,oreille,l',ear,noun,Body & Health
+273,earring,Ohrring,der,boucle d'oreille,la,earring,noun,Clothing & Accessories
+274,october,Oktober,der,octobre,,october,noun,Time
+275,operation,Operation,die,opération,l',operation,noun,Body & Health
+276,folder,Ordner,der,dossier,le,folder,noun,Home
+277,organization,Organisation,die,organisation,l',organization,noun,Work & Education
+278,ocean,Ozean,der,océan,l',ocean,noun,Nature & Weather
+279,package,Paket,der,colis,le,package,noun,City & Transport
+280,paper,Papier,das,papier,le,paper,noun,Work & Education
+281,park,Park,der,parc,le,park,noun,City & Transport
+282,partner,Partner,der,partenaire,le,partner,noun,People & Professions
+283,party,Party,der,fête,la,party,noun,People & Professions
+284,password,Passwort,der,mot de passe,le,password,noun,Technology
+285,person,Person,die,personne,la,person; individual,noun,People & Professions
+286,pan,Pfanne,die,poêle,la,pan,noun,Food & Drinks
+287,pepper,Pfeffer,der,poivre,le,pepper,noun,Food & Drinks
+288,peach,Pfirsich,der,pêche,la,peach,noun,Food & Drinks
+289,plant,Pflanze,die,plante,la,plant,noun,Nature & Weather
+290,plum,Pflaume,die,prune,la,plum,noun,Food & Drinks
+291,pilot,Pilot,der,pilote,le,pilot,noun,People & Professions
+292,police,Polizei,der,police,la,police,noun,Society & Politics
+293,position,Position,die,position,la,position,noun,Work & Education
+294,price,Preis,der,prix,le,price; award,noun,Work & Education
+295,problem,Problem,das,problème,le,problem; issue,noun,Work & Education
+296,product,Produkt,der,produit,le,product,noun,Work & Education
+297,project,Projekt,der,projet,le,project,noun,Work & Education
+298,process,Prozess,der,processus,le,process,noun,Work & Education
+299,sweater,Pullover,der,pull,le,sweater,noun,Clothing & Accessories
+300,space,Raum,das,espace,l',space,noun,Nature & Weather
+301,bill,Rechnung,die,facture,la,bill,noun,Work & Education
+302,rule,Regel,der,règle,la,rule,noun,Society & Politics
+303,rain,Regen,der,pluie,la,rain,noun,Nature & Weather
+304,umbrella,Regenschirm,der,parapluie,le,umbrella,noun,Nature & Weather
+305,government,Regierung,die,gouvernement,le,government,noun,Society & Politics
+306,rice,Reis,der,riz,le,rice,noun,Food & Drinks
+307,journey,Reise,die,voyage,le,journey,noun,City & Transport
+308,restaurant,Restaurant,das,restaurant,le,restaurant,noun,City & Transport
+309,judge,Richter,der,juge,le,judge,noun,People & Professions
+310,direction,Richtung,die,direction,la,direction,noun,City & Transport
+311,beef,Rindfleisch,der,bœuf,le,beef,noun,Food & Drinks
+312,ring,Ring,der,bague,la,ring,noun,Clothing & Accessories
+313,skirt,Rock,der,jupe,la,skirt,noun,Clothing & Accessories
+314,backpack,Rucksack,der,sac à dos,le,backpack,noun,Clothing & Accessories
+315,back,Rücken,der,dos,le,back,noun,Body & Health
+316,salad,Salat,der,salade,la,salad,noun,Food & Drinks
+317,salt,Salz,der,sel,le,salt,noun,Food & Drinks
+318,saturday,Samstag,der,samedi,,saturday,noun,Time
+319,sand,Sand,der,sable,le,sand,noun,Nature & Weather
+320,damage,Schaden,der,dommage,le,damage,noun,Society & Politics
+321,scarf,Schal,der,écharpe,l',scarf,noun,Clothing & Accessories
+322,actor,Schauspieler,der,acteur,l',actor,noun,People & Professions
+323,battle,Schlacht,der,bataille,la,battle,noun,Society & Politics
+324,bedroom,Schlafzimmer,der,chambre,la,bedroom,noun,Home
+325,key,Schlüssel,der,clé,la,key; wrench,noun,Home
+326,snow,Schnee,der,neige,la,snow,noun,Nature & Weather
+327,desk,Schreibtisch,der,bureau,le,desk,noun,Home
+328,writer,Schriftsteller,der,écrivain,l',writer,noun,People & Professions
+329,shoes,Schuhe,die,chaussures,les,shoes,noun,Clothing & Accessories
+330,school,Schule,die,école,l',school,noun,Work & Education
+331,shoulder,Schulter,der,épaule,l',shoulder,noun,Body & Health
+332,pork,Schweinefleisch,der,porc,le,pork,noun,Food & Drinks
+333,sister,Schwester,der,sœur,la,sister,noun,People & Professions
+334,student,Schüler,der,élève,l',student,noun,People & Professions
+335,lake,See,die,lac,le,lake,noun,Nature & Weather
+336,side,Seite,die,côté,le,side,noun,Grammar & Connectors
+337,september,September,der,septembre,,september,noun,Time
+338,shorts,Shorts,der,short,le,shorts,noun,Clothing & Accessories
+339,safety,Sicherheit,die,sécurité,la,safety,noun,Society & Politics
+340,situation,Situation,die,situation,la,situation,noun,Work & Education
+341,socks,Socken,der,chaussettes,les,socks,noun,Clothing & Accessories
+342,soldier,Soldat,der,soldat,le,soldier,noun,People & Professions
+343,sun,Sonne,die,soleil,le,sun,noun,Nature & Weather
+344,sunday,Sonntag,der,dimanche,,sunday,noun,Time
+345,mirror,Spiegel,der,miroir,le,mirror,noun,Home
+346,player,Spieler,der,joueur,le,player,noun,Work & Education
+347,sport,Sport,der,sport,le,sport,noun,Work & Education
+348,language,Sprache,die,langue,la,language; speech,noun,Work & Education
+349,city,Stadt,die,ville,la,city; town,noun,City & Transport
+350,stone,Stein,der,pierre,la,stone,noun,Nature & Weather
+351,star,Stern,der,étoile,l',star,noun,Nature & Weather
+352,boots,Stiefel,der,bottes,les,boots,noun,Clothing & Accessories
+353,pen,Stift,der,stylo,le,pen; pencil,noun,Work & Education
+354,voice,Stimme,die,voix,la,voice,noun,Communication
+355,beach,Strand,der,plage,la,beach,noun,Nature & Weather
+356,street,Strasse,die,rue,la,street,noun,City & Transport
+357,street,Straße,die,rue,la,street; road,noun,City & Transport
+358,argument,Streit,der,dispute,la,argument,noun,Communication
+359,chair,Stuhl,der,chaise,la,chair,noun,Home
+360,storm,Sturm,der,tempête,la,storm,noun,Nature & Weather
+361,soup,Suppe,die,soupe,la,soup,noun,Food & Drinks
+362,system,System,der,système,le,system,noun,Technology
+363,t-shirt,T-Shirt,der,t-shirt,le,t-shirt,noun,Clothing & Accessories
+364,board,Tafel,der,tableau,le,board,noun,Home
+365,day,Tag,der,jour,le,day,noun,Time
+366,valley,Tal,der,vallée,la,valley,noun,Nature & Weather
+367,bag,Tasche,die,sac,le,bag,noun,Clothing & Accessories
+368,cup,Tasse,die,tasse,la,cup,noun,Food & Drinks
+369,keyboard,Tastatur,die,clavier,le,keyboard,noun,Technology
+370,team,Team,der,équipe,l',team,noun,Work & Education
+371,tea,Tee,der,thé,le,tea,noun,Food & Drinks
+372,phone,Telefon,der,téléphone,le,phone,noun,Technology
+373,plate,Teller,der,assiette,l',plate,noun,Food & Drinks
+374,temperature,Temperatur,die,température,la,temperature,noun,Nature & Weather
+375,appointment,Termin,der,rendez-vous,le,appointment; date,noun,Time
+376,ticket,Ticket,das,billet,le,ticket; pass,noun,City & Transport
+377,animal,Tier,der,animal,l',animal,noun,Nature & Weather
+378,table,Tisch,der,table,la,table; desk,noun,Home
+379,tomato,Tomate,die,tomate,la,tomato,noun,Food & Drinks
+380,pot,Topf,der,casserole,la,pot,noun,Food & Drinks
+381,pie,Torte,die,tarte,la,pie,noun,Food & Drinks
+382,grape,Traube,die,raisin,le,grape,noun,Food & Drinks
+383,dream,Traum,das,rêve,le,dream,noun,Body & Health
+384,door,Tür,die,porte,la,door,noun,Home
+385,watch,Uhr,der,montre,la,watch,noun,Clothing & Accessories
+386,environment,Umwelt,der,environnement,l',environment,noun,Nature & Weather
+387,accident,Unfall,der,accident,l',accident,noun,Body & Health
+388,university,Universität,die,université,l',university; college,noun,Work & Education
+389,cause,Ursache,die,cause,la,cause,noun,Society & Politics
+390,father,Vater,der,père,le,father,noun,People & Professions
+391,crime,Verbrechen,das,crime,le,crime,noun,Society & Politics
+392,agreement,Vereinbarung,die,accord,l',agreement,noun,Work & Education
+393,bird,Vogel,der,oiseau,l',bird,noun,Nature & Weather
+394,benefit,Vorteil,der,avantage,l',benefit,noun,Work & Education
+395,growth,Wachstum,das,croissance,la,growth,noun,Work & Education
+396,choice,Wahl,der,choix,le,choice,noun,Work & Education
+397,truth,Wahrheit,die,vérité,la,truth,noun,Communication
+398,forest,Wald,der,forêt,la,forest,noun,Nature & Weather
+399,wall,Wand,der,mur,le,wall,noun,Home
+400,water,Wasser,das,eau,l',water,noun,Food & Drinks
+401,watermelon,Wassermelone,die,pastèque,la,watermelon,noun,Food & Drinks
+402,website,Webseite,die,site web,le,website,noun,Technology
+403,wine,Wein,der,vin,le,wine,noun,Food & Drinks
+404,world,Welt,der,monde,le,world,noun,Nature & Weather
+405,value,Wert,der,valeur,la,value,noun,Work & Education
+406,weather,Wetter,das,météo,la,weather,noun,Nature & Weather
+407,wind,Wind,der,vent,le,wind,noun,Nature & Weather
+408,science,Wissenschaft,die,science,la,science,noun,Work & Education
+409,week,Woche,die,semaine,la,week,noun,Time
+410,apartment,Wohnung,die,appartement,l',apartment; flat,noun,Home
+411,cloud,Wolke,die,nuage,le,cloud,noun,Nature & Weather
+412,word,Wort,der,mot,le,word,noun,Communication
+413,sausage,Wurst,der,saucisse,la,sausage,noun,Food & Drinks
+414,payment,Zahlung,die,paiement,le,payment,noun,Work & Education
+415,tooth,Zahn,der,dent,la,tooth,noun,Body & Health
+416,crosswalk,Zebrastreifen,der,passage piéton,le,crosswalk,noun,City & Transport
+417,toe,Zeh,der,orteil,l',toe,noun,Body & Health
+418,time,Zeit,die,temps,le,time,noun,Time
+419,magazine,Zeitschrift,der,magazine,le,magazine,noun,Home
+420,newspaper,Zeitung,die,journal,le,newspaper,noun,Home
+421,goal,Ziel,der,objectif,l',goal,noun,Work & Education
+422,room,Zimmer,das,pièce,la,room,noun,Home
+423,lemon,Zitrone,die,citron,le,lemon,noun,Food & Drinks
+424,sugar,Zucker,der,sucre,le,sugar,noun,Food & Drinks
+425,train,Zug,der,train,le,train,noun,City & Transport
+426,tongue,Zunge,die,langue,la,tongue,noun,Body & Health
+427,purpose,Zweck,der,but,le,purpose,noun,Work & Education
+428,onion,Zwiebel,der,oignon,l',onion,noun,Food & Drinks
+429,doctor (female),Ärztin,die,médecin,le,doctor; physician,noun,People & Professions
+430,oil,Öl,der,huile,l',oil,noun,Food & Drinks
+431,cancel,abbrechen,,annuler,,cancel,verb,Everyday Verbs
+432,accept,akzeptieren,,accepter,,accept,verb,Everyday Verbs
+433,arrive,ankommen,,arriver,,arrive,verb,Everyday Verbs
+434,call,anrufen,,appeler,,call,verb,Communication
+435,to answer,antworten,,répondre,,answer; reply,verb,Everyday Verbs
+436,to work,arbeiten,,travailler,,work,verb,Everyday Verbs
+437,wake,aufwachen,,se réveiller,,wake,verb,Everyday Verbs
+438,build,bauen,,construire,,build,verb,Everyday Verbs
+439,cover,bedecken,,couvrir,,cover,verb,Everyday Verbs
+440,finish,beenden,,finir,,finish,verb,Everyday Verbs
+441,begin,beginnen,,commencer,,begin,verb,Everyday Verbs
+442,keep,behalten,,garder,,keep,verb,Everyday Verbs
+443,get,bekommen,,obtenir,,get,verb,Everyday Verbs
+444,use,benutzen,,utiliser,,use,verb,Everyday Verbs
+445,describe,beschreiben,,décrire,,describe,verb,Communication
+446,visit,besuchen,,visiter,,visit,verb,Everyday Verbs
+447,enter,betreten,,entrer,,enter,verb,Everyday Verbs
+448,move,bewegen,,bouger,,move,verb,Everyday Verbs
+449,to pay,bezahlen,,payer,,pay,verb,Everyday Verbs
+450,stay,bleiben,,rester,,stay,verb,Everyday Verbs
+451,to need,brauchen,,avoir besoin,,need; require,verb,Everyday Verbs
+452,break,brechen,,casser,,break,verb,Everyday Verbs
+453,bring,bringen,,apporter,,bring,verb,Everyday Verbs
+454,think,denken,,penser,,think,verb,Everyday Verbs
+455,invite,einladen,,inviter,,invite,verb,Communication
+456,discover,entdecken,,découvrir,,discover,verb,Everyday Verbs
+457,decide,entscheiden,,décider,,decide,verb,Everyday Verbs
+458,receive,erhalten,,recevoir,,receive,verb,Everyday Verbs
+459,remember,erinnern,,se souvenir,,remember,verb,Everyday Verbs
+460,explain,erklären,,expliquer,,explain,verb,Communication
+461,allow,erlauben,,permettre,,allow,verb,Everyday Verbs
+462,tell,erzählen,,raconter,,tell,verb,Communication
+463,to eat,essen,,manger,,eat,verb,Food & Drinks
+464,drive,fahren,,conduire,,drive,verb,Everyday Verbs
+465,find,finden,,trouver,,find,verb,Everyday Verbs
+466,fly,fliegen,,voler,,fly,verb,Everyday Verbs
+467,continue,fortsetzen,,continuer,,continue,verb,Everyday Verbs
+468,to ask,fragen,,demander,,ask; inquire,verb,Everyday Verbs
+469,feel,fühlen,,ressentir,,feel,verb,Everyday Verbs
+470,give,geben,,donner,,give,verb,Everyday Verbs
+471,to go,gehen,,aller,,go; walk,verb,Everyday Verbs
+472,win,gewinnen,,gagner,,win,verb,Everyday Verbs
+473,believe,glauben,,croire,,believe,verb,Everyday Verbs
+474,to have,haben,,avoir,,have; possess,verb,Everyday Verbs
+475,hate,hassen,,détester,,hate,verb,Everyday Verbs
+476,to help,helfen,,aider,,help; assist,verb,Everyday Verbs
+477,add,hinzufügen,,ajouter,,add,verb,Everyday Verbs
+478,hope,hoffen,,espérer,,hope,verb,Everyday Verbs
+479,to hear,hören,,entendre,,hear; listen,verb,Everyday Verbs
+480,to buy,kaufen,,acheter,,buy; purchase,verb,Everyday Verbs
+481,cook,kochen,,cuisiner,,cook,verb,Food & Drinks
+482,to come,kommen,,venir,,come,verb,Everyday Verbs
+483,cost,kosten,,coûter,,cost,verb,Work & Education
+484,laugh,lachen,,rire,,laugh,verb,Everyday Verbs
+485,live,leben,,vivre,,live,verb,Everyday Verbs
+486,teach,lehren,,enseigner,,teach,verb,Everyday Verbs
+487,borrow,leihen,,emprunter,,borrow,verb,Everyday Verbs
+488,to learn,lernen,,apprendre,,learn; study,verb,Everyday Verbs
+489,to read,lesen,,lire,,read,verb,Everyday Verbs
+490,to love,lieben,,aimer,,love,verb,Everyday Verbs
+491,smile,lächeln,,sourire,,smile,verb,Everyday Verbs
+492,to do,machen,,faire,,do; make,verb,Everyday Verbs
+493,to like,mögen,,aimer bien,,like,verb,Everyday Verbs
+494,take,nehmen,,prendre,,take,verb,Everyday Verbs
+495,organize,organisieren,,organiser,,organize,verb,Everyday Verbs
+496,plan,planen,,planifier,,plan,verb,Everyday Verbs
+497,talk,reden,,parler,,talk,verb,Communication
+498,clean,reinigen,,nettoyer,,clean,verb,Everyday Verbs
+499,travel,reisen,,voyager,,travel,verb,Everyday Verbs
+500,ride,reiten,,monter,,ride,verb,Everyday Verbs
+501,run,rennen,,courir,,run,verb,Everyday Verbs
+502,repair,reparieren,,réparer,,repair,verb,Everyday Verbs
+503,to say,sagen,,dire,,say; tell,verb,Everyday Verbs
+504,look,schauen,,regarder,,look,verb,Everyday Verbs
+505,sleep,schlafen,,dormir,,sleep,verb,Everyday Verbs
+506,close,schliessen,,fermer,,close,verb,Everyday Verbs
+507,cut,schneiden,,couper,,cut,verb,Everyday Verbs
+508,to write,schreiben,,écrire,,write,verb,Everyday Verbs
+509,swim,schwimmen,,nager,,swim,verb,Everyday Verbs
+510,to see,sehen,,voir,,see; watch,verb,Everyday Verbs
+511,to be,sein,,être,,be; exist,verb,Everyday Verbs
+512,send,senden,,envoyer,,send,verb,Communication
+513,sit,sitzen,,s'asseoir,,sit,verb,Everyday Verbs
+514,play,spielen,,jouer,,play,verb,Everyday Verbs
+515,to speak,sprechen,,parler,,speak; talk,verb,Everyday Verbs
+516,start,starten,,commencer,,start,verb,Everyday Verbs
+517,stand,stehen,,se lever,,stand,verb,Everyday Verbs
+518,die,sterben,,mourir,,die,verb,Everyday Verbs
+519,stop,stoppen,,arrêter,,stop,verb,Everyday Verbs
+520,to study,studieren,,étudier,,study (at university),verb,Everyday Verbs
+521,dance,tanzen,,danser,,dance,verb,Everyday Verbs
+522,meet,treffen,,rencontrer,,meet,verb,Everyday Verbs
+523,to drink,trinken,,boire,,drink,verb,Food & Drinks
+524,do,tun,,faire,,do,verb,Everyday Verbs
+525,support,unterstützen,,soutenir,,support,verb,Everyday Verbs
+526,forget,vergessen,,oublier,,forget,verb,Everyday Verbs
+527,sell,verkaufen,,vendre,,sell,verb,Everyday Verbs
+528,leave,verlassen,,partir,,leave,verb,Everyday Verbs
+529,lend,verleihen,,prêter,,lend,verb,Everyday Verbs
+530,lose,verlieren,,perdre,,lose,verb,Everyday Verbs
+531,promise,versprechen,,promettre,,promise,verb,Communication
+532,try,versuchen,,essayer,,try,verb,Everyday Verbs
+533,grow,wachsen,,grandir,,grow,verb,Everyday Verbs
+534,wait,warten,,attendre,,wait,verb,Everyday Verbs
+535,wash,waschen,,laver,,wash,verb,Everyday Verbs
+536,cry,weinen,,pleurer,,cry,verb,Everyday Verbs
+537,become,werden,,devenir,,become,verb,Everyday Verbs
+538,disagree,widersprechen,,ne pas être d'accord,,disagree,verb,Communication
+539,know,wissen,,savoir,,know,verb,Everyday Verbs
+540,to want,wollen,,vouloir,,want,verb,Everyday Verbs
+541,choose,wählen,,choisir,,choose,verb,Everyday Verbs
+542,draw,zeichnen,,dessiner,,draw,verb,Everyday Verbs
+543,show,zeigen,,montrer,,show,verb,Communication
+544,listen,zuhören,,écouter,,listen,verb,Communication
+545,return,zurückkehren,,retourner,,return,verb,Everyday Verbs
+546,agree,zustimmen,,être d'accord,,agree,verb,Communication
+547,change,ändern,,changer,,change,verb,Everyday Verbs
+548,to open,öffnen,,ouvrir,,open,verb,Everyday Verbs
+549,old,alt,,vieux,,old,adj,Adjectives
+550,easy,einfach,,facile,,easy; simple,adj,Adjectives
+551,happy,glücklich,,heureux,,happy,adj,Adjectives
+552,big,groß,,grand,,big; large,adj,Adjectives
+553,good,gut,,bon,,good; well,adj,Adjectives
+554,hot,heiß,,chaud,,hot,adj,Adjectives
+555,cold,kalt,,froid,,cold,adj,Adjectives
+556,small,klein,,petit,,small; little,adj,Adjectives
+557,new,neu,,nouveau,,new,adj,Adjectives
+558,bad,schlecht,,mauvais,,bad; poor,adj,Adjectives
+559,difficult,schwierig,,difficile,,difficult; hard,adj,Adjectives
+560,sad,traurig,,triste,,sad,adj,Adjectives
+561,zero,null,,zéro,,zero,numeral,Numbers
+562,but,aber,,mais,,but,conjunction,Grammar & Connectors
+563,eight,acht,,huit,,eight,numeral,Numbers
+564,eighteen,achtzehn,,dix-huit,,eighteen,numeral,Numbers
+565,eighty,achtzig,,quatre-vingts,,eighty,numeral,Numbers
+566,than,als,,que,,than,conjunction,Grammar & Connectors
+567,most,am meisten,,le plus,,most,adverb,Grammar & Connectors
+568,different,anders,,différent,,different,adjective,Adjectives
+569,poor,arm,,pauvre,,poor,adjective,Adjectives
+570,on,auf,,sur,,on,preposition,Grammar & Connectors
+571,soon,bald,,bientôt,,soon,adverb,Time
+572,at,bei,,à,,at,preposition,Grammar & Connectors
+573,popular,beliebt,,populaire,,popular,adjective,Adjectives
+574,famous,berühmt,,célèbre,,famous,adjective,Adjectives
+575,busy,beschäftigt,,occupé,,busy,adjective,Adjectives
+576,better,besser,,meilleur,,better,adjective,Adjectives
+577,best,beste,,le meilleur,,best,adjective,Adjectives
+578,cheap,billig,,bon marché,,cheap,adjective,Adjectives
+579,blue,blau,,bleu,,blue,adjective,Adjectives
+580,brown,braun,,marron,,brown,adjective,Adjectives
+581,that,das,,ce,,that,pronoun,Grammar & Connectors
+582,your,dein,,ton/votre,,your,pronoun,Grammar & Connectors
+583,fat,dick,,gros,,fat,adjective,Adjectives
+584,this,dies,,ce/cet,,this,pronoun,Grammar & Connectors
+585,these,diese,,ces,,these,pronoun,Grammar & Connectors
+586,there,dort,,là,,there,adverb,Grammar & Connectors
+587,three,drei,,trois,,three,numeral,Numbers
+588,thirty,dreissig,,trente,,thirty,numeral,Numbers
+589,thirteen,dreizehn,,treize,,thirteen,numeral,Numbers
+590,you,du,,tu/vous,,you,pronoun,Grammar & Connectors
+591,dark,dunkel,,sombre,,dark,adjective,Adjectives
+592,through,durch,,à travers,,through,preposition,Grammar & Connectors
+593,one,eins,,un,,one,numeral,Numbers
+594,eleven,elf,,onze,,eleven,numeral,Numbers
+595,he,er,,il,,he,pronoun,Grammar & Connectors
+596,it,es,,il/elle,,it,pronoun,Grammar & Connectors
+597,lazy,faul,,paresseux,,lazy,adjective,Adjectives
+598,free,frei,,libre,,free,adjective,Adjectives
+599,friendly,freundlich,,aimable,,friendly,adjective,Adjectives
+600,fresh,frisch,,frais,,fresh,adjective,Adjectives
+601,early,früh,,tôt,,early,adjective,Time
+602,able,fähig,,capable,,able,adjective,Adjectives
+603,five,fünf,,cinq,,five,numeral,Numbers
+604,fifteen,fünfzehn,,quinze,,fifteen,numeral,Numbers
+605,fifty,fünfzig,,cinquante,,fifty,numeral,Numbers
+606,for,für,,pour,,for,preposition,Grammar & Connectors
+607,against,gegen,,contre,,against,preposition,Grammar & Connectors
+608,yellow,gelb,,jaune,,yellow,adjective,Adjectives
+609,yesterday,gestern,,hier,,yesterday,adverb,Time
+610,healthy,gesund,,en bonne santé,,healthy,adjective,Adjectives
+611,gold,golden,,doré,,gold,adjective,Adjectives
+612,gray,grau,,gris,,gray,adjective,Adjectives
+613,great,grossartig,,super,,great,adjective,Adjectives
+614,green,grün,,vert,,green,adjective,Adjectives
+615,hard,hart,,dur,,hard,adjective,Adjectives
+616,bright,hell,,brillant,,bright,adjective,Adjectives
+617,today,heute,,aujourd'hui,,today,adverb,Time
+618,here,hier,,ici,,here,adverb,Grammar & Connectors
+619,behind,hinter,,derrière,,behind,preposition,Grammar & Connectors
+620,high,hoch,,haut,,high,adjective,Adjectives
+621,hundred,hundert,,cent,,hundred,numeral,Numbers
+622,ugly,hässlich,,laid,,ugly,adjective,Adjectives
+623,I,ich,,je,,I,pronoun,Grammar & Connectors
+624,him,ihn,,lui,,him,pronoun,Grammar & Connectors
+625,their,ihr,,leur,,their,pronoun,Grammar & Connectors
+626,in,in,,dans,,in,preposition,Grammar & Connectors
+627,interesting,interessant,,intéressant,,interesting,adjective,Adjectives
+628,those,jene,,ceux,,those,pronoun,Grammar & Connectors
+629,now,jetzt,,maintenant,,now,adverb,Time
+630,young,jung,,jeune,,young,adjective,Adjectives
+631,sick,krank,,malade,,sick,adjective,Adjectives
+632,short,kurz,,court,,short,adjective,Adjectives
+633,long,lang,,long,,long,adjective,Adjectives
+634,slowly,langsam,,lentement,,slowly,adverb,Grammar & Connectors
+635,slow,langsam,,lent,,slow,adjective,Adjectives
+636,loud,laut,,bruyant,,loud,adjective,Adjectives
+637,empty,leer,,vide,,empty,adjective,Adjectives
+638,light,leicht,,léger,,light,adjective,Adjectives
+639,quiet,leise,,calme,,quiet,adjective,Adjectives
+640,purple,lila,,violet,,purple,adjective,Adjectives
+641,more,mehr,,plus,,more,adverb,Grammar & Connectors
+642,my,mein,,mon/ma,,my,pronoun,Grammar & Connectors
+643,me,mich,,moi,,me,pronoun,Grammar & Connectors
+644,with,mit,,avec,,with,preposition,Grammar & Connectors
+645,modern,modern,,moderne,,modern,adjective,Adjectives
+646,tomorrow,morgen,,demain,,tomorrow,adverb,Time
+647,tired,müde,,fatigué,,tired,adjective,Adjectives
+648,after,nach,,après,,after,preposition,Grammar & Connectors
+649,wet,nass,,mouillé,,wet,adjective,Adjectives
+650,nice,nett,,sympa,,nice,adjective,Adjectives
+651,nine,neun,,neuf,,nine,numeral,Numbers
+652,nineteen,neunzehn,,dix-neuf,,nineteen,numeral,Numbers
+653,ninety,neunzig,,quatre-vingt-dix,,ninety,numeral,Numbers
+654,still,noch,,encore,,still,adverb,Time
+655,although,obwohl,,bien que,,although,conjunction,Grammar & Connectors
+656,or,oder,,ou,,or,conjunction,Grammar & Connectors
+657,without,ohne,,sans,,without,preposition,Grammar & Connectors
+658,orange,orange,,orange,,orange,adjective,Adjectives
+659,rich,reich,,riche,,rich,adjective,Adjectives
+660,right,richtig,,correct,,right,adjective,Adjectives
+661,pink,rosa,,rose,,pink,adjective,Adjectives
+662,red,rot,,rouge,,red,adjective,Adjectives
+663,narrow,schmal,,étroit,,narrow,adjective,Adjectives
+664,fast,schnell,,vite,,fast,adverb,Adjectives
+665,quick,schnell,,rapide,,quick,adjective,Adjectives
+666,already,schon,,déjà,,already,adverb,Grammar & Connectors
+667,weak,schwach,,faible,,weak,adjective,Adjectives
+668,black,schwarz,,noir,,black,adjective,Adjectives
+669,heavy,schwer,,lourd,,heavy,adjective,Adjectives
+670,beautiful,schön,,beau,,beautiful,adjective,Adjectives
+671,six,sechs,,six,,six,numeral,Numbers
+672,sixteen,sechzehn,,seize,,sixteen,numeral,Numbers
+673,sixty,sechzig,,soixante,,sixty,numeral,Numbers
+674,very,sehr,,très,,very,adverb,Grammar & Connectors
+675,his,sein,,son,,his,pronoun,Grammar & Connectors
+676,safe,sicher,,sûr,,safe,adjective,Adjectives
+677,she,sie,,elle,,she,pronoun,Grammar & Connectors
+678,seven,sieben,,sept,,seven,numeral,Numbers
+679,seventeen,siebzehn,,dix-sept,,seventeen,numeral,Numbers
+680,seventy,siebzig,,soixante-dix,,seventy,numeral,Numbers
+681,silver,silbern,,argenté,,silver,adjective,Adjectives
+682,so,so,,donc,,so,conjunction,Grammar & Connectors
+683,late,spät,,en retard,,late,adjective,Time
+684,strong,stark,,fort,,strong,adjective,Adjectives
+685,thousand,tausend,,mille,,thousand,numeral,Numbers
+686,dead,tot,,mort,,dead,adjective,Adjectives
+687,dry,trocken,,sec,,dry,adjective,Adjectives
+688,turquoise,türkis,,turquoise,,turquoise,adjective,Adjectives
+689,and,und,,et,,and,conjunction,Grammar & Connectors
+690,us,uns,,nous,,us,pronoun,Grammar & Connectors
+691,our,unser,,notre,,our,pronoun,Grammar & Connectors
+692,under,unter,,sous,,under,preposition,Grammar & Connectors
+693,four,vier,,quatre,,four,numeral,Numbers
+694,fourteen,vierzehn,,quatorze,,fourteen,numeral,Numbers
+695,forty,vierzig,,quarante,,forty,numeral,Numbers
+696,full,voll,,plein,,full,adjective,Adjectives
+697,from,von,,de,,from,preposition,Grammar & Connectors
+698,before,vor,,avant,,before,preposition,Grammar & Connectors
+699,warm,warm,,chaud,,warm,adjective,Adjectives
+700,soft,weich,,doux,,soft,adjective,Adjectives
+701,because,weil,,parce que,,because,conjunction,Grammar & Connectors
+702,white,weiss,,blanc,,white,adjective,Adjectives
+703,less,weniger,,moins,,less,adverb,Grammar & Connectors
+704,if,wenn,,si,,if,conjunction,Grammar & Connectors
+705,important,wichtig,,important,,important,adjective,Adjectives
+706,again,wieder,,encore,,again,adverb,Time
+707,we,wir,,nous,,we,pronoun,Grammar & Connectors
+708,during,während,,pendant,,during,preposition,Grammar & Connectors
+709,while,während,,pendant que,,while,conjunction,Grammar & Connectors
+710,angry,wütend,,en colère,,angry,adjective,Adjectives
+711,ten,zehn,,dix,,ten,numeral,Numbers
+712,to,zu,,à,,to,preposition,Grammar & Connectors
+713,twenty,zwanzig,,vingt,,twenty,numeral,Numbers
+714,two,zwei,,deux,,two,numeral,Numbers
+715,between,zwischen,,entre,,between,preposition,Grammar & Connectors
+716,twelve,zwölf,,douze,,twelve,numeral,Numbers
+717,over,über,,au-dessus de,,over,preposition,Grammar & Connectors
+718,everywhere,überall,,partout,,everywhere,adverb,Grammar & Connectors

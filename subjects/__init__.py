@@ -1,4 +1,4 @@
-from subjects.language.GermanEnglish import Language
+from subjects.language.Language_selection import Language
 from subjects.math.mathematics import Math
 from models.subject import Subject
 
