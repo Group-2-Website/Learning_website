@@ -25,6 +25,7 @@ class Operation(Base):
     explanation = Column(String)
     expression = Column(String)
     answer = Column(String)
+    image = Column(String)
 engine = create_engine("sqlite:///learning.db")
 
 
@@ -42,7 +43,7 @@ def import_dictionary_words():
             word = DictionaryWord(
                 english=row["english"],
                 german=row["german"],
-                article=row["article"],
+                article=row["article_german"],
                 meanings=row["meanings"],
                 word_type=row["type"]
             )
@@ -66,6 +67,7 @@ def import_operations():
          explanation=row["explanation"],
          expression=row["expression"],
          answer=row["answer"],
+         image=row["image"]
          )
 
          session.add(operation)

@@ -85,6 +85,20 @@ def build_paint_page(subject: Subject, topic: Topic) -> None:
                         'background:transparent;touch-action:none;cursor:crosshair;z-index:2;">'
                         '</canvas>'
                         '</div>'
+                        '<div style="text-align:center;padding:8px 10px;">'
+                        f'<button type="button" class="paint-hint-btn" data-hint-index="{i}" '
+                        'style="padding:8px 22px;border-radius:18px;border:2.5px solid #60435F;'
+                        'background:linear-gradient(135deg,#ede9fe,#fce7f3);color:#60435F;'
+                        'font-weight:800;font-size:16px;cursor:pointer;'
+                        'transition:transform 0.15s,box-shadow 0.15s;"'
+                        ' onmouseover="this.style.transform=\'scale(1.06)\';this.style.boxShadow=\'0 4px 12px rgba(96,67,95,0.3)\'"'
+                        ' onmouseout="this.style.transform=\'scale(1)\';this.style.boxShadow=\'none\'"'
+                        '><img src="/images/icons/machine-learning.svg" style="width:22px;height:22px;vertical-align:middle;margin-right:6px;">Hint</button>'
+                        '</div>'
+                        f'<div class="paint-hint-area" data-hint-overlay="{i}" '
+                        'style="display:none;justify-content:center;align-items:center;'
+                        'padding:12px 0 16px 0;">'
+                        '</div>'
                         '</div>'
                     )
                 paint_body_html()
@@ -273,15 +287,51 @@ def paint_body_html() -> None:
           mountVisualTargets();
           bindCanvases();
           bindPaletteDrag();
+
+          const mountHints = function () {
+            const source = document.getElementById('paint-visual-source');
+            if (!source) return;
+            const pages = source.querySelectorAll('.paint-page');
+            const overlays = document.querySelectorAll('[data-hint-overlay]');
+
+            overlays.forEach(function (overlay, index) {
+              if (overlay.dataset.hintBound === 'true') return;
+              const page = pages[index];
+              if (!page) return;
+              const hint = page.querySelector('.paint-hint');
+              if (!hint) return;
+              overlay.dataset.hintBound = 'true';
+              const cloned = hint.cloneNode(true);
+              cloned.style.display = 'block';
+              overlay.appendChild(cloned);
+            });
+          };
+
+          if (!window.__kidslearnHintBound) {
+            window.__kidslearnHintBound = true;
+            document.addEventListener('click', function (event) {
+              const btn = event.target.closest('.paint-hint-btn');
+              if (!btn) return;
+              const idx = btn.dataset.hintIndex;
+              const overlay = document.querySelector('[data-hint-overlay="' + idx + '"]');
+              if (!overlay) return;
+              const isVisible = overlay.style.display === 'flex';
+              overlay.style.display = isVisible ? 'none' : 'flex';
+            });
+          }
+
+          mountHints();
           requestAnimationFrame(function () {
             mountVisualTargets();
             bindCanvases();
             bindPaletteDrag();
+            mountHints();
           });
           setTimeout(function () {
             mountVisualTargets();
             bindCanvases();
             bindPaletteDrag();
+            mountHints();
           }, 100);
         })();
         </script>

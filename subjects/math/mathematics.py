@@ -1,9 +1,9 @@
 from __future__ import annotations
+from fractions import Fraction
 import random
 import math
 import sqlite3
 import os
-
 
 from models.subject import Subject
 from models.topic import Topic
@@ -38,7 +38,7 @@ def _load_steps_from_db(topic_name: str | None = None) -> list[dict[str, str]]:
                     continue
 
                 base_query = (
-                    "SELECT content_type, topic, item_type, title, explanation, expression, answer "
+                    "SELECT content_type, topic, item_type, title, explanation, expression, answer, image "
                     f"FROM {table_name}"
                 )
 
@@ -158,14 +158,8 @@ class Fractions(Topic):
     def default_quiz_filters(self) -> dict[str, str]:
         return {"operation": "all", "difficulty": "mixed", "number of questions": "10"}
 
-    def set_operation_filter(self, mode: str) -> None:
-        # Backward-compatible helper used by older UI code.
-        filters = self.default_quiz_filters()
-        filters["operation"] = mode
-        self._legacy_filters = self.sanitize_quiz_filters(filters)
-
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
-        effective_filters = self.sanitize_quiz_filters(filters or getattr(self, "_legacy_filters", {}))
+        effective_filters = self.sanitize_quiz_filters(filters or {})
 
         operation_groups = {
             "all": ["+", "-", "×", "÷"],
@@ -350,7 +344,6 @@ class Fractions(Topic):
 
     def check_answer(self, user: str, correct: str) -> tuple[bool, str]:
         """Accept any numerically equivalent form: 2/4, 1/2, 0.5, 4/8 etc."""
-        from fractions import Fraction
 
         def _parse(text: str):
             text = text.strip().replace(" ", "")
@@ -396,8 +389,10 @@ class Fractions(Topic):
             )
 
         targets = [(1, 2), (2, 3), (2, 7)]
+        hint_colors = ["#7EC88A", "#FFAD05", "#6BBFFF"]
         pages = []
         for idx, (num, den) in enumerate(targets, start=1):
+            hint_svg = _fraction_svg(num, den, size=180, color=hint_colors[(idx - 1) % len(hint_colors)])
             pages.append(
                 f'<div class="paint-page" data-page="{idx}" '
                 f'style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0;">'
@@ -405,6 +400,7 @@ class Fractions(Topic):
                 f'Paint {num}/{den}'
                 f'</div>'
                 f'<div data-target-num="{num}" data-target-den="{den}">{_blank_paint_circle_svg(den)}</div>'
+                f'<div class="paint-hint" style="display:none;">{hint_svg}</div>'
                 f'</div>'
             )
         return (
@@ -446,13 +442,8 @@ class Operation(Topic):
     def default_quiz_filters(self) -> dict[str, str]:
         return {"operation": "all", "difficulty": "mixed", "number of questions": "10"}
 
-    def set_operation_filter(self, mode: str) -> None:
-        filters = self.default_quiz_filters()
-        filters["operation"] = mode
-        self._legacy_filters = self.sanitize_quiz_filters(filters)
-
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
-        effective_filters = self.sanitize_quiz_filters(filters or getattr(self, "_legacy_filters", {}))
+        effective_filters = self.sanitize_quiz_filters(filters or {})
 
         operation_groups = {
             "all": ["+", "-", "×", "÷"],
@@ -498,9 +489,21 @@ class Operation(Topic):
             question = f"{a} ÷ {b} = ?"
         return question, str(num_result)
 
+    def check_answer(self, user: str, correct: str) -> tuple[bool, str]:
+        user = user.strip()
+
+        if not user:
+            return False, "Please enter an answer."
+        if not user.lstrip("-").isdigit():
+            return False, "Only integer numbers allowed!"
+
+        return int(user) == int(correct), ""
+
+
     def learning_steps(self) -> list[tuple[str, str, str, str]]:
         steps = _load_steps_from_db("operations_2")
         if steps:
+            self._step_images = [row.get("image") or "" for row in steps]
             return [
                 (
                     row.get("title") or "",
@@ -510,9 +513,21 @@ class Operation(Topic):
                 )
                 for row in steps
             ]
+        self._step_images = []
         return [
             ("", "", "", "")
         ]
+
+    def step_visual_html(self, step_index: int) -> str:
+        images = getattr(self, "_step_images", [])
+        if step_index < len(images) and images[step_index]:
+            src = f"/images/icons/{images[step_index]}"
+            return (
+                f'<div style="display:flex;justify-content:center;margin:12px 0;">'
+                f'<img src="{src}" alt="" style="width:64px;height:64px;" />'
+                f'</div>'
+            )
+        return ""
 
     def paint_visual_html(self) -> str:
         targets = ["/images/Operation_painting1.png", "/images/Operation_painting1.png", "/images/Operation_painting2.png"]

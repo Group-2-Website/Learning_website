@@ -60,7 +60,7 @@ def build_quiz_filter_page(subject: Subject, topic: Topic) -> None:
                     value=selected[filter_name],
                     label=pretty_name,
                     on_change=lambda e, fn=filter_name: _on_change(fn, e.value),
-                ).props("outlined rounded").style(
+                ).props("outlined rounded color=purple").style(
                     "width:100%;font-size:16px;margin-top:12px;"
                 )
                 if filter_name == "row":
