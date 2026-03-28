@@ -36,7 +36,7 @@ def build_quiz_filter_page(subject: Subject, topic: Topic) -> None:
         )
 
         with ui.element("div").classes("mode-card").style(
-            "max-width:560px;margin:0 auto;"
+            "width:800px;margin:0 auto;"
         ):
             conditional_selects: dict[str, ui.select] = {}
 
@@ -61,7 +61,7 @@ def build_quiz_filter_page(subject: Subject, topic: Topic) -> None:
                     label=pretty_name,
                     on_change=lambda e, fn=filter_name: _on_change(fn, e.value),
                 ).props("outlined rounded color=purple").style(
-                    "width:100%;font-size:16px;margin-top:12px;"
+                    "width:90%;font-size:16px;margin-top:12px;"
                 )
                 if filter_name == "row":
                     conditional_selects["row"] = sel

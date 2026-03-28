@@ -15,15 +15,17 @@ def build_quiz_results_page(subject: Subject, topic: Topic, score: int, attempts
     quiz_dest = f"/{subject.url_slug}/{topic.name.lower()}/quiz"
 
     pct = round((score / attempts) * 100) if attempts > 0 else 0
+    stars = round(pct / 20 * 2) / 2  # 0–5 stars in 0.5 steps
+
 
     if pct == 100:
-        msg, color = "Perfect score! Amazing!", "#22c55e"
+        msg, color = "Perfect score! Amazing!", "#bde0c9"
     elif pct >= 70:
-        msg, color = "Great job! Keep it up!", "#f97316"
+        msg, color = "Great job! Keep it up!", "#b9bd60"
     elif pct >= 40:
-        msg, color = "Good effort! Keep practising.", "#60a5fa"
+        msg, color = "Good effort! Keep practising.", "#f28a7a"
     else:
-        msg, color = "Keep going — practice makes perfect!", "#ec4899"
+        msg, color = "Keep going — practice makes perfect!", "#fc4900"
 
     with ui.element("div").classes("page-content1"):
         _build_page_header(back_dest, f"Back to {topic.name}", f" Quiz Results", "")
@@ -31,10 +33,25 @@ def build_quiz_results_page(subject: Subject, topic: Topic, score: int, attempts
 
 
         with ui.element("div").classes("mode-card").style(
-            "max-width:520px;margin:40px auto;gap:18px;align-items:center;"
+            "width:800px;margin:40px auto;gap:18px;align-items:center;"
         ):
+            with ui.column().classes("items-center").style("margin-top:20px;"):
+                ui.label(f"YOU WON {stars} STAR(S)").classes("stars-title")
+
+                with ui.element("div").classes("stars-banner"):
+                    full = int(stars)
+                    has_half = (stars - full) >= 0.5
+                    for i in range(5):
+                        if i < full:
+                            star_class = "star filled"
+                        elif i == full and has_half:
+                            star_class = "star half"
+                        else:
+                            star_class = "star"
+                        ui.element("div").classes(star_class).style(f"animation-delay:{i * 0.1}s")
+
             ui.label(msg).style(
-                f"font-size:24px;font-weight:800;color:#f97316;text-align:center;"
+                f"font-size:24px;font-weight:800;color:{color};text-align:center;"
             )
             ui.label(f"Your score: {score} / {attempts}").style(
                 "font-size:36px;font-weight:800;color:#60435F;"
@@ -43,16 +60,16 @@ def build_quiz_results_page(subject: Subject, topic: Topic, score: int, attempts
                 f"font-size:48px;font-weight:900;color:#60435F;"
             )
 
-            with ui.row().style("gap:16px;flex-wrap:wrap;justify-content:center;margin-top:12px;"):
+            with ui.row().style("gap:18px;flex-wrap:wrap;justify-content:center;margin-top:8px;"):
                 ui.button("🔄  Try Again", on_click=lambda: ui.navigate.to(quiz_dest)) \
-                    .props("rounded") \
+                    .props('rounded flat color=""') \
                     .style(
-                        "background:linear-gradient(135deg,#60435F,#D67AB5);"
-                        "color:white;font-weight:700;font-size:15px;"
-                    )
-                ui.button("Back to Topic", on_click=lambda: ui.navigate.to(back_dest)) \
-                    .props("rounded") \
+                    "background:#bb93c4 !important;"
+                    "color:white !important;font-weight:700;font-size:15px;"
+                )
+                ui.button("   Back to Topic", on_click=lambda: ui.navigate.to(back_dest)) \
+                    .props('rounded flat color=""') \
                     .classes("btn-svg-icon") \
                     .style(
-                        "--icon: url('/images/icons/daycare.svg'); background:#f3e8ff;color:#60435F;font-weight:700;font-size:15px;"
-                    )
+                    "--icon: url('/images/icons/home.svg'); background:#bb93c4 !important;color:white !important;font-weight:700;font-size:15px;justify-content:center;"
+                )

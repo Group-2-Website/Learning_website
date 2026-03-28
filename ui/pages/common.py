@@ -163,17 +163,17 @@ def add_global_css():
       .page-title {
         font-size: 38px;
         font-weight: 1000;
-        color: #60435F;
-        margin-bottom: 8px;
+        color: #4A2D5F;
+        margin-bottom: 16px;
         text-shadow: 2px 2px 0px #c7c5c1;
       }
 
       .page-subtitle {
-        color: #eb4034;
+        color: #2F855A;
         font-size: 26px;
         font-weight: 600;
         margin-bottom: 36px;
-        text-shadow: 2px 2px 0px #c7c5c1;
+        text-shadow: 0 2px 6px rgba(0,0,0,0.2);
       }
 
       /* ── Mode cards (Quiz / Learning) ── */
@@ -181,7 +181,7 @@ def add_global_css():
         display: flex;
         gap: 28px;
         flex-wrap: wrap;
-        margin-top: 32px;
+        margin-top: 46px;
       }
 
       .mode-card {
@@ -196,10 +196,23 @@ def add_global_css():
         flex-direction: column;
         align-items: center;
         gap: 14px;
+        position: relative;
         cursor: pointer;
         box-shadow: 0 4px 14px rgba(96,67,95,0.10);
         transition: transform .18s ease, box-shadow .18s ease;
       }
+      
+      .mode-card::after {
+          content: "";
+          position: absolute;
+          top: -60px;
+          right: -70px;
+          width: 160px;
+          height: 160px;
+          background: url("/images/cute-star.png") no-repeat center;
+          background-size: contain;
+          pointer-events: none; /
+        }
 
       .mode-card:hover {
         transform: translateY(-4px);
@@ -257,7 +270,7 @@ def add_global_css():
         display: inline-flex;
         align-items: center;
         gap: 1px;
-        color: #D67AB5;
+        color: #C084FC;
         font-weight: 700;
         cursor: pointer;
         font-size: 20px;
@@ -278,6 +291,58 @@ def add_global_css():
          background-position: center;
          background-size: contain;
          }
+         
+    .stars-title {
+      font-size: 34px;
+      font-weight: 900;
+      color: #4b1d4d;
+      margin-bottom: 10px;
+    }
+
+    /* Banner */
+    .stars-banner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      
+      background: linear-gradient(180deg, #d1bad9, #b08ebf);
+      padding: 20px 40px;
+      border-radius: 60px;
+      box-shadow: 0 8px 0 #8d60a1;
+    }
+
+    /* Star base */
+    .star {
+      width: 40px;
+      height: 40px;
+      background: #d1d5db;
+      clip-path: polygon(
+        50% 0%, 61% 35%, 98% 35%,
+        68% 57%, 79% 91%, 50% 70%,
+        21% 91%, 32% 57%, 2% 35%, 39% 35%
+      );
+    }
+    
+    /* Filled star */
+    .star.filled {
+      background: #facc15;
+      box-shadow: 0 0 10px #facc15;
+      animation: pop 0.4s ease;
+    }
+
+    /* Half-filled star */
+    .star.half {
+      background: linear-gradient(90deg, #facc15 50%, #d1d5db 50%);
+      animation: pop 0.4s ease;
+    }
+    
+    /* Animation */
+    @keyframes pop {
+      0% { transform: scale(0.5); }
+      70% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
     </style>
     """)
 

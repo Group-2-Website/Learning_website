@@ -21,18 +21,19 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
         steps = topic.learning_steps()
         if steps:
             with ui.element("div").style(
-                "display:grid;grid-template-columns:repeat(2,1fr);gap:16px;"
+                "display:grid;grid-template-columns:repeat(2,1fr);gap:56px;"
             ):
-                for i, (title, explanation, expression, answer) in enumerate(steps, start=1):
+                for i, (title,image, explanation, expression, answer) in enumerate(steps, start=1):
                     visual = topic.step_visual_html(i - 1)
-                    with ui.element("div").classes("mode-card").style("gap:8px;"):
-                        if visual:
-                            ui.html(visual)
+                    with ui.element("div").classes("mode-card").style("gap:26px;"):
                         ui.html(
                             f'<strong>{title}</strong>'
                         )
+                        if visual:
+                            ui.html(visual)
+
                         ui.label(explanation).style(
-                            "margin-top:4px;color:#555;font-size:18px;line-height:1.6;text-align:center;"
+                            "margin-top:.5px;color:#555;font-size:18px;line-height:1.6;text-align:center;"
                         )
                         if expression:
                             ui.label(f" {expression}").style(

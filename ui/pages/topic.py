@@ -38,6 +38,6 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
                 with ui.element("div").classes("mode-card").on(
                     "click", lambda d=draw_dest: ui.navigate.to(d)
                 ):
-                    ui.html('<img src="/images/icons/colored-pencils.svg" style="width:80px;height:80px;object-fit:contain;">')
+                    ui.html('<img src="/images/icons/paint-palette.svg" style="width:80px;height:80px;object-fit:contain;">')
                     ui.label("Painting").classes("mode-title")
                     ui.label("Paint your understanding!").classes("mode-desc")

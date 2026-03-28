@@ -6,7 +6,7 @@ from ui.pages.common import _apply_bg
 
 def build_home_page() -> None:
     """Render the home / subject-selection page."""
-    _apply_bg('/images/Home_page.png')
+    _apply_bg('/images/Home-p.png')
     from subjects import SUBJECTS
     with (ui.element("div").classes("page-content1")):
         ui.label("Choose a subject to start your learning adventure.").classes("text-body1")
