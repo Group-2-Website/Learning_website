@@ -2,64 +2,60 @@ from __future__ import annotations
 from fractions import Fraction
 import random
 import math
-import sqlite3
-import os
 
+from sqlalchemy import func, inspect
+from Database.Learning import Session, Operation as DBOperation, Fraction as DBFraction
 from models.subject import Subject
 from models.topic import Topic
 
+_TABLE_MODEL_MAP = {
+    "operations": DBOperation,
+    "fractions": DBFraction,
+}
+_TABLE_CANDIDATES = ("operations", "fractions")
 
-def _load_steps_from_db(topic_name: str | None = None) -> list[dict[str, str]]:
-    """Load learning steps from the project SQLite database."""
-    project_root = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    candidate_db_paths = [
-        os.path.join(project_root, "learning.db"),
-        os.path.join(project_root, "Database", "learning.db"),
-    ]
 
-    # Prefer DB files that exist; still keep candidates for clearer debug output.
-    db_paths = [path for path in candidate_db_paths if os.path.exists(path)] or candidate_db_paths
+def _load_steps_from_db(
+    topic_name: str | None = None,
+    table: str | None = None,
+) -> list[dict[str, str]]:
+    """Load learning steps from the database via SQLAlchemy.
+     If topic_name is given, filter steps by topic. If table is given, query that specific table;
+     otherwise auto-detect which table to use based on existing tables and topic name. """
+    session = Session()
+    try:
+        # Resolve which model/table to query
+        model = None
+        if table and table in _TABLE_MODEL_MAP:
+            model = _TABLE_MODEL_MAP[table]
+        else:
+            engine = session.get_bind()
+            inspector = inspect(engine)
+            existing = set(inspector.get_table_names())
+            for candidate in _TABLE_CANDIDATES:
+                if candidate in existing and candidate in _TABLE_MODEL_MAP:
+                    model = _TABLE_MODEL_MAP[candidate]
+                    break
 
-    table_candidates = ("learning_steps", "operations")
+        if model is None:
+            return []
 
-    def _table_exists(conn: sqlite3.Connection, table_name: str) -> bool:
-        row = conn.execute(
-            "SELECT 1 FROM sqlite_master WHERE type='table' AND name = ? LIMIT 1",
-            (table_name,),
-        ).fetchone()
-        return row is not None
+        query = session.query(model)
+        if topic_name:
+            query = query.filter(func.lower(model.topic) == topic_name.lower())
+        rows = query.order_by(model.id).all()
 
-    for db_path in db_paths:
-        try:
-            with sqlite3.connect(db_path) as conn:
-                conn.row_factory = sqlite3.Row
-                table_name = next((t for t in table_candidates if _table_exists(conn, t)), None)
-                if not table_name:
-                    continue
+        # Fallback: if topic filter yielded nothing, return all rows
+        if not rows and topic_name:
+            rows = session.query(model).order_by(model.id).all()
 
-                base_query = (
-                    "SELECT content_type, topic, item_type, title, explanation, expression, answer, image "
-                    f"FROM {table_name}"
-                )
-
-                rows = []
-                if topic_name:
-                    rows = conn.execute(
-                        base_query + " WHERE lower(topic) = lower(?) ORDER BY rowid",
-                        (topic_name,),
-                    ).fetchall()
-
-                # Some datasets store sub-topics (addition, division, ...). If a strict
-                # topic filter is empty, return the table's ordered rows instead.
-                if not rows:
-                    rows = conn.execute(base_query + " ORDER BY rowid").fetchall()
-
-                return [dict(row) for row in rows]
-        except Exception as e:
-            print(f"[DEBUG] DB error ({db_path}): {e}")
-
-    print(f"[DEBUG] DB error: no supported table found in {db_paths}")
-    return []
+        columns = ["content_type", "topic", "item_type", "title", "explanation", "expression", "answer", "image"]
+        return [{col: getattr(row, col, "") or "" for col in columns} for row in rows]
+    except Exception as e:
+        print(f"[DEBUG] DB error: {e}")
+        return []
+    finally:
+        session.close()
 
 
 def _pie_slice_paths(
@@ -255,40 +251,22 @@ class Fractions(Topic):
 
     # learning steps
 
-    def learning_steps(self) -> list[tuple[str, str, str, str]]:
-        return [
-            # 3 intro cards
-            ("What is a fraction?", "A fraction shows part of a whole. The bottom number (denominator) is how many equal pieces.", "The top number (numerator) is how many pieces you have.", ""),
-            ("Same denominator rule", "To add or subtract fractions, the denominators must be the same.", "Keep the denominator, and add or subtract only the numerators!", ""),
-            ("Multiply & Divide rule", "To multiply fractions, multiply top × top and bottom × bottom.", "To divide, flip the second fraction and then multiply.", ""),
-
-            # 10 addition / subtraction examples
-            ("Adding and subtracting fractions", "It is easy when they have the same denominator.", "", ""),
-            ("➕ Example 1", "1/4 + 1/4 = 2/4 = 1/2 — same denominator, just add the tops.", "1/4 + 1/4", "1/2"),
-            ("➕ Example 2", "2/6 + 1/6 = 3/6 = 1/2 — three sixths is the same as one half!", "2/6 + 1/6", "1/2"),
-            ("➕ Example 3", "3/8 + 3/8 = 6/8 = 3/4 — always simplify by dividing by the common factor.", "3/8 + 3/8", "3/4"),
-            ("➕ Example 4", "1/3 + 1/3 = 2/3 — two thirds of a whole.", "1/3 + 1/3", "2/3"),
-            ("➕ Example 5", "4/10 + 3/10 = 7/10 — the denominator stays 10.", "4/10 + 3/10", "7/10"),
-            ("➖ Example 6", "3/4 − 1/4 = 2/4 = 1/2 — subtract the tops, keep the bottom.", "3/4 - 1/4", "1/2"),
-            ("➖ Example 7", "5/6 − 2/6 = 3/6 = 1/2 — three sixths simplifies to one half.", "5/6 - 2/6", "1/2"),
-            ("➖ Example 8", "7/8 − 3/8 = 4/8 = 1/2 — divide both by 4 to simplify.", "7/8 - 3/8", "1/2"),
-            ("➖ Example 9", "4/5 − 1/5 = 3/5 — three fifths remaining.", "4/5 - 1/5", "3/5"),
-            ("➖ Example 10", "9/10 − 4/10 = 5/10 = 1/2 — five tenths is the same as one half.", "9/10 - 4/10", "1/2"),
-
-            # multiplication / division examples
-            ("✖️ Multiplying fractions", "Find a fraction of a fraction: multiply top × top and bottom × bottom.", "", ""),
-            ("✖️ Example 1", "1/2 × 1/2 = 1/4 — multiply tops: 1×1=1; bottoms: 2×2=4.", "1/2 * 1/2", "1/4"),
-            ("✖️ Example 2", "2/3 × 3/4 = 6/12 = 1/2 — simplify by dividing top and bottom by 6.", "2/3 * 3/4", "1/2"),
-            ("✖️ Example 3", "3/4 × 2/3 = 6/12 = 1/2 — same as above, order does not matter!", "3/4 * 2/3", "1/2"),
-            ("✖️ Example 4", "1/3 × 1/3 = 1/9 — a third of a third is a ninth.", "1/3 * 1/3", "1/9"),
-            ("✖️ Example 5", "2/5 × 5/6 = 10/30 = 1/3 — simplify 10 and 30 by dividing by 10.", "2/5 * 5/6", "1/3"),
-            ("➗ Dividing fractions", "Ask how many of the second fraction fit into the first one, then flip and multiply.", "", ""),
-            ("➗ Example 6", "1/2 ÷ 1/4 = 1/2 × 4/1 = 4/2 = 2 — flip the second fraction then multiply.", "1/2 / 1/4", "2"),
-            ("➗ Example 7", "3/4 ÷ 3/8 = 3/4 × 8/3 = 24/12 = 2 — the answer is 2 whole circles!", "3/4 / 3/8", "2"),
-            ("➗ Example 8", "2/3 ÷ 1/3 = 2/3 × 3/1 = 6/3 = 2 — how many thirds fit in two thirds? Two!", "2/3 / 1/3", "2"),
-            ("➗ Example 9", "5/6 ÷ 5/12 = 5/6 × 12/5 = 60/30 = 2 — flip and multiply.", "5/6 / 5/12", "2"),
-            ("➗ Example 10", "1/4 ÷ 1/8 = 1/4 × 8/1 = 8/4 = 2 — two eighths fit in every quarter.", "1/4 / 1/8", "2"),
-        ]
+    def learning_steps(self) -> list[tuple[str, str, str, str, str]]:
+        rows = _load_steps_from_db("fractions", table="fractions")
+        if rows:
+            self._step_images = [r.get("image") or "" for r in rows]
+            return [
+                (
+                    r.get("title") or "",
+                    r.get("image") or "",
+                    r.get("explanation") or "",
+                    r.get("expression") or "",
+                    r.get("answer") or "",
+                )
+                for r in rows
+            ]
+        self._step_images = []
+        return []
 
     def step_visual_html(self, step_index: int) -> str:
         """Return a visual for each learning card."""
@@ -415,7 +393,7 @@ class Operation(Topic):
     name = "Operations"
     has_painting = True
     def page_background_image(self) -> str:
-        return "/images/Math_back.png"
+        return "/images/operation.jpg"
 
     def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
         return {
@@ -500,13 +478,14 @@ class Operation(Topic):
         return int(user) == int(correct), ""
 
 
-    def learning_steps(self) -> list[tuple[str, str, str, str]]:
-        steps = _load_steps_from_db("operations_2")
+    def learning_steps(self) -> list[tuple[str, str,str,str, str]]:
+        steps = _load_steps_from_db(table="operations")
         if steps:
             self._step_images = [row.get("image") or "" for row in steps]
             return [
                 (
                     row.get("title") or "",
+                    row.get("image") or "",
                     row.get("explanation") or "",
                     row.get("expression") or "",
                     row.get("answer") or ""
@@ -515,19 +494,10 @@ class Operation(Topic):
             ]
         self._step_images = []
         return [
-            ("", "", "", "")
+            ("", "","" ,"", "")
         ]
 
-    def step_visual_html(self, step_index: int) -> str:
-        images = getattr(self, "_step_images", [])
-        if step_index < len(images) and images[step_index]:
-            src = f"/images/icons/{images[step_index]}"
-            return (
-                f'<div style="display:flex;justify-content:center;margin:12px 0;">'
-                f'<img src="{src}" alt="" style="width:64px;height:64px;" />'
-                f'</div>'
-            )
-        return ""
+
 
     def paint_visual_html(self) -> str:
         targets = ["/images/Operation_painting1.png", "/images/Operation_painting1.png", "/images/Operation_painting2.png"]

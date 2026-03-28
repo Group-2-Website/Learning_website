@@ -1,9 +1,9 @@
 content_type,topic,item_type,title,explanation,expression,answer,image
 theory,intro,definition,What is an integer?,An integer is a whole number. It can be positive like 5 or negative like -5. Zero is also an integer.,,,calculator.svg
-theory,intro,rule,Positive and negative numbers,Positive numbers are greater than zero. Negative numbers are less than zero.,,
+theory,intro,rule,Positive and negative numbers,Positive numbers are greater than zero. Negative numbers are less than zero.,,,Line1.jpeg
 theory,intro,rule,Number line rule,Numbers to the right on the number line are bigger. Numbers to the left are smaller.,,
 example,addition,example,Add integers,Move right for positive numbers and left for negative numbers.,,
-example,addition,practice,Example 1,Start at 2 and move 3 steps right.,2 + 3,5
+example,addition,practice,Example 1,Start at 2 and move 3 steps right.,2 + 3,5,Example1.png
 example,addition,practice,Example 2,Adding a positive number increases the value.,4 + 1,5
 example,addition,practice,Example 3,Keep moving right on the number line.,6 + 2,8
 example,addition,practice,Example 4,Adding a negative moves left.,3 + (-1),2

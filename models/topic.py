@@ -31,7 +31,7 @@ class Topic:
             cleaned[filter_name] = value if value in valid_values else fallback
         return cleaned
 
-    def learning_steps(self) -> list[tuple[str, str, str, str]]:
+    def learning_steps(self) -> list[tuple[str, str, str,str, str]]:
         """Return a list of (title, explanation) tuples."""
         return []
 
@@ -45,6 +45,14 @@ class Topic:
 
     def step_visual_html(self, step_index: int) -> str:
         """Optional: return inline HTML/SVG shown next to each learning step."""
+        images = getattr(self, "_step_images", [])
+        if step_index < len(images) and images[step_index]:
+            src = f"/images/icons/{images[step_index]}"
+            return (
+                f'<div style="display:flex;justify-content:center;margin:12px 0;">'
+                f'<img src="{src}" alt="" style="max-width:500px;max-height:100px;" />'
+                f'</div>'
+            )
         return ""
 
     def question_visual_html(self, question: str) -> str:
