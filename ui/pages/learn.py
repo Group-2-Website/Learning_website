@@ -18,6 +18,8 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
             f"Learn how to deal with {topic.name}", ""
         )
 
+        ui.html('<div class="learn-overlay" id="learn-overlay"></div>')
+
         steps = topic.learning_steps()
         if steps:
             with ui.element("div").style(
@@ -43,6 +45,35 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
                             ui.label(f"Answer: {answer}").style(
                                 "margin-top:2px;color:#1a7f37;font-size:15px;line-height:1.4;text-align:center;"
                             )
+
+        ui.add_body_html("""
+        <script>
+        (function(){
+          const overlay = document.getElementById('learn-overlay');
+          function closeExpanded(){
+            document.querySelectorAll('.mode-card.expanded').forEach(function(c){
+              c.classList.remove('expanded');
+              var btn=c.querySelector('.learn-close-btn'); if(btn) btn.remove();
+            });
+            overlay.classList.remove('show');
+          }
+          document.addEventListener('click', function(e){
+            if(e.target.closest('.learn-close-btn')){ closeExpanded(); return; }
+            var card = e.target.closest('.mode-card');
+            if(card && !card.classList.contains('expanded')){
+              card.style.position='relative';
+              card.classList.add('expanded');
+              var btn=document.createElement('button');
+              btn.className='learn-close-btn'; btn.innerHTML='&times;'; btn.title='Close';
+              card.prepend(btn);
+              overlay.classList.add('show');
+              return;
+            }
+            if(overlay.classList.contains('show')) closeExpanded();
+          });
+        })();
+        </script>
+        """)
 
         ui.button("Ready? Take the Quiz →", on_click=lambda d=quiz_dest: ui.navigate.to(d)) \
             .props("rounded") \

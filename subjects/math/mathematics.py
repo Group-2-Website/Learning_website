@@ -497,18 +497,67 @@ class Operation(Topic):
             ("", "","" ,"", "")
         ]
 
+    def step_visual_html(self, step_index: int) -> str:
+        base = super().step_visual_html(step_index)
+
+        def group(rows, cols):
+            return "".join([
+                f'<div style="display:flex;gap:6px;">{"🍎" * cols}</div>'
+                for _ in range(rows)
+            ])
+
+        def people(p, a):
+            return "".join([
+                f'<div style="text-align:center;">●<br>{"🍎" * a}</div>'
+                for _ in range(p)
+            ])
+        if step_index == 15:
+            return base + f'''
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                {group(2, 3)}
+            </div>
+            '''
+        if step_index == 16:
+            return base + f'''
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                {group(2, 4)}
+            </div>
+            '''
+        if step_index == 18:
+            return base + f'''
+            <div style="display:flex;justify-content:center;gap:40px;">
+                {people(2, 3)}
+            </div>
+            '''
+        if step_index == 19:
+            return base + f'''
+            <div style="display:flex;justify-content:center;gap:30px;">
+                {people(4, 2)}
+            </div>
+            '''
+
+        return base
 
 
     def paint_visual_html(self) -> str:
-        targets = ["/images/Operation_painting1.png", "/images/Operation_painting1.png", "/images/Operation_painting2.png"]
+        targets = ["", "/images/Operation_painting2.png", ""]
+        hints = ["", "/images/math-sol.png", ""]
         pages = []
         for idx, image_path in enumerate(targets, start=1):
+            hint_html = ""
+            if hints[idx - 1]:
+                hint_html = (
+                    f'<div class="paint-hint" style="display:none;">'
+                    f'<img src="{hints[idx - 1]}" alt="hint {idx}" style="max-width:400px;height:auto;" />'
+                    f'</div>'
+                )
             pages.append(
                 f'<div class="paint-page" data-page="{idx}" '
                 f'style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0;">'
                 f'<div style="font-size:20px;font-weight:800;color:#60435F;">'
                 f'</div>'
                 f'<img src="{image_path}" alt="operation {idx}" style="max-width:220px;height:auto;" />'
+                f'{hint_html}'
                 f'</div>'
             )
         return (

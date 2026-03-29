@@ -38,19 +38,25 @@ def build_paint_page(subject: Subject, topic: Topic) -> None:
                 )
                 with ui.element("div").style("display:flex;flex-direction:column;gap:10px;"):
                     palette_colors = [
-                        ("#34303b", True), # (color, selected)
-                        ("#4361ee", False),
-                        ("#6BBFFF", False),
-                        ("#38b031", False),
-                        ("#7EC88A", False),
-                        ("#31b09f", False),
-                        ("#f72585", False),
-                        ("#D67AB1", False),
-                        ("#FF8C69", False),
-                        ("#f4a261", False),
-                        ("#FFAD05", False),
-                        ("#fff", False),
-
+                        ("#2F2A3A", True),  # Dark outline
+                        # Blues
+                        ("#4F7BFF", False),  # Primary blue
+                        ("#7ED3FF", False),  # Light sky blue
+                        # Greens (shapes)
+                        ("#4CD137", False),  # Bright green
+                        ("#9BE7A1", False),  # Soft mint
+                        # Teal (accent)
+                        ("#38C9B9", False),
+                        # Pinks / Purples
+                        ("#FF4FA3", False),  # Strong pink
+                        ("#E6A6D7", False),  # Soft pastel pink
+                        # Oranges
+                        ("#FF9A5A", False),  # Warm orange
+                        ("#FFC27A", False),  # Soft peach
+                        # Yellow
+                        ("#FFD84D", False),  # Bright cartoon yellow
+                        # White
+                        ("#FFFFFF", False),
                     ]
                     for color, selected in palette_colors:
                         border = "3px solid #60435F" if selected else "2px solid #d1d5db"

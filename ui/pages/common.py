@@ -219,6 +219,27 @@ def add_global_css():
         box-shadow: 0 8px 24px rgba(96,67,95,0.20);
       }
 
+      .mode-card.expanded {
+        position:fixed !important;top:50%;left:50%;
+        transform:translate(-50%,-50%) !important;
+        width:85vw;max-height:90vh;overflow:auto;
+        z-index:9999;min-width:0;
+        box-shadow:0 12px 40px rgba(96,67,95,0.35);
+      }
+      .mode-card.expanded:hover { transform:translate(-50%,-50%) !important; }
+
+      .learn-overlay {
+        display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9998;
+      }
+      .learn-overlay.show { display:block; }
+
+      .learn-close-btn {
+        position:absolute;top:12px;right:18px;z-index:10000;
+        background:#60435F;color:white;border:none;border-radius:50%;
+        width:36px;height:36px;font-size:20px;font-weight:800;
+        cursor:pointer;line-height:36px;text-align:center;
+      }
+
       .mode-title {
         font-size: 20px;
         font-weight: 800;
