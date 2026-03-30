@@ -2,6 +2,7 @@ from __future__ import annotations
 from fractions import Fraction
 import random
 import math
+import re
 
 from sqlalchemy import func, inspect
 from Database.Learning import Session, Operation as DBOperation, Fraction as DBFraction
@@ -121,13 +122,37 @@ def _fraction_svg(numerator: int, denominator: int, size: int = 120, color: str 
     )
 
 
+def _normalize_operator_symbol(op: str) -> str:
+    return {"*": "×", "/": "÷", "-": "−"}.get(op, op)
+
+
+def _parse_binary_expression(expression: str) -> tuple[str, str, str] | None:
+    """Parse expressions like '2/3 + 1/3', '3 + (-1)', '6 / 2'."""
+    token = r"[-+]?\(?\d+(?:/\d+)?\)?"
+    match = re.match(rf"^\s*({token})\s*([+\-*/×÷−])\s*({token})\s*$", expression or "")
+    if not match:
+        return None
+    left, op, right = match.groups()
+    return left.strip(), _normalize_operator_symbol(op), right.strip()
+
+
+def _token_to_fraction(token: str) -> Fraction | None:
+    cleaned = (token or "").replace("(", "").replace(")", "").strip()
+    if not cleaned:
+        return None
+    try:
+        return Fraction(cleaned)
+    except (ValueError, ZeroDivisionError):
+        return None
+
+
 class Fractions(Topic):
     name = "Fractions"
     has_learning = True
     has_painting  = True
 
     def page_background_image(self) -> str:
-        return "/images/Background.png"
+        return "/images/circle.jpeg"
 
     _DENOMINATORS = [2, 3, 4, 5, 6, 8, 10]
 
@@ -253,6 +278,7 @@ class Fractions(Topic):
 
     def learning_steps(self) -> list[tuple[str, str, str, str, str]]:
         rows = _load_steps_from_db("fractions", table="fractions")
+        self._step_rows = rows
         if rows:
             self._step_images = [r.get("image") or "" for r in rows]
             return [
@@ -269,56 +295,61 @@ class Fractions(Topic):
         return []
 
     def step_visual_html(self, step_index: int) -> str:
-        """Return a visual for each learning card."""
+        """Return a DB-driven visual for each learning card."""
+        base = super().step_visual_html(step_index)
+        rows = getattr(self, "_step_rows", None)
+        if rows is None:
+            rows = _load_steps_from_db("fractions", table="fractions")
+            self._step_rows = rows
+        if step_index < 0 or step_index >= len(rows):
+            return base
+
+        row = rows[step_index]
+        expression = (row.get("expression") or "").strip()
+        parsed = _parse_binary_expression(expression)
+        if not parsed:
+            return base
+
+        left_t, op, right_t = parsed
+        left_f = _token_to_fraction(left_t)
+        right_f = _token_to_fraction(right_t)
+        if left_f is None or right_f is None:
+            return base
+
         colors = ["#7EC88A", "#FFAD05", "#6BBFFF", "#FF8C69", "#D67AB1"]
-        color = colors[step_index % len(colors)]
+        left_color = colors[step_index % len(colors)]
+        right_color = colors[(step_index + 1) % len(colors)]
 
-        def render_pair(a_n: int, a_d: int, b_n: int, b_d: int, op: str) -> str:
-            svg_a = _fraction_svg(a_n, a_d, size=80, color=color)
-            svg_b = _fraction_svg(b_n, b_d, size=80, color="#FFAD05" if color != "#FFAD05" else "#7EC88A")
-            sep = f'<span style="font-size:22px;font-weight:800;color:#a83432;">{op}</span>'
-            return f'<div style="display:flex;align-items:center;gap:4px;">{svg_a}{sep}{svg_b}</div>'
+        left_svg = self._circles_for_fraction(left_f.numerator, left_f.denominator, left_color, size=78)
+        right_svg = self._circles_for_fraction(right_f.numerator, right_f.denominator, right_color, size=78)
 
-        # intro cards 0-2: plain circles showing halves/thirds/quarters
-        if step_index < 3:
-            denom = step_index + 2
-            return _fraction_svg(1, denom, size=90, color=color)
+        answer_f = _token_to_fraction((row.get("answer") or "").strip())
+        if answer_f is not None and answer_f.denominator == 1:
+            # Keep whole-number outcomes as plain numbers, not forced fraction pies.
+            answer_visual = (
+                '<div style="min-width:46px;height:46px;border-radius:999px;background:#96c97d;'
+                'display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#60435F;">'
+                f'{answer_f.numerator}'
+                '</div>'
+            )
+        elif answer_f is not None:
+            answer_visual = self._circles_for_fraction(answer_f.numerator, answer_f.denominator, colors[(step_index + 2) % len(colors)], size=78)
+        else:
+            answer_visual = ""
 
-        # section header card
-        if step_index == 3:
-            return render_pair(1, 4, 1, 4, "+")
-
-        # +/- examples: indices 4-13 (examples 1-10)
-        add_examples = [
-            (1, 4, 1, 4, "+"), (2, 6, 1, 6, "+"), (3, 8, 3, 8, "+"), (1, 3, 1, 3, "+"), (4, 10, 3, 10, "+"),
-            (3, 4, 1, 4, "−"), (5, 6, 2, 6, "−"), (7, 8, 3, 8, "−"), (4, 5, 1, 5, "−"), (9, 10, 4, 10, "−"),
-        ]
-        if 4 <= step_index <= 13:
-            return render_pair(*add_examples[step_index - 4])
-
-        # multiplication section header card
-        if step_index == 14:
-            return render_pair(1, 2, 1, 2, "×")
-
-        # × examples: indices 15-19 (examples 1-5)
-        mul_examples = [
-            (1, 2, 1, 2, "×"), (2, 3, 3, 4, "×"), (3, 4, 2, 3, "×"), (1, 3, 1, 3, "×"), (2, 5, 5, 6, "×"),
-        ]
-        if 15 <= step_index <= 19:
-            return render_pair(*mul_examples[step_index - 15])
-
-        # division section header card
-        if step_index == 20:
-            return render_pair(1, 2, 1, 4, "÷")
-
-        # ÷ examples: indices 21-25 (examples 6-10)
-        div_examples = [
-            (1, 2, 1, 4, "÷"), (3, 4, 3, 8, "÷"), (2, 3, 1, 3, "÷"), (5, 6, 5, 12, "÷"), (1, 4, 1, 8, "÷"),
-        ]
-        if 21 <= step_index <= 25:
-            return render_pair(*div_examples[step_index - 21])
-
-        return ""
+        equation = (
+            '<div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">'
+            f'<div style="display:flex;align-items:center;">{left_svg}</div>'
+            f'<span style="font-size:22px;font-weight:800;color:#a83432;">{op}</span>'
+            f'<div style="display:flex;align-items:center;">{right_svg}</div>'
+        )
+        if answer_visual:
+            equation += (
+                '<span style="font-size:22px;font-weight:800;color:#60435F;">=</span>'
+                f'<div style="display:flex;align-items:center;">{answer_visual}</div>'
+            )
+        equation += '</div>'
+        return base + equation
 
     def check_answer(self, user: str, correct: str) -> tuple[bool, str]:
         """Accept any numerically equivalent form: 2/4, 1/2, 0.5, 4/8 etc."""
@@ -502,13 +533,13 @@ class Operation(Topic):
 
         def group(rows, cols):
             return "".join([
-                f'<div style="display:flex;gap:6px;">{"🍎" * cols}</div>'
+                f'<div style="display:flex;gap:6px;font-size:25px;">{"🍎" * cols}</div>'
                 for _ in range(rows)
             ])
 
         def people(p, a):
             return "".join([
-                f'<div style="text-align:center;">●<br>{"🍎" * a}</div>'
+                f'<div style="text-align:center;font-size:25px;">●<br>{"🍎" * a}</div>'
                 for _ in range(p)
             ])
         if step_index == 15:
@@ -578,4 +609,4 @@ class Math(Subject):
     ]
 
     def page_background_image(self) -> str:
-        return "/images/Math_back.png"
+        return "/images/operation.jpg"

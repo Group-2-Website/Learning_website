@@ -117,7 +117,7 @@ def import_fractions():
                     explanation=row["explanation"],
                     expression=row.get("expression", ""),
                     answer=row.get("answer", ""),
-                    image="",
+                    image=row.get("image", ""),
                 )
                 for row in reader
             ]

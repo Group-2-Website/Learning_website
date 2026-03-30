@@ -13,7 +13,7 @@ example,subtraction,practice,Example 6,Move two steps left.,7 - 2,5
 example,subtraction,practice,Example 7,Subtract the smaller number.,5 - 3,2
 example,subtraction,practice,Example 9,Simple subtraction.,6 - 4,2
 example,subtraction,practice,Example 10,Move left five steps.,9 - 5,4
-example,multiplication,example,Multiply integers,Multiply numbers normally but apply sign rules.,,
+example,multiplication,example,Multiply integers,Multiply numbers normally but apply sign rules.,,,apples.svg
 example,multiplication,practice,Example 1,Positive times positive stays positive.,2 * 3,6
 example,multiplication,practice,Example 2,Multiply normally.,4 * 2,8
 example,division,example,Divide integers,Divide normally and apply sign rules.,,
