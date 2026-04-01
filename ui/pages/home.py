@@ -9,7 +9,7 @@ def build_home_page() -> None:
     _apply_bg('/images/Home-p.png')
     from subjects import SUBJECTS
     with (ui.element("div").classes("page-content1")):
-        ui.label("Choose a subject to start your learning adventure.").classes("text-body1")
+        ui.label("Start your Learning Adventure").classes("text-body1")
         with ui.element("div").style(
             "display:flex;flex-wrap:wrap;justify-content:center;margin-top:70px;"
         ):

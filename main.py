@@ -8,4 +8,4 @@ for _subject in SUBJECTS:
     register_subject(_subject)
 
 app.add_static_files('/images', 'images')
-ui.run(title="E-learning for kids", port=8081, reload=True)
+ui.run(title="E-learning for kids", port=8081, reload=True, favicon="hamster.ico")

@@ -23,7 +23,7 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
         steps = topic.learning_steps()
         if steps:
             with ui.element("div").style(
-                "display:grid;grid-template-columns:repeat(2,1fr);gap:56px;"
+                "display:grid;grid-template-columns:repeat(2,1fr);gap:60px;"
             ):
                 for i, (title,image, explanation, expression, answer) in enumerate(steps, start=1):
                     visual = topic.step_visual_html(i - 1)

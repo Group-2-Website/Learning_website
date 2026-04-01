@@ -50,7 +50,7 @@ class Topic:
             src = f"/images/icons/{images[step_index]}"
             return (
                 f'<div style="display:flex;justify-content:center;margin:12px 0;">'
-                f'<img src="{src}" alt="" style="max-width:500px;max-height:100px;" />'
+                f'<img src="{src}" alt="" style="max-width:500px;max-height:150px;" />'
                 f'</div>'
             )
         return ""

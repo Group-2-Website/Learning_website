@@ -1,8 +1,7 @@
 content_type,topic,item_type,title,explanation,expression,answer,image
-learning,fractions,intro,What is a fraction?,A fraction shows part of a whole. The bottom number (denominator) is how many equal pieces. The top number (numerator) is how many pieces you have.,,,
+fraction1.jpeg
+learning,fractions,intro,What is a fraction?,A fraction shows part of a whole. The bottom number (denominator) is how many equal pieces. The top number (numerator) is how many pieces you have.,,,fraction1.jpeg
 learning,fractions,intro,Same denominator rule,"To add or subtract fractions, the denominators must be the same. Keep the denominator, and add or subtract only the numerators!",,,
-learning,fractions,intro,Multiply & Divide rule,"To multiply fractions, multiply top × top and bottom × bottom. To divide, flip the second fraction and then multiply.",,,
-learning,fractions,section,Adding and subtracting fractions,It is easy when they have the same denominator.,,,
 learning,fractions,example,➕ Example 1,"1/4 + 1/4 = 2/4 = 1/2 — same denominator, just add the tops.",1/4 + 1/4,1/2,,
 learning,fractions,example,➕ Example 2,2/6 + 1/6 = 3/6 = 1/2 — three sixths is the same as one half!,2/6 + 1/6,1/2,,
 learning,fractions,example,➕ Example 3,3/8 + 3/8 = 6/8 = 3/4 — always simplify by dividing by the common factor.,3/8 + 3/8,3/4,,

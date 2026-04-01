@@ -19,6 +19,8 @@ def build_topbar():
 
 def add_global_css():
     ui.add_head_html("""
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap" rel="stylesheet">
+    
     <style>
 
       body {
@@ -28,7 +30,7 @@ def add_global_css():
 
       .topbar {
         background: linear-gradient(90deg,#FF8A8A,#FFB6C1,#FFD6A5,#BDE0FE,#A8E6CF);
-        height: 250px;
+        height: 210px;
         width: 110vw;
         margin-left: calc(-1 * var(--nicegui-default-padding));
         margin-right: calc(-1 * var(--nicegui-default-padding));
@@ -70,10 +72,26 @@ def add_global_css():
         white-space:pre-line;
       }
       .text-body1 {
-        color:#60435F;
-        font-weight:950;
-        font-size:34px;
-        margin-top:2px;
+        display: block;
+        font-family: 'Baloo 2', cursive;
+        font-size: clamp(26px, 6vw, 60px);
+        font-weight: 800;
+        color: #ffb4a2;
+        text-shadow:
+            -2px -2px 0 #ffffff,
+            2px 2px 0 #f28482,
+            4px 4px 0 #e76f51,
+            6px 6px 14px rgba(0,0,0,0.2);
+        letter-spacing: 1px;
+        word-break: break-word;
+        white-space: normal;
+        animation: shine 3s ease-in-out infinite;
+        transform: translateZ(0);
+      }
+      @keyframes shine {
+        0% { filter: brightness(1); }
+        50% { filter: brightness(1.15); }
+        100% { filter: brightness(1); }
       }
       .brand-sub {
         color:#32a852;
@@ -186,7 +204,7 @@ def add_global_css():
 
       .mode-card {
         flex: 1;
-        min-width: 600px;
+        min-width: 650px;
         min-height:300px;
         background: #f3f1f1;
         border-radius: 35px;
@@ -383,7 +401,7 @@ def _apply_bg(url: str) -> None:
         content: '';
         position: fixed;
         inset: 0;
-        background: rgba(255,255,255,0.35);
+        background: rgba(255,255,255,0.45);
         z-index: 0;
         pointer-events: none;
       }}

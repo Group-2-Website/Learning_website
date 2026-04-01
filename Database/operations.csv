@@ -1,21 +1,20 @@
 content_type,topic,item_type,title,explanation,expression,answer,image
-theory,intro,definition,What is an integer?,An integer is a whole number. It can be positive like 5 or negative like -5. Zero is also an integer.,,,calculator.svg
-theory,intro,rule,Positive and negative numbers,Positive numbers are greater than zero. Negative numbers are less than zero.,,,Line1.jpeg
-theory,intro,rule,Number line rule,Numbers to the right on the number line are bigger. Numbers to the left are smaller.,,
-example,addition,example,Add integers,Move right for positive numbers and left for negative numbers.,,
-example,addition,practice,Example 1,Start at 2 and move 3 steps right.,2 + 3,5,Example1.png
+theory,intro,definition,What is an integer?,An integer is a whole number. It can be positive like 5 or negative like -5. Zero is also an integer.,,,abacus.svg
+theory,intro,rule,Positive and negative numbers,Positive numbers are greater than zero. Negative numbers are less than zero.,,,Line2.jpeg
+example,addition,practice,Example 1,Start at 2 and move 3 steps right.,2 + 3,5,
 example,addition,practice,Example 2,Adding a positive number increases the value.,4 + 1,5
 example,addition,practice,Example 3,Keep moving right on the number line.,6 + 2,8
-example,addition,practice,Example 4,Adding a negative moves left.,3 + (-1),2
-example,addition,practice,Example 5,Subtract the absolute values.,5 + (-3),2
-example,subtraction,example,Subtract integers,Subtracting means moving left or adding the opposite.,,
-example,subtraction,practice,Example 6,Move two steps left.,7 - 2,5
-example,subtraction,practice,Example 7,Subtract the smaller number.,5 - 3,2
-example,subtraction,practice,Example 9,Simple subtraction.,6 - 4,2
-example,subtraction,practice,Example 10,Move left five steps.,9 - 5,4
-example,multiplication,example,Multiply integers,Multiply numbers normally but apply sign rules.,,,apples.svg
-example,multiplication,practice,Example 1,Positive times positive stays positive.,2 * 3,6
-example,multiplication,practice,Example 2,Multiply normally.,4 * 2,8
-example,division,example,Divide integers,Divide normally and apply sign rules.,,
-example,division,practice,Example 6,Normal division.,6 / 2,3
-example,division,practice,Example 7,Divide normally.,8 / 4,2
+example,subtraction,practice,Example 4,Move two steps left.,7 - 2,5
+example,subtraction,practice,Example 5,Subtract the smaller number.,5 - 3,2
+example,subtraction,practice,Example 6,Simple subtraction.,6 - 4,2
+example,subtraction,practice,Example 7,Move left four steps.,9 - 4,5
+example,subtraction,practice,Example 8,Move left five steps.,9 - 5,4
+example,multiplication,example,Multiplying integers,tells you how many items you have in total when you take the same amount several times.,,,apples.svg
+example,multiplication,practice,Example 1,You have 2 equal groups with 3 in each group,2 * 3,6
+example,multiplication,practice,Example 2,You have 2 equal groups with 4 in each group.,2 * 4,8
+example,multiplication,practice,Example 3,You have 3 equal groups with 3 in each group.,3 * 3,9
+example,division,example,Dividing integers,tells you how many are in each group or how many groups you can make.,,,sharing.svg
+example,division,practice,Example 1,You are splitting 6 into 2 equal groups,6 / 2,3
+example,division,practice,Example 2,You are splitting 8 into 4 equal groups,8 / 4,2
+example,division,practice,Example 3,You are splitting 2 into 2 equal groups,2 / 2,1
+

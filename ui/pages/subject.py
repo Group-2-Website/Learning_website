@@ -10,7 +10,7 @@ def build_subject_page(subject: Subject) -> None:
     if url:
         _apply_bg(url)
     with ui.element("div").classes("page-content1"):
-        _build_page_header("/", "Back", subject.name, "Pick a topic to practise.")
+        _build_page_header("/", "Back", subject.name, "Pick a Topic to Practise.")
 
         with ui.element("div").style(
             "display:flex;flex-wrap:wrap;gap:36px;justify-content:center;margin-top:20px;"
