@@ -16,6 +16,15 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
             f"  {topic.name}", "What would you like to do?"
         )
 
+        if topic.has_learning:
+            learn_dest = f"/{subject.url_slug}/{topic.name.lower()}/learn"
+            with ui.element("div").classes("mode-card").on(
+                    "click", lambda d=learn_dest: ui.navigate.to(d)
+            ):
+                ui.html('<img src="/images/icons/read.svg" style="width:80px;height:80px;object-fit:contain;">')
+                ui.label("Learning").classes("mode-title")
+                ui.label("Read step-by-step explanations.").classes("mode-desc")
+
         with ui.element("div").classes("mode-grid"):
             quiz_filter_dest = f"/{subject.url_slug}/{topic.name.lower()}/filter"
             with ui.element("div").classes("mode-card").on(
@@ -25,14 +34,6 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
                 ui.label("Quiz").classes("mode-title")
                 ui.label("Answer questions and test yourself!").classes("mode-desc")
 
-            if topic.has_learning:
-                learn_dest = f"/{subject.url_slug}/{topic.name.lower()}/learn"
-                with ui.element("div").classes("mode-card").on(
-                    "click", lambda d=learn_dest: ui.navigate.to(d)
-                ):
-                    ui.html('<img src="/images/icons/read.svg" style="width:80px;height:80px;object-fit:contain;">')
-                    ui.label("Learning").classes("mode-title")
-                    ui.label("Read step-by-step explanations.").classes("mode-desc")
             if topic.has_painting:
                 draw_dest = f"/{subject.url_slug}/{topic.name.lower()}/paint"
                 with ui.element("div").classes("mode-card").on(
