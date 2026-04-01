@@ -34,7 +34,7 @@ def add_global_css():
         width: 110vw;
         margin-left: calc(-1 * var(--nicegui-default-padding));
         margin-right: calc(-1 * var(--nicegui-default-padding));
-        margin-top: calc(-2* var(--nicegui-default-padding));
+        margin-top: calc(-1 * var(--nicegui-default-padding));
         box-sizing: border-box;
         padding-left: var(--nicegui-default-padding);
         padding-right: var(--nicegui-default-padding);
@@ -74,19 +74,17 @@ def add_global_css():
       .text-body1 {
         display: block;
         font-family: 'Baloo 2', cursive;
-        font-size: clamp(38px, 6vw, 70px);
-        font-weight: 800;
-        max-width: 115%;
+        font-size: clamp(36px, 8vw, 80px);
+        font-weight: 1000;
         color: #ffb4a2;
         text-shadow:
             -2px -2px 0 #ffffff,
             2px 2px 0 #f28482,
             4px 4px 0 #e76f51,
             6px 6px 14px rgba(0,0,0,0.2);
-        line-height: 1.3;
-        letter-spacing: 2px;
-        overflow: hidden;
-        white-space: nowrap;
+        letter-spacing: 1px;
+        word-break: break-word;
+        white-space: normal;
         animation: shine 3s ease-in-out infinite;
         transform: translateZ(0);
       }
@@ -120,7 +118,7 @@ def add_global_css():
         cursor: pointer;
         transition: transform .2s ease, box-shadow .2s ease;
         box-shadow: 0 4px 14px rgba(96,67,95,0.18);
-        margin: 25px;
+        margin: 20px;
         
       }
 
@@ -175,8 +173,8 @@ def add_global_css():
 
 
       .page-content1 {
-        max-width: 1200px;  /* ← max width of content on all pages  */
-        margin: 35px auto; /* ← top gap from topbar on all pages   */
+        max-width: 900px;  /* ← max width of content on all pages  */
+        margin: 40px auto; /* ← top gap from topbar on all pages   */
         padding: 0 px;   /* ← left/right edge gap on all pages   */
       }
 
@@ -208,7 +206,6 @@ def add_global_css():
         flex: 1;
         min-width: 650px;
         min-height:300px;
-        max-width: 90%;
         background: #f3f1f1;
         border-radius: 35px;
         border: 2px solid #60435f99;
