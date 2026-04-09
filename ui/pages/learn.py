@@ -6,7 +6,7 @@ from ui.pages.common import _apply_bg, _build_page_header
 
 
 def build_learn_page(subject: Subject, topic: Topic) -> None:
-    """Render the learning/explanation page for any topic."""
+    """Render the learning/b page for any topic."""
     url = topic.page_background_image()
     if url:
         _apply_bg(url)
@@ -25,24 +25,24 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
             with ui.element("div").style(
                 "display:grid;grid-template-columns:repeat(2,1fr);gap:60px;"
             ):
-                for i, (title,image, explanation, expression, answer) in enumerate(steps, start=1):
+                for i, (a,image, b, c, d) in enumerate(steps, start=1):
                     visual = topic.step_visual_html(i - 1)
                     with ui.element("div").classes("mode-card").style("gap:26px;"):
                         ui.html(
-                            f'<strong>{title}</strong>'
+                            f'<strong>{a}</strong>'
                         )
                         if visual:
                             ui.html(visual)
 
-                        ui.label(explanation).style(
+                        ui.label(b).style(
                             "margin-top:.5px;color:#555;font-size:18px;line-height:1.6;text-align:center;"
                         )
-                        if expression:
-                            ui.label(f" {expression}").style(
+                        if c:
+                            ui.label(f" {c}").style(
                                 "margin-top:4px;color:#333;font-size:15px;line-height:1.4;text-align:center;"
                             )
-                        if answer:
-                            ui.label(f"Answer: {answer}").style(
+                        if d:
+                            ui.label(f"Answer: {d}").style(
                                 "margin-top:2px;color:#1a7f37;font-size:15px;line-height:1.4;text-align:center;"
                             )
 
@@ -64,7 +64,7 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
               card.style.position='relative';
               card.classList.add('expanded');
               var btn=document.createElement('button');
-              btn.className='learn-close-btn'; btn.innerHTML='&times;'; btn.title='Close';
+              btn.className='learn-close-btn'; btn.innerHTML='&times;'; btn.a='Close';
               card.prepend(btn);
               overlay.classList.add('show');
               return;

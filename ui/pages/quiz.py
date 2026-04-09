@@ -9,6 +9,7 @@ from ui.pages.common import _apply_bg, _build_page_header
 
 def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, str] | None = None) -> None:
     """Render the interactive quiz page for any topic."""
+    feedback_seconds = 1.4
     url = topic.page_background_image()
     if url:
         _apply_bg(url)
@@ -25,10 +26,24 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         "filters": dict(active_filters),
         "asked":   0,
         "num_questions": num_questions,
+        "feedback_token": 0,
     }
 
     visual_holder: list = []
     answer_input_holder: list = []
+
+    def show_feedback(message: str, style_class: str) -> None:
+        """Show feedback briefly and clear it after a short delay."""
+        state["feedback_token"] += 1
+        token = state["feedback_token"]
+        feedback_label.text = message
+        feedback_label.classes(replace=style_class)
+
+        def clear_feedback_if_latest() -> None:
+            if state["feedback_token"] == token:
+                feedback_label.text = ""
+
+        ui.timer(feedback_seconds, clear_feedback_if_latest, once=True)
 
     def check_answer():
         if state["checked"]:
@@ -37,25 +52,21 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         is_correct, error = topic.check_answer(user, state["answer"])
 
         if error:
-            feedback_label.text = error
-            feedback_label.classes(replace="quiz-feedback-wrong")
+            show_feedback(error, "quiz-feedback-wrong")
             return  # invalid input - let the user fix it, don't count
 
         state["checked"] = True
         state["attempts"] += 1
         if is_correct:
             state["score"] += 1
-            feedback_label.text = "Correct!"
-            feedback_label.classes(replace="quiz-feedback-correct")
+            show_feedback("Correct!", "quiz-feedback-correct")
         else:
-            feedback_label.text = f"Oops! The answer was {state['answer']}"
-            feedback_label.classes(replace="quiz-feedback-wrong")
+            show_feedback(f"Oops! The answer was {state['answer']}", "quiz-feedback-wrong")
         score_label.text = f"Score: {state['score']} / {state['attempts']}"
-        ui.timer(1.4, _advance, once=True)
+        ui.timer(feedback_seconds, _advance, once=True)
 
     def show_hint():
-        feedback_label.text = f" Hint: the answer is {state['answer']}"
-        feedback_label.classes(replace="quiz-feedback-wrong")
+        show_feedback(f" Hint: the answer is {state['answer']}", "quiz-feedback-wrong")
 
     def _advance():
         """Load a new question without checking."""

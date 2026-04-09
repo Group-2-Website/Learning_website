@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import math
 import re
-from fractions import Fraction
 
 from sqlalchemy import func, inspect
 
@@ -128,8 +126,8 @@ class MathTopic(Topic):
         return {"operation": "all", "difficulty": "mixed", "number of questions": "10"}
 
 
-from subjects.math.fraction_topic import Fractions
 from subjects.math.operations import Operation
+from subjects.math.fraction_topic import Fractions
 
 
 class Math(Subject):
@@ -137,8 +135,9 @@ class Math(Subject):
     url_slug = "math"
     icon = "/images/icons/notebook.svg"
     topics: list[Topic] = [
-        Fractions(),
         Operation(),
+        Fractions(),
+
     ]
 
     def page_background_image(self) -> str:

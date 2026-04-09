@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import random
 
-from models.topic import Topic
-
 from .mathematics import MathTopic, OPERATION_GROUPS, load_steps_from_db, parse_binary_expression
 
 
