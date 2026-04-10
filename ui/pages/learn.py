@@ -20,29 +20,29 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
 
         ui.html('<div class="learn-overlay" id="learn-overlay"></div>')
 
-        steps = topic.learning_steps()
-        if steps:
+        cards = topic.learning_cards()
+        if cards:
             with ui.element("div").style(
                 "display:grid;grid-template-columns:repeat(2,1fr);gap:60px;"
             ):
-                for i, (a,image, b, c, d) in enumerate(steps, start=1):
+                for i, card in enumerate(cards, start=1):
                     visual = topic.step_visual_html(i - 1)
                     with ui.element("div").classes("mode-card").style("gap:26px;"):
                         ui.html(
-                            f'<strong>{a}</strong>'
+                            f'<strong>{card.title}</strong>'
                         )
                         if visual:
                             ui.html(visual)
 
-                        ui.label(b).style(
+                        ui.label(card.paragraph).style(
                             "margin-top:.5px;color:#555;font-size:18px;line-height:1.6;text-align:center;"
                         )
-                        if c:
-                            ui.label(f" {c}").style(
+                        if card.detail:
+                            ui.label(f" {card.detail}").style(
                                 "margin-top:4px;color:#333;font-size:15px;line-height:1.4;text-align:center;"
                             )
-                        if d:
-                            ui.label(f"Answer: {d}").style(
+                        if card.note:
+                            ui.label(card.note).style(
                                 "margin-top:2px;color:#1a7f37;font-size:15px;line-height:1.4;text-align:center;"
                             )
 

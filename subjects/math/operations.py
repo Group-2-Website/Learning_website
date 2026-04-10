@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 
 from .mathematics import MathTopic, OPERATION_GROUPS, load_steps_from_db, parse_binary_expression
+from models.learning_card import LearningCard
 
 
 def token_to_int(token: str) -> int | None:
@@ -79,23 +80,23 @@ class Operation(MathTopic):
 
         return int(user) == int(correct), ""
 
-    def learning_steps(self) -> list[tuple[str, str, str, str, str]]:
+    def learning_cards(self) -> list[LearningCard]:
         steps = load_steps_from_db(table="operations")
         self._step_rows = steps
         if steps:
             self._step_images = [row.get("image") or "" for row in steps]
             return [
-                (
-                    row.get("title") or "",
-                    row.get("image") or "",
-                    row.get("explanation") or "",
-                    row.get("expression") or "",
-                    row.get("answer") or "",
+                LearningCard(
+                    title=row.get("title") or "",
+                    image=row.get("image") or "",
+                    paragraph=row.get("explanation") or "",
+                    detail=row.get("expression") or "",
+                    note=f"Answer: {row['answer']}" if row.get("answer") else "",
                 )
                 for row in steps
             ]
         self._step_images = []
-        return [("", "", "", "", "")]
+        return [LearningCard()]
 
     @staticmethod
     def _clamp(value: int, minimum: int, maximum: int) -> int:

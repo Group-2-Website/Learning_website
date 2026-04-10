@@ -1,4 +1,5 @@
 from __future__ import annotations
+from models.learning_card import LearningCard
 
 
 class Topic:
@@ -31,8 +32,8 @@ class Topic:
             cleaned[filter_name] = value if value in valid_values else fallback
         return cleaned
 
-    def learning_steps(self) -> list[tuple[str, str, str,str, str]]:
-        """Return a list of (title, explanation) tuples."""
+    def learning_cards(self) -> list[LearningCard]:
+        """Return a list of LearningCard objects."""
         return []
 
     def learn_page_subtitle(self) -> str:
