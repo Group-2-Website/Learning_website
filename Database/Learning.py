@@ -28,7 +28,9 @@ class DictionaryWord(Base):
     id = Column(Integer, primary_key=True)
     english = Column(String)
     german = Column(String)
-    article = Column(String)
+    article_german = Column(String)
+    french = Column(String)
+    article_french = Column(String)
     meanings = Column(String)
     word_type = Column(String)
 
@@ -59,7 +61,9 @@ def import_dictionary_words():
                 DictionaryWord(
                     english=row["english"],
                     german=row["german"],
-                    article=row["article_german"],
+                    article_german=row["article_german"],
+                    french=row["french"],
+                    article_french=row["article_french"],
                     meanings=row["meanings"],
                     word_type=row["type"],
                 )

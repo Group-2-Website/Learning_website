@@ -6,6 +6,7 @@ import re
 from fractions import Fraction
 
 from .mathematics import MathTopic, OPERATION_GROUPS, load_steps_from_db, parse_binary_expression
+from models.learning_card import LearningCard
 
 
 def _token_to_fraction(token: str) -> Fraction | None:
@@ -169,18 +170,18 @@ class Fractions(MathTopic):
             f'flex-wrap:wrap;margin:8px 0;">{joined}</div>'
         )
 
-    def learning_steps(self) -> list[tuple[str, str, str, str, str]]:
+    def learning_cards(self) -> list[LearningCard]:
         rows = load_steps_from_db("fractions", table="fractions")
         self._step_rows = rows
         if rows:
             self._step_images = [r.get("image") or "" for r in rows]
             return [
-                (
-                    r.get("title") or "",
-                    r.get("image") or "",
-                    r.get("explanation") or "",
-                    r.get("expression") or "",
-                    r.get("answer") or "",
+                LearningCard(
+                    title=r.get("title") or "",
+                    image=r.get("image") or "",
+                    paragraph=r.get("explanation") or "",
+                    detail=r.get("expression") or "",
+                    note=f"Answer: {r['answer']}" if r.get("answer") else "",
                 )
                 for r in rows
             ]
