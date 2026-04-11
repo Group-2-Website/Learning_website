@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+import random
+
+from sqlalchemy import func
+
+from Database.Learning import Biology as DBBiology
+from Database.Learning import Geography as DBGeography
+from Database.Learning import Session
 from models.subject import Subject
 from models.topic import Topic
 
@@ -39,7 +46,9 @@ class ScienceTopic(Topic):
     has_learning = False
     has_painting = True
 
-    def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
+    def generate_question(
+        self, filters: dict[str, str] | None = None
+    ) -> tuple[str, str] | tuple[str, str, list[str]]:
         return "Quiz content will be added later.", "coming soon"
 
     def check_answer(self, user: str, correct: str) -> tuple[bool, str]:
@@ -57,12 +66,71 @@ class ScienceTopic(Topic):
         return f"Painting for {self.name} will be added later."
 
 
-class Geography(ScienceTopic):
+class DatabaseScienceTopic(ScienceTopic):
+    category_filter_name = "category"
+    source_model = None
+    source_options: list[tuple[str, str]] = []
+
+    def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
+        return {self.category_filter_name: self.source_options}
+
+    def default_quiz_filters(self) -> dict[str, str]:
+        if not self.source_options:
+            return {}
+        return {self.category_filter_name: self.source_options[0][0]}
+
+    def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
+        effective_filters = self.sanitize_quiz_filters(filters or {})
+        selected_source = effective_filters.get(self.category_filter_name)
+        if self.source_model is None or not selected_source:
+            return "Quiz content will be added later.", "coming soon"
+
+        session = Session()
+        try:
+            rows = (
+                session.query(self.source_model)
+                .filter(func.lower(self.source_model.source_csv) == selected_source.lower())
+                .all()
+            )
+        finally:
+            session.close()
+
+        if not rows:
+            return "Quiz content will be added later.", "coming soon"
+
+        selected_row = random.choice(rows)
+        options = [
+            selected_row.option_a,
+            selected_row.option_b,
+            selected_row.option_c,
+        ]
+        random.shuffle(options)
+        return selected_row.question, selected_row.correct_answer, options
+
+    def check_answer(self, user: str, correct: str) -> tuple[bool, str]:
+        if not user.strip():
+            return False, "Please choose an answer."
+        return user.strip().lower() == correct.strip().lower(), ""
+
+
+class Geography(DatabaseScienceTopic):
     name = "Geography"
+    source_model = DBGeography
+    source_options = [
+        ("countries", "Countries"),
+        ("continants", "Continents"),
+        ("water in the earth", "Water In The Earth"),
+    ]
 
 
-class Biology(ScienceTopic):
+class Biology(DatabaseScienceTopic):
     name = "Biology"
+    source_model = DBBiology
+    source_options = [
+        ("human_body", "Human Body"),
+        ("plant", "Plant"),
+        ("animals", "Animals"),
+    ]
 
 
 class Science(Subject):

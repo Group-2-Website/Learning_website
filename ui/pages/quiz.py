@@ -7,6 +7,16 @@ from models.topic import Topic
 from ui.pages.common import _apply_bg, _build_page_header
 
 
+def _normalize_question_payload(
+    payload: tuple[str, str] | tuple[str, str, list[str]]
+) -> tuple[str, str, list[str]]:
+    if len(payload) == 3:
+        question_text, correct_answer, options = payload
+        return question_text, correct_answer, options
+    question_text, correct_answer = payload
+    return question_text, correct_answer, []
+
+
 def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, str] | None = None) -> None:
     """Render the interactive quiz page for any topic."""
     feedback_seconds = 1.4
@@ -16,10 +26,13 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
     active_filters = topic.sanitize_quiz_filters(initial_filters or topic.default_quiz_filters())
     num_questions = int(active_filters.get("number of questions", 10))
-    question_text, correct_answer = topic.generate_question(active_filters)
+    question_text, correct_answer, answer_options = _normalize_question_payload(
+        topic.generate_question(active_filters)
+    )
     state = {
         "question": question_text,
         "answer":   correct_answer,
+        "options": answer_options,
         "score":    0,
         "attempts": 0,
         "checked":  False,
@@ -31,6 +44,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
     visual_holder: list = []
     answer_input_holder: list = []
+    answer_choice_holder: list = []
 
     def show_feedback(message: str, style_class: str) -> None:
         """Show feedback briefly and clear it after a short delay."""
@@ -48,7 +62,10 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
     def check_answer():
         if state["checked"]:
             return
-        user = answer_input_holder[0].value.strip()
+        if answer_choice_holder:
+            user = (answer_choice_holder[0].value or "").strip()
+        else:
+            user = answer_input_holder[0].value.strip()
         is_correct, error = topic.check_answer(user, state["answer"])
 
         if error:
@@ -74,11 +91,18 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         if state["asked"] >= state["num_questions"]:
             finish_quiz()
             return
-        state["question"], state["answer"] = topic.generate_question(state["filters"])
+        state["question"], state["answer"], state["options"] = _normalize_question_payload(
+            topic.generate_question(state["filters"])
+        )
         state["checked"] = False
         question_label.text = state["question"]
-        answer_input_holder[0].value = ""
-        answer_input_holder[0].run_method("focus")
+        if answer_choice_holder:
+            options_map = {option: option for option in state["options"]}
+            answer_choice_holder[0].set_options(options_map)
+            answer_choice_holder[0].value = None
+        else:
+            answer_input_holder[0].value = ""
+            answer_input_holder[0].run_method("focus")
         if visual_holder:
             visual_holder[0].content = topic.question_visual_html(state["question"])
 
@@ -112,13 +136,20 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
             if initial_visual:
                 visual_holder.append(ui.html(initial_visual))
 
-            answer_input = (
-                ui.input(placeholder="Your Answer")
-                .props("outlined rounded")
-                .style("width:260px;font-size:18px;")
-                .on("keydown.enter", check_answer)
-            )
-            answer_input_holder.append(answer_input)
+            if state["options"]:
+                answer_choices = ui.radio(
+                    {option: option for option in state["options"]},
+                    value=None,
+                ).props("inline").style("font-size:18px;color:#60435F;")
+                answer_choice_holder.append(answer_choices)
+            else:
+                answer_input = (
+                    ui.input(placeholder="Your Answer")
+                    .props("outlined rounded")
+                    .style("width:260px;font-size:18px;")
+                    .on("keydown.enter", check_answer)
+                )
+                answer_input_holder.append(answer_input)
 
             feedback_label = ui.label("").classes("quiz-feedback-wrong")
 

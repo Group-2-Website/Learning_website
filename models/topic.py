@@ -8,8 +8,10 @@ class Topic:
     has_learning: bool = True
     has_painting: bool = False
 
-    def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
-        """Return (question_text, correct_answer) as strings. Optional filters argument for compatibility."""
+    def generate_question(
+        self, filters: dict[str, str] | None = None
+    ) -> tuple[str, str] | tuple[str, str, list[str]]:
+        """Return (question_text, correct_answer) or include answer options for multiple-choice topics."""
         raise NotImplementedError
 
     def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
