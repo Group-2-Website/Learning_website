@@ -20,7 +20,7 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
 
         ui.html('<div class="learn-overlay" id="learn-overlay"></div>')
 
-        cards = topic.learning_cards()
+        cards = topic.learning_steps()
         if cards:
             with ui.element("div").style(
                 "display:grid;grid-template-columns:repeat(2,1fr);gap:60px;"
@@ -34,15 +34,15 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
                         if visual:
                             ui.html(visual)
 
-                        ui.label(card.paragraph).style(
+                        ui.label(card.main_text).style(
                             "margin-top:.5px;color:#555;font-size:18px;line-height:1.6;text-align:center;"
                         )
-                        if card.detail:
-                            ui.label(f" {card.detail}").style(
+                        if card.secondary_text:
+                            ui.label(f" {card.secondary_text}").style(
                                 "margin-top:4px;color:#333;font-size:15px;line-height:1.4;text-align:center;"
                             )
-                        if card.note:
-                            ui.label(card.note).style(
+                        if card.hint_text:
+                            ui.label(f"Answer: {card.hint_text}").style(
                                 "margin-top:2px;color:#1a7f37;font-size:15px;line-height:1.4;text-align:center;"
                             )
 

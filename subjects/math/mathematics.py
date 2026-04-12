@@ -2,62 +2,44 @@ from __future__ import annotations
 
 import re
 
-from sqlalchemy import func, inspect
+from sqlalchemy import func
 
-from Database.Learning import Fraction as DBFraction
-from Database.Learning import Operation as DBOperation
-from Database.Learning import Session
+from Database.Learning import LearningStepRow, Session
+from models.learning_card import LearningStep
 from models.subject import Subject
 from models.topic import Topic
 
-_TABLE_MODEL_MAP = {
-    "operations": DBOperation,
-    "fractions": DBFraction,
-}
-_TABLE_CANDIDATES = ("operations", "fractions")
-
 
 def load_steps_from_db(
+    subject_name: str,
     topic_name: str | None = None,
-    table: str | None = None,
-) -> list[dict[str, str]]:
-    """Load learning steps from the database via SQLAlchemy."""
+) -> list[LearningStep]:
+    """Load learning steps from the unified ``learning_steps`` table.
+
+    *subject_name* selects the subject partition (e.g. ``"operations"``).
+    *topic_name* optionally filters within that subject.
+    """
     session = Session()
     try:
-        model = None
-        if table and table in _TABLE_MODEL_MAP:
-            model = _TABLE_MODEL_MAP[table]
-        else:
-            engine = session.get_bind()
-            inspector = inspect(engine)
-            existing = set(inspector.get_table_names())
-            for candidate in _TABLE_CANDIDATES:
-                if candidate in existing and candidate in _TABLE_MODEL_MAP:
-                    model = _TABLE_MODEL_MAP[candidate]
-                    break
-
-        if model is None:
-            return []
-
-        query = session.query(model)
+        query = session.query(LearningStepRow).filter(
+            func.lower(LearningStepRow.subject) == subject_name.lower()
+        )
         if topic_name:
-            query = query.filter(func.lower(model.topic) == topic_name.lower())
-        rows = query.order_by(model.id).all()
+            query = query.filter(
+                func.lower(LearningStepRow.topic) == topic_name.lower()
+            )
+        rows = query.order_by(LearningStepRow.id).all()
 
-        if not rows and topic_name:
-            rows = session.query(model).order_by(model.id).all()
-
-        columns = [
-            "content_type",
-            "topic",
-            "item_type",
-            "title",
-            "explanation",
-            "expression",
-            "answer",
-            "image",
+        return [
+            LearningStep(
+                title=getattr(row, "title", "") or "",
+                image=getattr(row, "image", "") or "",
+                main_text=getattr(row, "explanation", "") or "",
+                secondary_text=getattr(row, "expression", "") or "",
+                hint_text=getattr(row, "answer", "") or "",
+            )
+            for row in rows
         ]
-        return [{col: getattr(row, col, "") or "" for col in columns} for row in rows]
     except Exception as e:
         print(f"[DEBUG] DB error: {e}")
         return []

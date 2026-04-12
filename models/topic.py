@@ -1,5 +1,5 @@
 from __future__ import annotations
-from models.learning_card import LearningCard
+from models.learning_card import LearningStep
 
 
 class Topic:
@@ -7,10 +7,20 @@ class Topic:
     name: str = ""
     has_learning: bool = True
     has_painting: bool = False
+    quiz_mode: str = "text"  # "text" (type answer) or "multiple_choice" (select from options)
 
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
         """Return (question_text, correct_answer) as strings. Optional filters argument for compatibility."""
         raise NotImplementedError
+
+    def generate_mc_question(self, filters: dict[str, str] | None = None) -> tuple[str, list[str], str]:
+        """Return (question_text, [option_a, option_b, option_c], correct_answer).
+
+        Only used when ``quiz_mode == "multiple_choice"``.
+        Default implementation wraps ``generate_question`` with empty choices.
+        """
+        q, a = self.generate_question(filters)
+        return q, [], a
 
     def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
         """Optional quiz filters: {filter_name: [(value, label), ...]} for UI menus."""
@@ -32,8 +42,8 @@ class Topic:
             cleaned[filter_name] = value if value in valid_values else fallback
         return cleaned
 
-    def learning_cards(self) -> list[LearningCard]:
-        """Return a list of LearningCard objects."""
+    def learning_steps(self) -> list[LearningStep]:
+        """Return a list of LearningStep objects."""
         return []
 
     def learn_page_subtitle(self) -> str:
