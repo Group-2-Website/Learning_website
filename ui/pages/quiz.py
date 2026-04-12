@@ -21,9 +21,9 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
     # ── Generate the first question ─────────────────────────────────────
     if is_mc:
-        question_text, options, correct_answer = topic.generate_mc_question(active_filters)
+        question_text, options, correct_answer = topic.get_mc_question(active_filters)
     else:
-        question_text, correct_answer = topic.generate_question(active_filters)
+        question_text, correct_answer = topic.get_question(active_filters)
         options = []
 
     state = {
@@ -117,9 +117,9 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
             return
 
         if is_mc:
-            state["question"], state["options"], state["answer"] = topic.generate_mc_question(state["filters"])
+            state["question"], state["options"], state["answer"] = topic.get_mc_question(state["filters"])
         else:
-            state["question"], state["answer"] = topic.generate_question(state["filters"])
+            state["question"], state["answer"] = topic.get_question(state["filters"])
             state["options"] = []
 
         state["checked"] = False

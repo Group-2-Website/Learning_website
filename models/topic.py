@@ -1,5 +1,6 @@
 from __future__ import annotations
 from models.learning_card import LearningStep
+from models.quiz_card import QuizCard
 
 
 class Topic:
@@ -8,9 +9,35 @@ class Topic:
     has_learning: bool = True
     has_painting: bool = False
     quiz_mode: str = "text"  # "text" (type answer) or "multiple_choice" (select from options)
+    quiz_source: str = "logic"  # "logic" = generate_question, "database" = _load_question_from_db
+
+    # ── Public quiz entry points (factory dispatch) ─────────────────────
+
+    def get_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
+        """Single public entry point for obtaining a quiz question.
+
+        Dispatches to ``generate_question`` (code-logic) or
+        ``_load_question_from_db`` (database-backed) based on *quiz_source*.
+        """
+        if self.quiz_source == "database":
+            card = self._load_question_from_db(filters)
+            return card.question, card.correct_answer
+        return self.generate_question(filters)
+
+    def get_mc_question(self, filters: dict[str, str] | None = None) -> tuple[str, list[str], str]:
+        """Single public entry point for obtaining a multiple-choice quiz question."""
+        if self.quiz_source == "database":
+            card = self._load_question_from_db(filters)
+            return card.question, card.options, card.correct_answer
+        return self.generate_mc_question(filters)
+
+    # ── Override points ─────────────────────────────────────────────────
 
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
-        """Return (question_text, correct_answer) as strings. Optional filters argument for compatibility."""
+        """Return (question_text, correct_answer) as strings.
+
+        Override this in logic-based topics (quiz_source="logic").
+        """
         raise NotImplementedError
 
     def generate_mc_question(self, filters: dict[str, str] | None = None) -> tuple[str, list[str], str]:
@@ -21,6 +48,18 @@ class Topic:
         """
         q, a = self.generate_question(filters)
         return q, [], a
+
+    def _load_question_from_db(self, filters: dict[str, str] | None = None) -> QuizCard:
+        """Load a QuizCard from a topic-specific data source.
+
+        Override this in database-backed topics (quiz_source="database").
+        Each topic should query its own dedicated table.
+        Must return a ``QuizCard`` instance.
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} has quiz_source='database' "
+            f"but does not override _load_question_from_db()"
+        )
 
     def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
         """Optional quiz filters: {filter_name: [(value, label), ...]} for UI menus."""
