@@ -4,31 +4,38 @@ import re
 
 from sqlalchemy import func
 
-from Database.Learning import LearningStepRow, Session
+from Database.Learning import Operation as OperationRow, Fraction as FractionRow, Session
 from models.learning_card import LearningStep
 from models.subject import Subject
 from models.topic import Topic
+
+_SUBJECT_MODEL_MAP = {
+    "operations": OperationRow,
+    "fractions": FractionRow,
+}
 
 
 def load_steps_from_db(
     subject_name: str,
     topic_name: str | None = None,
 ) -> list[LearningStep]:
-    """Load learning steps from the unified ``learning_steps`` table.
+    """Load learning steps from the dedicated table for *subject_name*.
 
-    *subject_name* selects the subject partition (e.g. ``"operations"``).
     *topic_name* optionally filters within that subject.
     """
+    model = _SUBJECT_MODEL_MAP.get(subject_name.lower())
+    if model is None:
+        print(f"[DEBUG] Unknown subject: {subject_name}")
+        return []
+
     session = Session()
     try:
-        query = session.query(LearningStepRow).filter(
-            func.lower(LearningStepRow.subject) == subject_name.lower()
-        )
+        query = session.query(model)
         if topic_name:
             query = query.filter(
-                func.lower(LearningStepRow.topic) == topic_name.lower()
+                func.lower(model.topic) == topic_name.lower()
             )
-        rows = query.order_by(LearningStepRow.id).all()
+        rows = query.order_by(model.id).all()
 
         return [
             LearningStep(

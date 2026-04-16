@@ -8,6 +8,7 @@ from models.topic import Topic
 from ui.pages.common import _apply_bg, _build_page_header, audio_button_html, add_audio_player_script
 
 
+# ── Tiny UI helpers to cut down inline repetition ───────────────────────
 def _quiz_button(label: str, on_click, *, bg: str, color: str, extra_classes: str = "", extra_style: str = "") -> None:
     btn = ui.button(label, on_click=on_click).props("rounded")
     if extra_classes:
@@ -16,27 +17,31 @@ def _quiz_button(label: str, on_click, *, bg: str, color: str, extra_classes: st
 
 
 def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, str] | None = None) -> None:
+    """Render the interactive quiz page for any topic."""
     feedback_seconds = 1.4
     url = topic.page_background_image()
     if url:
         _apply_bg(url)
 
     is_mc = getattr(topic, "quiz_mode", "text") == "multiple_choice"
+
     active_filters = topic.sanitize_quiz_filters(initial_filters or topic.default_quiz_filters())
     num_questions = int(active_filters.get("number of questions", 10))
 
-    def _generate_question(filters: dict[str, str]) -> QuizCard:
-        if is_mc:
-            return topic.get_mc_question(filters)
+    # ── Unified question generator ──────────────────────────────────────
+    def _generate_question(filters) -> QuizCard:
+        """Return a QuizCard regardless of quiz mode."""
         return topic.get_question(filters)
 
+    card = _generate_question(active_filters)
+
     state = {
-        "card": _generate_question(active_filters),
-        "score": 0,
+        "card":     card,
+        "score":    0,
         "attempts": 0,
-        "checked": False,
-        "filters": dict(active_filters),
-        "asked": 0,
+        "checked":  False,
+        "filters":  dict(active_filters),
+        "asked":    0,
         "num_questions": num_questions,
         "feedback_token": 0,
         "selected_option": "",
@@ -48,6 +53,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
     audio_btn_holder: list = []
 
     def _update_audio_button() -> None:
+        """Show or hide the audio button based on the current question's audio_url."""
         if not audio_btn_holder:
             return
         container = audio_btn_holder[0]
@@ -58,6 +64,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
                 ui.html(html)
 
     def show_feedback(message: str, style_class: str) -> None:
+        """Show feedback briefly and clear it after a short delay."""
         state["feedback_token"] += 1
         token = state["feedback_token"]
         feedback_label.text = message
@@ -69,6 +76,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
         ui.timer(feedback_seconds, clear_feedback_if_latest, once=True)
 
+    # ── User-input helpers ──────────────────────────────────────────────
     def _get_user_answer() -> str:
         if is_mc:
             return state["selected_option"]
@@ -85,16 +93,27 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
             return
         container = mc_buttons_holder[0]
         container.clear()
+        colors = [
+            ("#D1FAE5", "#A7F3D0"),  # light green
+            ("#FEF9C3", "#FDE68A"),  # light yellow
+            ("#FFE4E6", "#FECDD3"),  # light pink
+        ]
         with container:
-            for option in state["card"].options:
-                ui.button(option, on_click=lambda choice=option: _select_option(choice)) \
-                    .props("rounded outline") \
-                    .style(
-                        "width:100%;text-align:left;font-size:16px;font-weight:600;"
-                        "color:#60435F;border:2px solid #D67AB5;background:white;"
-                    )
+            for i, opt in enumerate(state["card"].options):
+                c1, c2 = colors[i % len(colors)]
+                ui.button(
+                    opt,
+                    on_click=lambda o=opt: _select_option(o)
+                ).props("unelevated no-caps").style(
+                    f"width:100%;font-size:28px;font-weight:900;color:#4A3F55 !important;"
+                    f"padding:22px 48px;border-radius:25px;border:none;"
+                    f"background:linear-gradient(135deg,{c1},{c2}) !important;"
+                    f"box-shadow:0 10px 0 rgba(0,0,0,0.12);"
+                    f"transition:all 0.15s ease;"
+                ).classes("mc-btn")
 
     def _reset_input() -> None:
+        """Clear the answer area after advancing to a new question."""
         state["checked"] = False
         state["selected_option"] = ""
         if is_mc:
@@ -103,11 +122,13 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
             answer_input_holder[0].value = ""
             answer_input_holder[0].run_method("focus")
 
-    def check_answer() -> None:
+    # ── Core quiz logic ─────────────────────────────────────────────────
+    def check_answer():
         if state["checked"]:
             return
 
         is_correct, error = topic.check_answer(_get_user_answer(), state["card"].correct_answer)
+
         if error:
             show_feedback(error, "quiz-feedback-wrong")
             return
@@ -122,10 +143,11 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         score_label.text = f"Score: {state['score']} / {state['attempts']}"
         ui.timer(feedback_seconds, _advance, once=True)
 
-    def show_hint() -> None:
+    def show_hint():
         show_feedback(f" Hint: the answer is {state['card'].correct_answer}", "quiz-feedback-wrong")
 
-    def _advance() -> None:
+    def _advance():
+        """Load a new question."""
         state["asked"] += 1
         if state["asked"] >= state["num_questions"]:
             finish_quiz()
@@ -140,11 +162,11 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         if visual_holder:
             visual_holder[0].content = topic.question_visual_html(state["card"].question)
 
-    def next_question() -> None:
+    def next_question():
         check_answer()
         _advance()
 
-    def finish_quiz() -> None:
+    def finish_quiz():
         check_answer()
         dest = (
             f"/{subject.url_slug}/{topic.name.lower()}/results"
@@ -156,13 +178,18 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
     with ui.element("div").classes("page-content1"):
         _build_page_header(back_dest, f"Back to {topic.name}", f"  {topic.name} Quiz", "")
 
-        with ui.element("div").classes("mode-card").style("max-width:560px;margin:0;"):
-            score_label = ui.label("Score: 0").style("color:#D67AB5;font-weight:700;font-size:15px;")
+        with ui.element("div").classes("mode-card").style("max-width:900px;margin:0;"):
+            score_label = ui.label("Score: 0").style(
+                "color:#D67AB5;font-weight:700;font-size:15px;"
+            )
+
             question_label = ui.label(state["card"].question).classes("quiz-question")
+
             type_hint_label = ui.label(state["card"].type_hint).style(
                 "font-size:18px;color:#D67AB5;font-weight:600;text-align:center;width:100%;"
             )
 
+            # ── Audio listen button ─────────────────────────────────────
             audio_btn_holder.append(
                 ui.element("div").style("display:flex;justify-content:center;margin:6px 0;")
             )
@@ -173,7 +200,9 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
                 visual_holder.append(ui.html(initial_visual))
 
             if is_mc:
-                mc_buttons_holder.append(ui.column().style("gap:10px;width:100%;max-width:420px;"))
+                mc_buttons_holder.append(
+                    ui.column().style("gap:20px;width:100%;max-width:760px;")
+                )
                 _rebuild_mc_buttons()
             else:
                 answer_input_holder.append(
@@ -187,21 +216,29 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
             with ui.row().style("gap:12px;flex-wrap:wrap;justify-content:center;"):
                 if not is_mc:
-                    _quiz_button(
-                        "Submit ✓",
-                        check_answer,
-                        bg="linear-gradient(135deg,#60435F,#D67AB5)",
-                        color="white",
-                    )
-                _quiz_button("Skip →", next_question, bg="#f3e8ff", color="#60435F")
-                _quiz_button(
-                    "   Hint",
-                    show_hint,
-                    bg="#fffbe6",
-                    color="#b45309",
-                    extra_classes="btn-svg-icon",
-                    extra_style="--icon: url('/images/icons/machine-learning.svg');",
-                )
-                _quiz_button("Finish Quiz", finish_quiz, bg="#fee2e2", color="#7f1d1d")
+                    _quiz_button("Submit ✓", check_answer,
+                                 bg="linear-gradient(135deg,#60435F,#D67AB5)", color="white")
+                _quiz_button("Skip →", next_question,
+                             bg="#f3e8ff", color="#60435F")
+                _quiz_button("   Hint", show_hint,
+                             bg="#fffbe6", color="#b45309",
+                             extra_classes="btn-svg-icon",
+                             extra_style="--icon: url('/images/icons/machine-learning.svg');")
+                _quiz_button("Finish Quiz", finish_quiz,
+                             bg="#fee2e2", color="#7f1d1d")
 
         add_audio_player_script()
+        ui.add_head_html("""
+        <style>
+        .mc-btn:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 12px 0 rgba(0,0,0,0.18);
+        }
+        .mc-btn:active {
+            transform: translateY(3px) scale(0.97);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+        }
+        </style>
+        """)
+
+

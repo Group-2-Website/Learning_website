@@ -1,7 +1,6 @@
 import csv
 import os
-
-from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 
@@ -15,11 +14,7 @@ _CSV_DIR = os.path.join(_DATABASE_DIR, "csv")
 _DATABASE_PATH = os.path.join(_DATABASE_DIR, "learning.db")
 
 
-class LearningStepRow(Base):
-    __tablename__ = "learning_steps"
-
-    id = Column(Integer, primary_key=True)
-    subject = Column(String)
+class ContentMixin:
     content_type = Column(String)
     topic = Column(String)
     item_type = Column(String)
@@ -28,10 +23,6 @@ class LearningStepRow(Base):
     expression = Column(String)
     answer = Column(String)
     image = Column(String)
-
-
-Operation = LearningStepRow
-Fraction = LearningStepRow
 
 
 class DictionaryWord(Base):
@@ -46,6 +37,18 @@ class DictionaryWord(Base):
     meanings = Column(String)
     word_type = Column(String)
     topic = Column(String)
+
+
+class Operation(ContentMixin, Base):
+    __tablename__ = "operations"
+
+    id = Column(Integer, primary_key=True)
+
+
+class Fraction(ContentMixin, Base):
+    __tablename__ = "fractions"
+
+    id = Column(Integer, primary_key=True)
 
 
 class Biology(Base):
@@ -77,10 +80,10 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
 
-def read_csv_rows(file_path: str) -> list[dict[str, str]]:
+def read_csv_rows(file_path):
     for encoding in ("utf-8-sig", "cp1252"):
         try:
-            with open(file_path, encoding=encoding, newline="") as file:
+            with open(file_path, encoding=encoding) as file:
                 return list(csv.DictReader(file))
         except UnicodeDecodeError:
             continue
@@ -93,40 +96,11 @@ def read_csv_rows(file_path: str) -> list[dict[str, str]]:
     )
 
 
-def _import_learning_steps(csv_filename: str, subject_tag: str) -> None:
-    csv_path = os.path.join(_CSV_DIR, csv_filename)
-    session = Session()
-    try:
-        rows = read_csv_rows(csv_path)
-        session.add_all(
-            LearningStepRow(
-                subject=subject_tag,
-                content_type=row.get("content_type", ""),
-                topic=row.get("topic", ""),
-                item_type=row.get("item_type", ""),
-                title=row.get("title", ""),
-                explanation=row.get("explanation", ""),
-                expression=row.get("expression", ""),
-                answer=row.get("answer", ""),
-                image=row.get("image", ""),
-            )
-            for row in rows
-            if row.get("content_type") and row.get("title")
-        )
-        session.commit()
-        print(f"{subject_tag} imported")
-    except Exception:
-        session.rollback()
-        raise
-    finally:
-        session.close()
-
-
-def import_dictionary_words() -> None:
+def import_dictionary_words():
     session = Session()
     try:
         rows = read_csv_rows(os.path.join(_CSV_DIR, "flashcard_words_cleaned.csv"))
-        session.add_all(
+        words = [
             DictionaryWord(
                 english=row["english"],
                 german=row["german"],
@@ -138,7 +112,8 @@ def import_dictionary_words() -> None:
                 topic=row.get("topic", ""),
             )
             for row in rows
-        )
+        ]
+        session.add_all(words)
         session.commit()
         print("dictionary imported")
     except Exception:
@@ -148,22 +123,68 @@ def import_dictionary_words() -> None:
         session.close()
 
 
-def import_operations() -> None:
-    _import_learning_steps("operations.csv", "operations")
+def import_operations():
+    session = Session()
+    try:
+        rows = read_csv_rows(os.path.join(_CSV_DIR, "operations.csv"))
+        operations = [
+            Operation(
+                content_type=row["content_type"],
+                topic=row["topic"],
+                item_type=row["item_type"],
+                title=row["title"],
+                explanation=row["explanation"],
+                expression=row["expression"],
+                answer=row["answer"],
+                image=row["image"],
+            )
+            for row in rows
+        ]
+        session.add_all(operations)
+        session.commit()
+        print("operations imported")
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
-def import_fractions() -> None:
-    _import_learning_steps("fractions_learning.csv", "fractions")
+def import_fractions():
+    session = Session()
+    try:
+        rows = read_csv_rows(os.path.join(_CSV_DIR, "fractions_learning.csv"))
+        fractions = [
+            Fraction(
+                content_type=row["content_type"],
+                topic=row["topic"],
+                item_type=row["item_type"],
+                title=row["title"],
+                explanation=row["explanation"],
+                expression=row.get("expression", ""),
+                answer=row.get("answer", ""),
+                image=row.get("image", ""),
+            )
+            for row in rows
+        ]
+        session.add_all(fractions)
+        session.commit()
+        print("fractions imported")
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
-def import_grouped_quiz_csvs(model, files: list[str]) -> None:
+def import_grouped_quiz_csvs(model, files):
     session = Session()
     try:
         for filename in files:
             file_path = os.path.join(_CSV_DIR, filename)
             source_csv = os.path.splitext(filename)[0].strip().lower()
-            rows = read_csv_rows(file_path)
-            session.add_all(
+            reader_rows = read_csv_rows(file_path)
+            rows = [
                 model(
                     source_csv=source_csv,
                     question=row["Question"],
@@ -172,8 +193,10 @@ def import_grouped_quiz_csvs(model, files: list[str]) -> None:
                     option_c=row["Option C"],
                     correct_answer=row["Correct Answer"],
                 )
-                for row in rows
-            )
+                for row in reader_rows
+            ]
+            session.add_all(rows)
+
         session.commit()
         print(f"{model.__tablename__} imported")
     except Exception:
@@ -183,17 +206,25 @@ def import_grouped_quiz_csvs(model, files: list[str]) -> None:
         session.close()
 
 
-def import_biology() -> None:
+def import_biology():
     import_grouped_quiz_csvs(
         Biology,
-        ["animals.csv", "plant.csv", "human_body.csv"],
+        [
+            "animals.csv",
+            "pLant.csv",
+            "human_body.csv",
+        ],
     )
 
 
-def import_geography() -> None:
+def import_geography():
     import_grouped_quiz_csvs(
         Geography,
-        ["continants.csv", "countries.csv", "water in the earth.csv"],
+        [
+            "continants.csv",
+            "countries.csv",
+            "water in the earth.csv",
+        ],
     )
 
 
