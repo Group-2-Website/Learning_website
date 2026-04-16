@@ -42,6 +42,7 @@ class DictionaryWord(Base):
     article_french = Column(String)
     meanings = Column(String)
     word_type = Column(String)
+    topic = Column(String)
 
 
 engine = create_engine(f"sqlite:///{os.path.join(_PROJECT_ROOT, 'Database', 'learning.db')}")
@@ -98,6 +99,7 @@ def import_dictionary_words():
                     article_french=row["article_french"],
                     meanings=row["meanings"],
                     word_type=row["type"],
+                    topic=row.get("topic", ""),
                 )
                 for row in reader
             ]

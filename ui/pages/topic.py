@@ -24,7 +24,7 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
                 ):
                     ui.html('<img src="/images/icons/read.svg" style="width:80px;height:80px;object-fit:contain;">')
                     ui.label("Learning").classes("mode-title")
-                    ui.label("Read step-by-step explanations.").classes("mode-desc")
+                    ui.label("Explore and learn at your own pace!").classes("mode-desc")
 
             quiz_filter_dest = f"/{subject.url_slug}/{topic.name.lower()}/filter"
             with ui.element("div").classes("mode-card").on(
@@ -41,4 +41,4 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
                 ):
                     ui.html('<img src="/images/icons/paint-palette.svg" style="width:80px;height:80px;object-fit:contain;">')
                     ui.label("Painting").classes("mode-title")
-                    ui.label("Paint your understanding!").classes("mode-desc")
+                    ui.label("Get creative and draw what you learned!").classes("mode-desc")

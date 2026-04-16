@@ -10,38 +10,48 @@ class Topic:
     has_painting: bool = False
     quiz_mode: str = "text"  # "text" (type answer) or "multiple_choice" (select from options)
     quiz_source: str = "logic"  # "logic" = generate_question, "database" = _load_question_from_db
+    learn_subtitle: str = ""
 
-    # ── Public quiz entry points (factory dispatch) ─────────────────────
-
-    def get_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
+    def get_question(self, filters: dict[str, str] | None = None) -> QuizCard:
         """Single public entry point for obtaining a quiz question.
 
         Dispatches to ``generate_question`` (code-logic) or
         ``_load_question_from_db`` (database-backed) based on *quiz_source*.
+
+        Always returns a ``QuizCard`` — never a raw tuple.
         """
         if self.quiz_source == "database":
             card = self._load_question_from_db(filters)
-            return card.question, card.correct_answer
-        return self.generate_question(filters)
+            if card is None:
+                return QuizCard(question="No question available.", correct_answer="N/A", topic=self.name)
+            return card
+        q, a = self.generate_question(filters)
+        return QuizCard(question=q, correct_answer=a, topic=self.name)
 
-    def get_mc_question(self, filters: dict[str, str] | None = None) -> tuple[str, list[str], str]:
-        """Single public entry point for obtaining a multiple-choice quiz question."""
+    def get_mc_question(self, filters: dict[str, str] | None = None) -> QuizCard:
+        """Single public entry point for obtaining a multiple-choice quiz question.
+
+        Always returns a ``QuizCard`` with populated *options*.
+        """
         if self.quiz_source == "database":
             card = self._load_question_from_db(filters)
-            return card.question, card.options, card.correct_answer
-        return self.generate_mc_question(filters)
+            if card is None:
+                return QuizCard(question="No question available.", correct_answer="N/A", topic=self.name)
+            return card
+        q, opts, a = self.generate_mc_question(filters)
+        return QuizCard(question=q, options=opts, correct_answer=a, topic=self.name)
 
-    # ── Override points ─────────────────────────────────────────────────
+    # ── Override hooks (return simple tuples) ────────────────────────
 
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
-        """Return (question_text, correct_answer) as strings.
+        """Return ``(question_text, correct_answer)`` as plain strings.
 
         Override this in logic-based topics (quiz_source="logic").
         """
         raise NotImplementedError
 
     def generate_mc_question(self, filters: dict[str, str] | None = None) -> tuple[str, list[str], str]:
-        """Return (question_text, [option_a, option_b, option_c], correct_answer).
+        """Return ``(question_text, [options], correct_answer)``.
 
         Only used when ``quiz_mode == "multiple_choice"``.
         Default implementation wraps ``generate_question`` with empty choices.
@@ -49,12 +59,12 @@ class Topic:
         q, a = self.generate_question(filters)
         return q, [], a
 
-    def _load_question_from_db(self, filters: dict[str, str] | None = None) -> QuizCard:
+    def _load_question_from_db(self, filters: dict[str, str] | None = None) -> QuizCard | None:
         """Load a QuizCard from a topic-specific data source.
 
         Override this in database-backed topics (quiz_source="database").
         Each topic should query its own dedicated table.
-        Must return a ``QuizCard`` instance.
+        Must return a ``QuizCard`` instance (or ``None`` if nothing is available).
         """
         raise NotImplementedError(
             f"{self.__class__.__name__} has quiz_source='database' "
@@ -87,7 +97,7 @@ class Topic:
 
     def learn_page_subtitle(self) -> str:
         """Subtitle shown at the top of the learn page."""
-        return f"Step-by-step guide to {self.name}."
+        return self.learn_subtitle or f"Explore and learn about {self.name}!"
 
     def paint_page_subtitle(self) -> str:
         """Subtitle shown at the top of the draw page."""

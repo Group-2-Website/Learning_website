@@ -38,6 +38,7 @@ def _placeholder_paint_pages(topic_name: str) -> str:
 class ScienceTopic(Topic):
     has_learning = False
     has_painting = True
+    quiz_mode: str =  "multiple_choice"
 
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
         return "Quiz content will be added later.", "coming soon"
@@ -68,7 +69,7 @@ class Biology(ScienceTopic):
 class Science(Subject):
     name = "Science"
     url_slug = "science"
-    icon = "/images/Biology_Geography.png"
+    icon = "/images/icons/laboratory.svg"
     topics: list[Topic] = [Geography(), Biology()]
 
     def page_background_image(self) -> str:
