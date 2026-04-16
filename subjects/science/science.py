@@ -46,16 +46,6 @@ class ScienceTopic(Topic):
     has_learning = False
     has_painting = True
 
-    def generate_question(
-        self, filters: dict[str, str] | None = None
-    ) -> tuple[str, str] | tuple[str, str, list[str]]:
-        return "Quiz content will be added later.", "coming soon"
-
-    def check_answer(self, user: str, correct: str) -> tuple[bool, str]:
-        if not user.strip():
-            return False, "Please enter an answer."
-        return False, "Quiz content is not added yet."
-
     def page_background_image(self) -> str:
         return "/images/science.png"
 
