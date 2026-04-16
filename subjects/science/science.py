@@ -7,9 +7,9 @@ from sqlalchemy import func
 from Database.Learning import Biology as DBBiology
 from Database.Learning import Geography as DBGeography
 from Database.Learning import Session
-from models.quiz_card import QuizCard
 from models.subject import Subject
 from models.topic import Topic
+from models.quiz_card import QuizCard
 
 
 def _placeholder_paint_pages(topic_name: str) -> str:
@@ -46,8 +46,7 @@ def _placeholder_paint_pages(topic_name: str) -> str:
 class ScienceTopic(Topic):
     has_learning = False
     has_painting = True
-    quiz_mode = "multiple_choice"
-    quiz_source = "database"
+    quiz_mode: str = "multiple_choice"
 
     def page_background_image(self) -> str:
         return "/images/science.png"
@@ -60,6 +59,8 @@ class ScienceTopic(Topic):
 
 
 class DatabaseScienceTopic(ScienceTopic):
+    quiz_mode: str = "multiple_choice"
+    quiz_source: str = "database"
     category_filter_name = "category"
     source_model = None
     source_options: list[tuple[str, str]] = []
@@ -76,7 +77,7 @@ class DatabaseScienceTopic(ScienceTopic):
         effective_filters = self.sanitize_quiz_filters(filters or {})
         selected_source = effective_filters.get(self.category_filter_name)
         if self.source_model is None or not selected_source:
-            return QuizCard(question="Quiz content will be added later.", correct_answer="coming soon", topic=self.name)
+            return None
 
         session = Session()
         try:
@@ -89,26 +90,17 @@ class DatabaseScienceTopic(ScienceTopic):
             session.close()
 
         if not rows:
-            return QuizCard(question="Quiz content will be added later.", correct_answer="coming soon", topic=self.name)
+            return None
 
-        selected_row = random.choice(rows)
-        options = [
-            selected_row.option_a,
-            selected_row.option_b,
-            selected_row.option_c,
-        ]
+        row = random.choice(rows)
+        options = [row.option_a, row.option_b, row.option_c]
         random.shuffle(options)
         return QuizCard(
-            question=selected_row.question,
+            question=row.question,
             options=options,
-            correct_answer=selected_row.correct_answer,
+            correct_answer=row.correct_answer,
             topic=self.name,
         )
-
-    def check_answer(self, user: str, correct: str) -> tuple[bool, str]:
-        if not user.strip():
-            return False, "Please choose an answer."
-        return user.strip().lower() == correct.strip().lower(), ""
 
 
 class Geography(DatabaseScienceTopic):
