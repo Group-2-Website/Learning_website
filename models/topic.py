@@ -28,18 +28,6 @@ class Topic:
         q, a = self.generate_question(filters)
         return QuizCard(question=q, correct_answer=a, topic=self.name)
 
-    def get_mc_question(self, filters: dict[str, str] | None = None) -> QuizCard:
-        """Single public entry point for obtaining a multiple-choice quiz question.
-
-        Always returns a ``QuizCard`` with populated *options*.
-        """
-        if self.quiz_source == "database":
-            card = self._load_question_from_db(filters)
-            if card is None:
-                return QuizCard(question="No question available.", correct_answer="N/A", topic=self.name)
-            return card
-        q, opts, a = self.generate_mc_question(filters)
-        return QuizCard(question=q, options=opts, correct_answer=a, topic=self.name)
 
     # ── Override hooks (return simple tuples) ────────────────────────
 
@@ -50,22 +38,9 @@ class Topic:
         """
         raise NotImplementedError
 
-    def generate_mc_question(self, filters: dict[str, str] | None = None) -> tuple[str, list[str], str]:
-        """Return ``(question_text, [options], correct_answer)``.
-
-        Only used when ``quiz_mode == "multiple_choice"``.
-        Default implementation wraps ``generate_question`` with empty choices.
-        """
-        q, a = self.generate_question(filters)
-        return q, [], a
 
     def _load_question_from_db(self, filters: dict[str, str] | None = None) -> QuizCard | None:
-        """Load a QuizCard from a topic-specific data source.
 
-        Override this in database-backed topics (quiz_source="database").
-        Each topic should query its own dedicated table.
-        Must return a ``QuizCard`` instance (or ``None`` if nothing is available).
-        """
         raise NotImplementedError(
             f"{self.__class__.__name__} has quiz_source='database' "
             f"but does not override _load_question_from_db()"

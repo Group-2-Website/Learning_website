@@ -1,6 +1,6 @@
 import csv
 import os
-from sqlalchemy import create_engine, Column, Integer, String, func
+from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 
@@ -9,14 +9,12 @@ class Base(DeclarativeBase):
 
 
 _PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+_DATABASE_DIR = os.path.join(_PROJECT_ROOT, "Database")
+_CSV_DIR = os.path.join(_DATABASE_DIR, "csv")
+_DATABASE_PATH = os.path.join(_DATABASE_DIR, "learning.db")
 
 
-class LearningStepRow(Base):
-
-    __tablename__ = "learning_steps"
-
-    id = Column(Integer, primary_key=True)
-    subject = Column(String)
+class ContentMixin:
     content_type = Column(String)
     topic = Column(String)
     item_type = Column(String)
@@ -25,10 +23,6 @@ class LearningStepRow(Base):
     expression = Column(String)
     answer = Column(String)
     image = Column(String)
-
-
-Operation = LearningStepRow
-Fraction = LearningStepRow
 
 
 class DictionaryWord(Base):
@@ -45,65 +39,81 @@ class DictionaryWord(Base):
     topic = Column(String)
 
 
-engine = create_engine(f"sqlite:///{os.path.join(_PROJECT_ROOT, 'Database', 'learning.db')}")
+class Operation(ContentMixin, Base):
+    __tablename__ = "operations"
+
+    id = Column(Integer, primary_key=True)
+
+
+class Fraction(ContentMixin, Base):
+    __tablename__ = "fractions"
+
+    id = Column(Integer, primary_key=True)
+
+
+class Biology(Base):
+    __tablename__ = "biology"
+
+    id = Column(Integer, primary_key=True)
+    source_csv = Column(String, nullable=False)
+    question = Column(String, nullable=False)
+    option_a = Column(String, nullable=False)
+    option_b = Column(String, nullable=False)
+    option_c = Column(String, nullable=False)
+    correct_answer = Column(String, nullable=False)
+
+
+class Geography(Base):
+    __tablename__ = "geography"
+
+    id = Column(Integer, primary_key=True)
+    source_csv = Column(String, nullable=False)
+    question = Column(String, nullable=False)
+    option_a = Column(String, nullable=False)
+    option_b = Column(String, nullable=False)
+    option_c = Column(String, nullable=False)
+    correct_answer = Column(String, nullable=False)
+
+
+engine = create_engine(f"sqlite:///{_DATABASE_PATH}")
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
 
-_DB_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-def _import_csv(csv_filename: str, subject_tag: str) -> None:
-    """Import a CSV file into *learning_steps* with the given *subject_tag*."""
-    csv_path = os.path.join(_DB_DIR, csv_filename)
-    session = Session()
-    try:
-        with open(csv_path, encoding="utf-8-sig") as file:
-            reader = csv.DictReader(file)
-            rows = [
-                LearningStepRow(
-                    subject=subject_tag,
-                    content_type=row.get("content_type", ""),
-                    topic=row.get("topic", ""),
-                    item_type=row.get("item_type", ""),
-                    title=row.get("title", ""),
-                    explanation=row.get("explanation", ""),
-                    expression=row.get("expression", ""),
-                    answer=row.get("answer", ""),
-                    image=row.get("image", ""),
-                )
-                for row in reader
-                if row.get("content_type") and row.get("title")
-            ]
-            session.add_all(rows)
-        session.commit()
-        print(f"{subject_tag} imported ({len(rows)} rows)")
-    except Exception:
-        session.rollback()
-        raise
-    finally:
-        session.close()
+def read_csv_rows(file_path):
+    for encoding in ("utf-8-sig", "cp1252"):
+        try:
+            with open(file_path, encoding=encoding) as file:
+                return list(csv.DictReader(file))
+        except UnicodeDecodeError:
+            continue
+    raise UnicodeDecodeError(
+        "utf-8",
+        b"",
+        0,
+        1,
+        f"Could not decode CSV file: {file_path}",
+    )
 
 
 def import_dictionary_words():
     session = Session()
     try:
-        with open(os.path.join(_DB_DIR, "csv/flashcard_words_cleaned.csv"), encoding="utf-8-sig") as file:
-            reader = csv.DictReader(file)
-            words = [
-                DictionaryWord(
-                    english=row["english"],
-                    german=row["german"],
-                    article_german=row["article_german"],
-                    french=row["french"],
-                    article_french=row["article_french"],
-                    meanings=row["meanings"],
-                    word_type=row["type"],
-                    topic=row.get("topic", ""),
-                )
-                for row in reader
-            ]
-            session.add_all(words)
+        rows = read_csv_rows(os.path.join(_CSV_DIR, "flashcard_words_cleaned.csv"))
+        words = [
+            DictionaryWord(
+                english=row["english"],
+                german=row["german"],
+                article_german=row["article_german"],
+                french=row["french"],
+                article_french=row["article_french"],
+                meanings=row["meanings"],
+                word_type=row["type"],
+                topic=row.get("topic", ""),
+            )
+            for row in rows
+        ]
+        session.add_all(words)
         session.commit()
         print("dictionary imported")
     except Exception:
@@ -114,14 +124,113 @@ def import_dictionary_words():
 
 
 def import_operations():
-    _import_csv("csv/operations.csv", "operations")
+    session = Session()
+    try:
+        rows = read_csv_rows(os.path.join(_CSV_DIR, "operations.csv"))
+        operations = [
+            Operation(
+                content_type=row["content_type"],
+                topic=row["topic"],
+                item_type=row["item_type"],
+                title=row["title"],
+                explanation=row["explanation"],
+                expression=row["expression"],
+                answer=row["answer"],
+                image=row["image"],
+            )
+            for row in rows
+        ]
+        session.add_all(operations)
+        session.commit()
+        print("operations imported")
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 def import_fractions():
-    _import_csv("csv/fractions_learning.csv", "fractions")
+    session = Session()
+    try:
+        rows = read_csv_rows(os.path.join(_CSV_DIR, "fractions_learning.csv"))
+        fractions = [
+            Fraction(
+                content_type=row["content_type"],
+                topic=row["topic"],
+                item_type=row["item_type"],
+                title=row["title"],
+                explanation=row["explanation"],
+                expression=row.get("expression", ""),
+                answer=row.get("answer", ""),
+                image=row.get("image", ""),
+            )
+            for row in rows
+        ]
+        session.add_all(fractions)
+        session.commit()
+        print("fractions imported")
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+def import_grouped_quiz_csvs(model, files):
+    session = Session()
+    try:
+        for filename in files:
+            file_path = os.path.join(_CSV_DIR, filename)
+            source_csv = os.path.splitext(filename)[0].strip().lower()
+            reader_rows = read_csv_rows(file_path)
+            rows = [
+                model(
+                    source_csv=source_csv,
+                    question=row["Question"],
+                    option_a=row["Option A"],
+                    option_b=row["Option B"],
+                    option_c=row["Option C"],
+                    correct_answer=row["Correct Answer"],
+                )
+                for row in reader_rows
+            ]
+            session.add_all(rows)
+
+        session.commit()
+        print(f"{model.__tablename__} imported")
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+def import_biology():
+    import_grouped_quiz_csvs(
+        Biology,
+        [
+            "animals.csv",
+            "pLant.csv",
+            "human_body.csv",
+        ],
+    )
+
+
+def import_geography():
+    import_grouped_quiz_csvs(
+        Geography,
+        [
+            "continants.csv",
+            "countries.csv",
+            "water in the earth.csv",
+        ],
+    )
 
 
 if __name__ == "__main__":
     import_dictionary_words()
     import_operations()
     import_fractions()
+    import_biology()
+    import_geography()

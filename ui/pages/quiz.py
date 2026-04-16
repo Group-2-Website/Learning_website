@@ -31,8 +31,6 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
     # ── Unified question generator ──────────────────────────────────────
     def _generate_question(filters) -> QuizCard:
         """Return a QuizCard regardless of quiz mode."""
-        if is_mc:
-            return topic.get_mc_question(filters)
         return topic.get_question(filters)
 
     card = _generate_question(active_filters)
@@ -95,14 +93,24 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
             return
         container = mc_buttons_holder[0]
         container.clear()
+        colors = [
+            ("#D1FAE5", "#A7F3D0"),  # light green
+            ("#FEF9C3", "#FDE68A"),  # light yellow
+            ("#FFE4E6", "#FECDD3"),  # light pink
+        ]
         with container:
-            for opt in state["card"].options:
-                ui.button(opt, on_click=lambda o=opt: _select_option(o)) \
-                    .props("rounded outline") \
-                    .style(
-                    "width:100%;text-align:left;font-size:16px;font-weight:600;"
-                    "color:#60435F;border:2px solid #D67AB5;background:white;"
-                )
+            for i, opt in enumerate(state["card"].options):
+                c1, c2 = colors[i % len(colors)]
+                ui.button(
+                    opt,
+                    on_click=lambda o=opt: _select_option(o)
+                ).props("unelevated no-caps").style(
+                    f"width:100%;font-size:28px;font-weight:900;color:#4A3F55 !important;"
+                    f"padding:22px 48px;border-radius:25px;border:none;"
+                    f"background:linear-gradient(135deg,{c1},{c2}) !important;"
+                    f"box-shadow:0 10px 0 rgba(0,0,0,0.12);"
+                    f"transition:all 0.15s ease;"
+                ).classes("mc-btn")
 
     def _reset_input() -> None:
         """Clear the answer area after advancing to a new question."""
@@ -170,7 +178,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
     with ui.element("div").classes("page-content1"):
         _build_page_header(back_dest, f"Back to {topic.name}", f"  {topic.name} Quiz", "")
 
-        with ui.element("div").classes("mode-card").style("max-width:560px;margin:0;"):
+        with ui.element("div").classes("mode-card").style("max-width:900px;margin:0;"):
             score_label = ui.label("Score: 0").style(
                 "color:#D67AB5;font-weight:700;font-size:15px;"
             )
@@ -193,7 +201,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
             if is_mc:
                 mc_buttons_holder.append(
-                    ui.column().style("gap:10px;width:100%;max-width:420px;")
+                    ui.column().style("gap:20px;width:100%;max-width:760px;")
                 )
                 _rebuild_mc_buttons()
             else:
@@ -220,5 +228,17 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
                              bg="#fee2e2", color="#7f1d1d")
 
         add_audio_player_script()
+        ui.add_head_html("""
+        <style>
+        .mc-btn:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 12px 0 rgba(0,0,0,0.18);
+        }
+        .mc-btn:active {
+            transform: translateY(3px) scale(0.97);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+        }
+        </style>
+        """)
 
 
