@@ -163,7 +163,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
             visual_holder[0].content = topic.question_visual_html(state["card"].question)
 
     def next_question():
-        check_answer()
+        state["checked"] = True
         _advance()
 
     def finish_quiz():
