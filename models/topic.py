@@ -15,7 +15,6 @@ class Topic:
     learn_subtitle: str = ""
 
     def get_question(self, filters: dict[str, str] | None = None) -> QuizCard:
-        """Return a QuizCard for text-entry topics."""
         if self.quiz_source == "database":
             card = self._load_question_from_db(filters)
             if card is None:
@@ -25,7 +24,6 @@ class Topic:
         return QuizCard(question=question, correct_answer=answer, topic=self.name)
 
     def get_mc_question(self, filters: dict[str, str] | None = None) -> QuizCard:
-        """Return a QuizCard for multiple-choice topics."""
         if self.quiz_source == "database":
             card = self._load_question_from_db(filters)
             if card is None:
@@ -35,16 +33,13 @@ class Topic:
         return QuizCard(question=question, options=options, correct_answer=answer, topic=self.name)
 
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
-        """Return ``(question_text, correct_answer)`` for logic-backed topics."""
         raise NotImplementedError
 
     def generate_mc_question(self, filters: dict[str, str] | None = None) -> tuple[str, list[str], str]:
-        """Return ``(question_text, [options], correct_answer)``."""
         question, answer = self.generate_question(filters)
         return question, [], answer
 
     def _load_question_from_db(self, filters: dict[str, str] | None = None) -> QuizCard | None:
-        """Return a QuizCard for database-backed topics."""
         raise NotImplementedError(
             f"{self.__class__.__name__} has quiz_source='database' "
             f"but does not override _load_question_from_db()"

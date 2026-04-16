@@ -16,7 +16,6 @@ def _quiz_button(label: str, on_click, *, bg: str, color: str, extra_classes: st
 
 
 def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, str] | None = None) -> None:
-    """Render the interactive quiz page for any topic."""
     feedback_seconds = 1.4
     url = topic.page_background_image()
     if url:
