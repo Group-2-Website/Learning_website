@@ -7,7 +7,7 @@ from models.topic import Topic
 
 
 class BaseVocabTopic(Topic):
-    csv_path = Path("Database/flashcard_words_cleaned.csv")
+    csv_path = Path("Database/csv/flashcard_words_cleaned.csv")
     source_col: str = ""
     target_col: str = ""
     _cards: list[dict[str, str]] | None = None

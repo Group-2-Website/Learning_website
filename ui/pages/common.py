@@ -222,7 +222,6 @@ def add_global_css():
         box-shadow: 0 4px 14px rgba(96,67,95,0.10);
         transition: transform .18s ease, box-shadow .18s ease;
       }
-      
       .mode-card::after {
           content: "";
           position: absolute;
@@ -294,6 +293,7 @@ def add_global_css():
         font-weight: 800;
         color: #60435F;
         text-align: center;
+        white-space: pre-line;
       }
 
       .quiz-feedback-correct {
@@ -333,6 +333,24 @@ def add_global_css():
          background-position: center;
          background-size: contain;
          }
+
+      .start-quiz-btn.q-btn,
+      .start-quiz-btn.q-btn.bg-primary,
+      .start-quiz-btn.q-btn[class*="bg-"] {
+         background: linear-gradient(135deg, #FF9A9E, #FAD0C4) !important;
+         background-color: transparent !important;
+         color: #4A3F55 !important;
+         border: none !important;
+         border-radius: 20px !important;
+         transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+      }
+      .start-quiz-btn.q-btn:hover {
+         transform: scale(1.05) !important;
+         box-shadow: 0 6px 18px rgba(255, 154, 158, 0.4) !important;
+      }
+      .start-quiz-btn .q-focus-helper {
+         display: none !important;
+      }
          
     .stars-title {
       font-size: 34px;
@@ -397,14 +415,14 @@ def _apply_bg(url: str) -> None:
       body {{
         background-image: url('{url}') !important;
         background-size: cover !important;
-        background-position: center !important;
+        background-position: center top 50px !important;
         background-attachment: fixed !important;
       }}
       body::before {{
         content: '';
         position: fixed;
         inset: 0;
-        background: rgba(255,255,255,0.45);
+        background: rgba(255,255,255,0.55);
         z-index: 0;
         pointer-events: none;
       }}
@@ -420,5 +438,69 @@ def _build_page_header(back_dest: str, back_label: str, title: str, subtitle: st
     if subtitle:
         ui.label(subtitle).classes("page-subtitle")
 
+def audio_button_html(audio_url: str, *, size: str = "normal") -> str:
+    if not audio_url:
+        return ""
+
+    font = "16px" if size == "normal" else "18px"
+    pad = "6px 14px" if size == "normal" else "8px 18px"
+    icon = "20px" if size == "normal" else "24px"
+
+    return (
+        f'<button class="audio-btn" data-audio-url="{audio_url}"'
+        f' style="'
+        f' background:linear-gradient(135deg,#FF9A9E,#FAD0C4);'
+        f' border:none;'
+        f' cursor:pointer;'
+        f' color:#4A3F55;'
+        f' font-size:{font};'
+        f' padding:{pad};'
+        f' border-radius:999px;'
+        f' display:inline-flex;'
+        f' align-items:center;'
+        f' gap:8px;'
+        f' box-shadow:0 4px 10px rgba(0,0,0,0.1);'
+        f' transition:all 0.25s ease;'
+        f' font-weight:600;'
+        f' "'
+        f' onmouseover="this.style.transform=\'scale(1.05)\';this.style.boxShadow=\'0 6px 14px rgba(0,0,0,0.15)\'"'
+        f' onmouseout="this.style.transform=\'scale(1)\';this.style.boxShadow=\'0 4px 10px rgba(0,0,0,0.1)\'"'
+        f' title="Listen to pronunciation"'
+        f'>'
+
+        f'<span style="'
+        f' display:flex;align-items:center;justify-content:center;'
+        f' width:{icon};height:{icon};'
+        f' background:white;border-radius:50%;'
+        f' padding:4px;'
+        f' ">'
+        f'<img src="/images/icons/high-volume.svg"'
+        f' style="width:100%;height:100%;object-fit:contain;" />'
+        f'</span>'
+
+        f' Listen'
+        f'</button>'
+    )
 
 
+def add_audio_player_script() -> None:
+    """Inject the shared JS that makes every .audio-btn play its audio."""
+    ui.add_body_html("""
+    <script>
+    (function(){
+      if(window.__audioPlayerReady) return;
+      window.__audioPlayerReady = true;
+      var currentAudio = null;
+      document.addEventListener('click', function(e){
+        var btn = e.target.closest('.audio-btn');
+        if(!btn) return;
+        e.stopPropagation();
+        var url = btn.getAttribute('data-audio-url');
+        if(!url) return;
+        if(currentAudio){ currentAudio.pause(); currentAudio = null; }
+        currentAudio = new Audio(url);
+        currentAudio.play();
+      });
+    })();
+    </script>
+    """)

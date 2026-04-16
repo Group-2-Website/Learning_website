@@ -6,7 +6,7 @@ import re
 from fractions import Fraction
 
 from .mathematics import MathTopic, OPERATION_GROUPS, load_steps_from_db, parse_binary_expression
-from models.learning_card import LearningCard
+from models.learning_card import LearningStep
 
 
 def _token_to_fraction(token: str) -> Fraction | None:
@@ -170,21 +170,12 @@ class Fractions(MathTopic):
             f'flex-wrap:wrap;margin:8px 0;">{joined}</div>'
         )
 
-    def learning_cards(self) -> list[LearningCard]:
-        rows = load_steps_from_db("fractions", table="fractions")
-        self._step_rows = rows
-        if rows:
-            self._step_images = [r.get("image") or "" for r in rows]
-            return [
-                LearningCard(
-                    title=r.get("title") or "",
-                    image=r.get("image") or "",
-                    paragraph=r.get("explanation") or "",
-                    detail=r.get("expression") or "",
-                    note=f"Answer: {r['answer']}" if r.get("answer") else "",
-                )
-                for r in rows
-            ]
+    def learning_steps(self) -> list[LearningStep]:
+        steps = load_steps_from_db(subject_name="fractions")
+        self._step_rows = steps
+        if steps:
+            self._step_images = [s.image for s in steps]
+            return steps
         self._step_images = []
         return []
 
@@ -193,13 +184,13 @@ class Fractions(MathTopic):
         base = super().step_visual_html(step_index)
         rows = getattr(self, "_step_rows", None)
         if rows is None:
-            rows = load_steps_from_db("fractions", table="fractions")
+            rows = load_steps_from_db(subject_name="fractions")
             self._step_rows = rows
         if step_index < 0 or step_index >= len(rows):
             return base
 
-        row = rows[step_index]
-        expression = (row.get("expression") or "").strip()
+        step = rows[step_index]
+        expression = step.secondary_text.strip()
         parsed = parse_binary_expression(expression)
         if not parsed:
             return base
@@ -217,7 +208,7 @@ class Fractions(MathTopic):
         left_svg = self._circles_for_fraction(left_f.numerator, left_f.denominator, left_color, size=78)
         right_svg = self._circles_for_fraction(right_f.numerator, right_f.denominator, right_color, size=78)
 
-        answer_f = _token_to_fraction((row.get("answer") or "").strip())
+        answer_f = _token_to_fraction(step.hint_text.strip())
         if answer_f is not None and answer_f.denominator == 1:
             answer_visual = (
                 '<div style="min-width:46px;height:46px;border-radius:999px;background:#96c97d;'

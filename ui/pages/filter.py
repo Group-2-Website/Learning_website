@@ -69,13 +69,12 @@ def build_quiz_filter_page(subject: Subject, topic: Topic) -> None:
             _update_visibility()
 
             ui.button("Start Quiz ", on_click=_start_quiz) \
-                .props("rounded size=lg") \
-                .classes("btn-svg-icon") \
-                .style( "--icon: url('/images/icons/rocket.svg');font-weight:700;")\
+                .props("rounded size=lg unelevated flat no-caps") \
+                .classes("btn-svg-icon start-quiz-btn") \
                 .style(
+                    "--icon: url('/images/icons/rocket.svg');"
+                    "font-weight:700;font-size:18px;"
+                    "padding:12px 40px;margin-top:24px;"
+                )
 
-                        "background:linear-gradient(135deg,#60435F,#D67AB5);"
-                        "color:white;font-weight:700;font-size:18px;"
-                        "padding:12px 40px;margin-top:24px;"
-                    )
 

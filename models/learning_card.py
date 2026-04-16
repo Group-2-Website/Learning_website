@@ -3,10 +3,14 @@ from dataclasses import dataclass
 
 
 @dataclass
-class LearningCard:
-    """A single card in a topic's learning sequence."""
+class LearningStep:
     title: str = ""
     image: str = ""
-    paragraph: str = ""
-    detail: str = ""
-    note: str = ""
+    main_text: str = ""
+    secondary_text: str = ""
+    hint_text: str = ""
+    audio_url: str = ""
+
+
+# Keep the old name available for backwards compatibility.
+LearningCard = LearningStep

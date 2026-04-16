@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 
 from .mathematics import MathTopic, OPERATION_GROUPS, load_steps_from_db, parse_binary_expression
-from models.learning_card import LearningCard
+from models.learning_card import LearningStep
 
 
 def token_to_int(token: str) -> int | None:
@@ -80,23 +80,14 @@ class Operation(MathTopic):
 
         return int(user) == int(correct), ""
 
-    def learning_cards(self) -> list[LearningCard]:
-        steps = load_steps_from_db(table="operations")
+    def learning_steps(self) -> list[LearningStep]:
+        steps = load_steps_from_db(subject_name="operations")
         self._step_rows = steps
         if steps:
-            self._step_images = [row.get("image") or "" for row in steps]
-            return [
-                LearningCard(
-                    title=row.get("title") or "",
-                    image=row.get("image") or "",
-                    paragraph=row.get("explanation") or "",
-                    detail=row.get("expression") or "",
-                    note=f"Answer: {row['answer']}" if row.get("answer") else "",
-                )
-                for row in steps
-            ]
+            self._step_images = [step.image for step in steps]
+            return steps
         self._step_images = []
-        return [LearningCard()]
+        return [LearningStep()]
 
     @staticmethod
     def _clamp(value: int, minimum: int, maximum: int) -> int:
@@ -202,14 +193,14 @@ class Operation(MathTopic):
         base = super().step_visual_html(step_index)
         rows = getattr(self, "_step_rows", None)
         if rows is None:
-            rows = load_steps_from_db(table="operations")
+            rows = load_steps_from_db(subject_name="operations")
             self._step_rows = rows
 
         if step_index < 0 or step_index >= len(rows):
             return base
 
-        row = rows[step_index]
-        expression = (row.get("expression") or "").strip()
+        step = rows[step_index]
+        expression = step.secondary_text.strip()
         parsed = parse_binary_expression(expression)
         if not parsed:
             return base
@@ -217,7 +208,7 @@ class Operation(MathTopic):
         left_t, op, right_t = parsed
         left_value = token_to_int(left_t)
         right_value = token_to_int(right_t)
-        answer_value = token_to_int((row.get("answer") or "").strip())
+        answer_value = token_to_int(step.hint_text.strip())
 
         if left_value is None or right_value is None:
             return base

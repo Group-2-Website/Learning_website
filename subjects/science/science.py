@@ -7,6 +7,7 @@ from sqlalchemy import func
 from Database.Learning import Biology as DBBiology
 from Database.Learning import Geography as DBGeography
 from Database.Learning import Session
+from models.quiz_card import QuizCard
 from models.subject import Subject
 from models.topic import Topic
 
@@ -45,6 +46,8 @@ def _placeholder_paint_pages(topic_name: str) -> str:
 class ScienceTopic(Topic):
     has_learning = False
     has_painting = True
+    quiz_mode = "multiple_choice"
+    quiz_source = "database"
 
     def page_background_image(self) -> str:
         return "/images/science.png"
@@ -69,11 +72,11 @@ class DatabaseScienceTopic(ScienceTopic):
             return {}
         return {self.category_filter_name: self.source_options[0][0]}
 
-    def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
+    def _load_question_from_db(self, filters: dict[str, str] | None = None) -> QuizCard | None:
         effective_filters = self.sanitize_quiz_filters(filters or {})
         selected_source = effective_filters.get(self.category_filter_name)
         if self.source_model is None or not selected_source:
-            return "Quiz content will be added later.", "coming soon"
+            return QuizCard(question="Quiz content will be added later.", correct_answer="coming soon", topic=self.name)
 
         session = Session()
         try:
@@ -86,7 +89,7 @@ class DatabaseScienceTopic(ScienceTopic):
             session.close()
 
         if not rows:
-            return "Quiz content will be added later.", "coming soon"
+            return QuizCard(question="Quiz content will be added later.", correct_answer="coming soon", topic=self.name)
 
         selected_row = random.choice(rows)
         options = [
@@ -95,7 +98,12 @@ class DatabaseScienceTopic(ScienceTopic):
             selected_row.option_c,
         ]
         random.shuffle(options)
-        return selected_row.question, selected_row.correct_answer, options
+        return QuizCard(
+            question=selected_row.question,
+            options=options,
+            correct_answer=selected_row.correct_answer,
+            topic=self.name,
+        )
 
     def check_answer(self, user: str, correct: str) -> tuple[bool, str]:
         if not user.strip():
@@ -126,7 +134,7 @@ class Biology(DatabaseScienceTopic):
 class Science(Subject):
     name = "Science"
     url_slug = "science"
-    icon = "/images/Biology_Geography.png"
+    icon = "/images/icons/laboratory.svg"
     topics: list[Topic] = [Geography(), Biology()]
 
     def page_background_image(self) -> str:
