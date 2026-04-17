@@ -44,6 +44,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         "num_questions": num_questions,
         "feedback_token": 0,
         "selected_option": "",
+        "hint_revealed": 0,
     }
 
     visual_holder: list = []
@@ -143,7 +144,15 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         ui.timer(feedback_seconds, _advance, once=True)
 
     def show_hint():
-        show_feedback(f" Hint: the answer is {state['card'].correct_answer}", "quiz-feedback-wrong")
+        answer = state["card"].correct_answer
+        revealed = state["hint_revealed"]
+        if revealed >= len(answer):
+            show_feedback(f"💡 Hint: {answer}", "quiz-feedback-hint")
+            return
+        revealed += 1
+        state["hint_revealed"] = revealed
+        hint_text = answer[:revealed] + " _" * (len(answer) - revealed)
+        show_feedback(f"💡 Hint: {hint_text}  ({len(answer)} character )", "quiz-feedback-hint")
 
     def _advance():
         """Load a new question."""
@@ -153,6 +162,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
             return
 
         state["card"] = _generate_question(state["filters"])
+        state["hint_revealed"] = 0
         question_label.text = state["card"].question
         type_hint_label.text = state["card"].type_hint
         _update_audio_button()

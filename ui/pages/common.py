@@ -308,6 +308,12 @@ def add_global_css():
         font-size: 18px;
       }
 
+      .quiz-feedback-hint {
+        color: #b45309;
+        font-weight: 700;
+        font-size: 18px;
+      }
+
       .back-btn {
         display: inline-flex;
         align-items: center;
