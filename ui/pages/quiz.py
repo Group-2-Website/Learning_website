@@ -8,7 +8,6 @@ from models.topic import Topic
 from ui.pages.common import _apply_bg, _build_page_header, audio_button_html, add_audio_player_script
 
 
-# ── Tiny UI helpers to cut down inline repetition ───────────────────────
 def _quiz_button(label: str, on_click, *, bg: str, color: str, extra_classes: str = "", extra_style: str = "") -> None:
     btn = ui.button(label, on_click=on_click).props("rounded")
     if extra_classes:
