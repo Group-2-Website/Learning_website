@@ -1,2 +1,3 @@
 venv
 .idea
+**/audio_cache/*.mp3
