@@ -81,6 +81,9 @@ Session = sessionmaker(bind=engine)
 
 
 def read_csv_rows(file_path):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"CSV file not found: {file_path}")
+
     for encoding in ("utf-8-sig", "cp1252"):
         try:
             with open(file_path, encoding=encoding) as file:
@@ -100,6 +103,8 @@ def import_dictionary_words():
     session = Session()
     try:
         rows = read_csv_rows(os.path.join(_CSV_DIR, "flashcard_words_cleaned.csv"))
+        # Keep import idempotent across repeated runs.
+        session.query(DictionaryWord).delete()
         words = [
             DictionaryWord(
                 english=row["english"],
@@ -127,6 +132,8 @@ def import_operations():
     session = Session()
     try:
         rows = read_csv_rows(os.path.join(_CSV_DIR, "operations.csv"))
+        # Keep import idempotent across repeated runs.
+        session.query(Operation).delete()
         operations = [
             Operation(
                 content_type=row["content_type"],
@@ -154,6 +161,8 @@ def import_fractions():
     session = Session()
     try:
         rows = read_csv_rows(os.path.join(_CSV_DIR, "fractions_learning.csv"))
+        # Keep import idempotent across repeated runs.
+        session.query(Fraction).delete()
         fractions = [
             Fraction(
                 content_type=row["content_type"],
@@ -184,6 +193,8 @@ def import_grouped_quiz_csvs(model, files):
             file_path = os.path.join(_CSV_DIR, filename)
             source_csv = os.path.splitext(filename)[0].strip().lower()
             reader_rows = read_csv_rows(file_path)
+            # Replace only rows for this source CSV to keep grouped imports repeatable.
+            session.query(model).filter_by(source_csv=source_csv).delete()
             rows = [
                 model(
                     source_csv=source_csv,
@@ -211,7 +222,7 @@ def import_biology():
         Biology,
         [
             "animals.csv",
-            "pLant.csv",
+            "plant.csv",
             "human_body.csv",
         ],
     )
