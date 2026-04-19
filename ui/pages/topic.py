@@ -18,7 +18,10 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
 
         with ui.element("div").classes("mode-grid"):
             if topic.has_learning:
-                learn_dest = f"/{subject.url_slug}/{topic.name.lower()}/learn"
+                if topic.learn_filter_definitions():
+                    learn_dest = f"/{subject.url_slug}/{topic.name.lower()}/learn-filter"
+                else:
+                    learn_dest = f"/{subject.url_slug}/{topic.name.lower()}/learn"
                 with ui.element("div").classes("mode-card").on(
                         "click", lambda d=learn_dest: ui.navigate.to(d)
                 ):

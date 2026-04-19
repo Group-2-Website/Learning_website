@@ -24,7 +24,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
     is_mc = getattr(topic, "quiz_mode", "text") == "multiple_choice"
 
-    active_filters = topic.sanitize_quiz_filters(initial_filters or topic.default_quiz_filters())
+    active_filters = topic.sanitize_quiz_filters(initial_filters or {})
     num_questions = int(active_filters.get("number of questions", 10))
 
     # ── Unified question generator ──────────────────────────────────────

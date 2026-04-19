@@ -11,7 +11,7 @@ from ui.pages.quiz import build_quiz_page
 from ui.pages.quiz_results import build_quiz_results_page
 from ui.pages.topic import build_topic_mode_page
 from ui.pages.subject import build_subject_page
-from ui.pages.filter import build_quiz_filter_page
+from ui.pages.filter import build_quiz_filter_page, build_learn_filter_page
 
 
 def _setup_page() -> None:
@@ -64,9 +64,18 @@ def _register_topic(subject, topic):
         build_quiz_results_page(_s, _t, score, attempts)
 
     if topic.has_learning:
+        if topic.learn_filter_definitions():
+            @ui.page(f'/{slug}/{topic_slug}/learn-filter')
+            def topic_learn_filter_page(_s=subject, _t=topic):
+                _setup_page()
+                build_learn_filter_page(_s, _t)
+
         @ui.page(f'/{slug}/{topic_slug}/learn')
-        def topic_learn_page(_s=subject, _t=topic):
+        def topic_learn_page(request: Request, _s=subject, _t=topic):
             _setup_page()
+            filters = dict(request.query_params)
+            if filters:
+                _t.apply_learn_filters(filters)
             build_learn_page(_s, _t)
 
     if topic.has_painting:

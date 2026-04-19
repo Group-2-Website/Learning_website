@@ -1,6 +1,42 @@
 from __future__ import annotations
+from dataclasses import dataclass, field
+
 from models.learning_card import LearningStep
 from models.quiz_card import QuizCard
+
+
+@dataclass
+class FilterOption:
+    """A single selectable option inside a filter dropdown."""
+    value: str
+    label: str
+
+
+@dataclass
+class FilterDefinition:
+    """A named filter with its available options and a default selection."""
+    name: str
+    options: list[FilterOption] = field(default_factory=list)
+    default: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.default and self.options:
+            self.default = self.options[0].value
+
+    @property
+    def options_map(self) -> dict[str, str]:
+        """Return {value: label} dict suitable for ui.select."""
+        return {opt.value: opt.label for opt in self.options}
+
+    @property
+    def valid_values(self) -> set[str]:
+        return {opt.value for opt in self.options}
+
+    def sanitize(self, value: str | None) -> str:
+        """Return *value* if valid, else the default."""
+        if value in self.valid_values:
+            return value
+        return self.default
 
 
 class Topic:
@@ -46,25 +82,25 @@ class Topic:
             f"but does not override _load_question_from_db()"
         )
 
-    def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
-        """Optional quiz filters: {filter_name: [(value, label), ...]} for UI menus."""
-        return {}
+    def quiz_filter_definitions(self) -> list[FilterDefinition]:
+        """Return filter definitions for the quiz settings page."""
+        return []
 
-    def default_quiz_filters(self) -> dict[str, str]:
-        """Default selected filter values for this topic."""
-        return {}
+    def learn_filter_definitions(self) -> list[FilterDefinition]:
+        """Return filter definitions for the learn settings page."""
+        return []
 
     def sanitize_quiz_filters(self, selected: dict[str, str]) -> dict[str, str]:
         """Validate and normalize filter selections against quiz_filter_definitions."""
-        definitions = self.quiz_filter_definitions()
-        defaults = self.default_quiz_filters()
         cleaned: dict[str, str] = {}
-        for filter_name, options in definitions.items():
-            valid_values = {value for value, _ in options}
-            fallback = defaults.get(filter_name, options[0][0])
-            value = selected.get(filter_name, fallback)
-            cleaned[filter_name] = value if value in valid_values else fallback
+        for fd in self.quiz_filter_definitions():
+            cleaned[fd.name] = fd.sanitize(selected.get(fd.name))
         return cleaned
+
+
+    def apply_learn_filters(self, filters: dict[str, str]) -> None:
+        """Apply learn filters before learning_steps() is called."""
+        pass
 
     def learning_steps(self) -> list[LearningStep]:
         """Return a list of LearningStep objects."""

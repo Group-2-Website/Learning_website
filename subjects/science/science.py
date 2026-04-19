@@ -8,7 +8,7 @@ from Database.Learning import Biology as DBBiology
 from Database.Learning import Geography as DBGeography
 from Database.Learning import Session
 from models.subject import Subject
-from models.topic import Topic
+from models.topic import Topic, FilterOption, FilterDefinition
 from models.quiz_card import QuizCard
 
 
@@ -63,15 +63,10 @@ class DatabaseScienceTopic(ScienceTopic):
     quiz_source: str = "database"
     category_filter_name = "category"
     source_model = None
-    source_options: list[tuple[str, str]] = []
+    source_options: list[FilterOption] = []
 
-    def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
-        return {self.category_filter_name: self.source_options}
-
-    def default_quiz_filters(self) -> dict[str, str]:
-        if not self.source_options:
-            return {}
-        return {self.category_filter_name: self.source_options[0][0]}
+    def quiz_filter_definitions(self) -> list[FilterDefinition]:
+        return [FilterDefinition(self.category_filter_name, self.source_options)]
 
     def _load_question_from_db(self, filters: dict[str, str] | None = None) -> QuizCard | None:
         effective_filters = self.sanitize_quiz_filters(filters or {})
@@ -107,9 +102,9 @@ class Geography(DatabaseScienceTopic):
     name = "Geography"
     source_model = DBGeography
     source_options = [
-        ("countries", "Countries"),
-        ("continants", "Continents"),
-        ("water in the earth", "Water In The Earth"),
+        FilterOption("countries", "Countries"),
+        FilterOption("continants", "Continents"),
+        FilterOption("water in the earth", "Water In The Earth"),
     ]
 
 
@@ -117,9 +112,9 @@ class Biology(DatabaseScienceTopic):
     name = "Biology"
     source_model = DBBiology
     source_options = [
-        ("human_body", "Human Body"),
-        ("plant", "Plant"),
-        ("animals", "Animals"),
+        FilterOption("human_body", "Human Body"),
+        FilterOption("plant", "Plant"),
+        FilterOption("animals", "Animals"),
     ]
 
 

@@ -7,7 +7,7 @@ from sqlalchemy import func
 from Database.Learning import Operation as OperationRow, Fraction as FractionRow, Session
 from models.learning_card import LearningStep
 from models.subject import Subject
-from models.topic import Topic
+from models.topic import Topic, FilterOption, FilterDefinition
 
 _SUBJECT_MODEL_MAP = {
     "operations": OperationRow,
@@ -79,40 +79,37 @@ OPERATION_GROUPS: dict[str, list[str]] = {
     "div": ["÷"],
 }
 
-_COMMON_OPERATION_FILTER: list[tuple[str, str]] = [
-    ("all", "All operations"),
-    ("add_sub", "Addition + Subtraction"),
-    ("mul_div", "Multiplication + Division"),
-    ("add", "Addition only"),
-    ("sub", "Subtraction only"),
-    ("mul", "Multiplication only"),
-    ("div", "Division only"),
+_COMMON_OPERATION_FILTER: list[FilterOption] = [
+    FilterOption("all", "All operations"),
+    FilterOption("add_sub", "Addition + Subtraction"),
+    FilterOption("mul_div", "Multiplication + Division"),
+    FilterOption("add", "Addition only"),
+    FilterOption("sub", "Subtraction only"),
+    FilterOption("mul", "Multiplication only"),
+    FilterOption("div", "Division only"),
 ]
 
-_COMMON_DIFFICULTY_FILTER: list[tuple[str, str]] = [
-    ("mixed", "Mixed"),
-    ("easy", "Easy"),
-    ("medium", "Medium"),
-    ("hard", "Hard"),
+_COMMON_DIFFICULTY_FILTER: list[FilterOption] = [
+    FilterOption("mixed", "Mixed"),
+    FilterOption("easy", "Easy"),
+    FilterOption("medium", "Medium"),
+    FilterOption("hard", "Hard"),
 ]
 
-_COMMON_QUESTION_COUNT_FILTER: list[tuple[str, str]] = [
-    (str(n), f"{n} questions") for n in [5, 10, 15, 20]
+_COMMON_QUESTION_COUNT_FILTER: list[FilterOption] = [
+    FilterOption(str(n), f"{n} questions") for n in [5, 10, 15, 20]
 ]
 
 
 class MathTopic(Topic):
     """Shared base for Math topics: provides common operation/difficulty filters."""
 
-    def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
-        return {
-            "operation": _COMMON_OPERATION_FILTER,
-            "difficulty": _COMMON_DIFFICULTY_FILTER,
-            "number of questions": _COMMON_QUESTION_COUNT_FILTER,
-        }
-
-    def default_quiz_filters(self) -> dict[str, str]:
-        return {"operation": "all", "difficulty": "mixed", "number of questions": "10"}
+    def quiz_filter_definitions(self) -> list[FilterDefinition]:
+        return [
+            FilterDefinition("operation", _COMMON_OPERATION_FILTER, default="all"),
+            FilterDefinition("difficulty", _COMMON_DIFFICULTY_FILTER, default="mixed"),
+            FilterDefinition("number of questions", _COMMON_QUESTION_COUNT_FILTER, default="10"),
+        ]
 
 
 from subjects.math.operations import Operation

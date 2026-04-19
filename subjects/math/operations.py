@@ -27,9 +27,10 @@ class Operation(MathTopic):
     def page_background_image(self) -> str:
         return "/images/operation.jpg"
 
-    def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
+    def quiz_filter_definitions(self) -> list:
+        from models.topic import FilterOption, FilterDefinition
         result = super().quiz_filter_definitions()
-        result["row"] = [(str(i), f"Row {i}") for i in range(1, 13)]
+        result.append(FilterDefinition("row", [FilterOption(str(i), f"Row {i}") for i in range(1, 13)], default="1"))
         return result
 
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
@@ -80,7 +81,50 @@ class Operation(MathTopic):
 
         return int(user) == int(correct), ""
 
+    def learn_filter_definitions(self) -> list:
+        from models.topic import FilterOption, FilterDefinition
+        topic_options = [
+            FilterOption("all", "Introduction (All Operations)"),
+        ] + [FilterOption(f"row_{i}", f"Multiplication Row {i}") for i in range(1, 13)]
+        return [
+            FilterDefinition("topic", topic_options, default="all"),
+        ]
+
+    def apply_learn_filters(self, filters: dict[str, str]) -> None:
+        topic_val = filters.get("topic", "all")
+        if topic_val.startswith("row_"):
+            try:
+                self._learn_row = max(1, min(12, int(topic_val.split("_")[1])))
+            except (ValueError, IndexError):
+                self._learn_row = None
+        else:
+            self._learn_row = None
+
+    def learn_page_subtitle(self) -> str:
+        row = getattr(self, "_learn_row", None)
+        if row is not None:
+            return f"Let's learn about Row {row}"
+        return "Explore and learn about Operations!"
+
     def learning_steps(self) -> list[LearningStep]:
+        row = getattr(self, "_learn_row", None)
+        if row is not None:
+            # Generate multiplication table cards for the selected row
+            steps = []
+            for i in range(1, 13):
+                result = row * i
+                steps.append(LearningStep(
+                    title="",
+                    main_text=f"{row} × {i} = {result}",
+                    secondary_text=self._render_multiplication_apples(
+                        row, i
+                    ) if row * i <= 144 else "",
+                ))
+            self._step_rows = steps
+            self._step_images = ["" for _ in steps]
+            return steps
+
+        # Default: load introduction steps from DB
         steps = load_steps_from_db(subject_name="operations")
         self._step_rows = steps
         if steps:
@@ -95,7 +139,7 @@ class Operation(MathTopic):
 
     @staticmethod
     def _render_multiplication_apples(groups: int, apples_per_group: int) -> str:
-        safe_groups = Operation._clamp(groups, 1, 10)
+        safe_groups = Operation._clamp(groups, 1, 12)
         safe_apples = Operation._clamp(apples_per_group, 0, 12)
         rows_html = "".join(
             f'<div style="display:flex;gap:6px;font-size:25px;">{"🍎" * safe_apples}</div>'
