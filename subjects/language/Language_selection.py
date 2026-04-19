@@ -1,11 +1,14 @@
 from __future__ import annotations
 import random
-from Database.Learning import DictionaryWord, Session
-from models.subject import Subject
-from models.topic import Topic
 from collections import defaultdict
 from html import escape
+from urllib.parse import quote_plus
+
+from Database.Learning import DictionaryWord, Session
 from models.learning_card import LearningStep
+from models.quiz_card import QuizCard
+from models.subject import Subject
+from models.topic import Topic
 
 
 class BaseVocabTopic(Topic):
@@ -50,7 +53,8 @@ class BaseVocabTopic(Topic):
         filtered = [r for r in cards if r.get("topic", "") == selected_topic]
         return filtered or cards
 
-    def _is_noun(self, entry: dict[str, str]) -> bool:
+    @staticmethod
+    def _is_noun(entry: dict[str, str]) -> bool:
         t = entry.get("type", "").strip().lower()
         return t in {"noun", "nomen", "substantiv"}
 
@@ -77,6 +81,35 @@ class BaseVocabTopic(Topic):
     @staticmethod
     def _normalize_answer(text: str) -> str:
         return " ".join(text.strip().lower().split())
+
+    @staticmethod
+    def _tts_lang_for_col(col: str) -> str:
+        mapping = {
+            "german": "de",
+            "french": "fr",
+            "english": "en",
+        }
+        return mapping.get(col, "en")
+
+    def _tts_url(self, text: str, lang_col: str) -> str:
+        cleaned = text.strip()
+        if not cleaned:
+            return ""
+        lang = self._tts_lang_for_col(lang_col)
+        return f"/api/tts?text={quote_plus(cleaned)}&lang={quote_plus(lang)}"
+
+    @staticmethod
+    def _inline_audio_button(audio_url: str, label: str = "Listen") -> str:
+        if not audio_url:
+            return ""
+        safe_url = escape(audio_url, quote=True)
+        safe_label = escape(label)
+        return (
+            f'<button class="audio-btn" data-audio-url="{safe_url}" '
+            f'style="padding:4px 10px;border:none;border-radius:999px;'
+            f'background:#f3e8ff;color:#4A3F55;font-weight:700;cursor:pointer;">'
+            f'{safe_label}</button>'
+        )
 
     def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
         topics = sorted(
@@ -107,7 +140,7 @@ class BaseVocabTopic(Topic):
         cleaned["number of questions"] = str(len(cards))
         return cleaned
 
-    def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
+    def _next_vocab_round(self, filters: dict[str, str]) -> tuple[str, str, str, str]:
         effective = self.sanitize_quiz_filters(filters or {})
         direction = effective["translate_from"]
         selected_topic = effective["topic"]
@@ -119,7 +152,7 @@ class BaseVocabTopic(Topic):
             random.shuffle(self._session_pool)
 
         if not self._session_pool:
-            return "No words available.", "N/A"
+            return "No words available.", "N/A", "", self.source_col
 
         entry = self._session_pool.pop()
         word_type = entry.get("type", "").strip()
@@ -128,12 +161,27 @@ class BaseVocabTopic(Topic):
         if direction == self.source_col:
             prompt_term = self._term_with_article_if_needed(entry, self.source_col)
             answer = self._term_with_article_if_needed(entry, self.target_col)
+            prompt_lang_col = self.source_col
         else:
             prompt_term = self._term_with_article_if_needed(entry, self.target_col)
             answer = self._term_with_article_if_needed(entry, self.source_col)
+            prompt_lang_col = self.target_col
 
         question = f"Translate: {prompt_term}{type_suffix}"
+        return question, answer, prompt_term, prompt_lang_col
+
+    def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
+        question, answer, _, _ = self._next_vocab_round(filters or {})
         return question, answer
+
+    def get_question(self, filters: dict[str, str] | None = None) -> QuizCard:
+        question, answer, prompt_term, prompt_lang_col = self._next_vocab_round(filters or {})
+        return QuizCard(
+            question=question,
+            correct_answer=answer,
+            topic=self.name,
+            audio_url=self._tts_url(prompt_term, prompt_lang_col),
+        )
 
     def check_answer(self, user: str, correct: str) -> tuple[bool, str]:
         if not user.strip():
@@ -172,20 +220,26 @@ class BaseVocabTopic(Topic):
             ),
         )
 
-        # 2) group by topic
+        # 2) Group by topic
         grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
         for entry in cards_sorted:
             group = (entry.get("topic") or "General").strip() or "General"
             grouped[group].append(entry)
 
-        # 3) One LearningStep card per topic with a list view
+        # 3) One LearningStep card per topic with a table view
         steps: list[LearningStep] = []
-        for topic_name in sorted(grouped.keys(), key=str.lower):
+        for topic_name in sorted(grouped.keys(), key=lambda s: s.lower()):
             rows_html = "".join(
                 "<tr>"
                 f"<td style='padding:8px 10px;border-bottom:1px solid #eee;'>{escape(self._term_with_article_if_needed(e, self.source_col))}</td>"
                 f"<td style='padding:8px 10px;border-bottom:1px solid #eee;'>{escape(self._term_with_article_if_needed(e, self.target_col))}</td>"
                 f"<td style='padding:8px 10px;border-bottom:1px solid #eee;'>{escape((e.get('type') or '').strip())}</td>"
+                f"<td style='padding:8px 10px;border-bottom:1px solid #eee;'>"
+                f"<div style='display:flex;gap:6px;flex-wrap:wrap;'>"
+                f"{self._inline_audio_button(self._tts_url(self._term_with_article_if_needed(e, self.source_col), self.source_col), label=self._tts_lang_for_col(self.source_col).upper())}"
+                f"{self._inline_audio_button(self._tts_url(self._term_with_article_if_needed(e, self.target_col), self.target_col), label=self._tts_lang_for_col(self.target_col).upper())}"
+                f"</div>"
+                f"</td>"
                 "</tr>"
                 for e in grouped[topic_name]
             )
@@ -198,6 +252,7 @@ class BaseVocabTopic(Topic):
                 f"<th style='padding:10px;border-bottom:2px solid #ddd;'>{escape(self.source_col.title())}</th>"
                 f"<th style='padding:10px;border-bottom:2px solid #ddd;'>{escape(self.target_col.title())}</th>"
                 "<th style='padding:10px;border-bottom:2px solid #ddd;'>Type</th>"
+                "<th style='padding:10px;border-bottom:2px solid #ddd;'>Audio</th>"
                 "</tr>"
                 "</thead>"
                 f"<tbody>{rows_html}</tbody>"

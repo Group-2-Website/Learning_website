@@ -1,8 +1,7 @@
 from nicegui import ui, app
 from subjects import SUBJECTS
 from ui.pages import register_subject
-
-# Register the TTS audio endpoint (lives in subjects/language/tts.py)
+import subjects.language.tts  # noqa: F401
 
 for _subject in SUBJECTS:
     register_subject(_subject)
