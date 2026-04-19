@@ -1,7 +1,9 @@
 from nicegui import ui, app
 from subjects import SUBJECTS
 from ui.pages import register_subject
-import subjects.language.tts  # noqa: F401
+
+from subjects.language import tts
+tts.init()
 
 for _subject in SUBJECTS:
     register_subject(_subject)
