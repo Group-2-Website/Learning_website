@@ -1,13 +1,14 @@
 from __future__ import annotations
-import csv
 import random
-from pathlib import Path
+from Database.Learning import DictionaryWord, Session
 from models.subject import Subject
 from models.topic import Topic
+from collections import defaultdict
+from html import escape
+from models.learning_card import LearningStep
 
 
 class BaseVocabTopic(Topic):
-    csv_path = Path("Database/csv/flashcard_words_cleaned.csv")
     source_col: str = ""
     target_col: str = ""
     _cards: list[dict[str, str]] | None = None
@@ -18,27 +19,73 @@ class BaseVocabTopic(Topic):
     def _load_flashcards(self) -> list[dict[str, str]]:
         if self._cards is not None:
             return self._cards
-        with self.csv_path.open(encoding="utf-8", newline="") as f:
-            rows = list(csv.DictReader(f))
-        self._cards = [
-            r for r in rows
-            if r.get(self.source_col, "").strip() and r.get(self.target_col, "").strip()
-        ]
+
+        session = Session()
+        try:
+            rows = session.query(DictionaryWord).all()
+        finally:
+            session.close()
+
+        cards: list[dict[str, str]] = []
+        for row in rows:
+            entry = {
+                "english": (row.english or "").strip(),
+                "german": (row.german or "").strip(),
+                "french": (row.french or "").strip(),
+                "article_german": (row.article_german or "").strip(),
+                "article_french": (row.article_french or "").strip(),
+                "type": (row.word_type or "").strip(),
+                "topic": (row.topic or "").strip(),
+            }
+            if entry.get(self.source_col, "") and entry.get(self.target_col, ""):
+                cards.append(entry)
+
+        self._cards = cards
         return self._cards
 
     def _cards_for_topic(self, selected_topic: str) -> list[dict[str, str]]:
         cards = self._load_flashcards()
         if selected_topic == "all":
             return cards
-        filtered = [r for r in cards if r.get("topic", "").strip() == selected_topic]
+        filtered = [r for r in cards if r.get("topic", "") == selected_topic]
         return filtered or cards
 
+    def _is_noun(self, entry: dict[str, str]) -> bool:
+        t = entry.get("type", "").strip().lower()
+        return t in {"noun", "nomen", "substantiv"}
+
+    @staticmethod
+    def _article_key_for_lang(lang: str) -> str:
+        return f"article_{lang}"
+
+    def _term_with_article_if_needed(self, entry: dict[str, str], lang: str) -> str:
+        word = entry.get(lang, "").strip()
+        if not word or not self._is_noun(entry):
+            return word
+
+        article = entry.get(self._article_key_for_lang(lang), "").strip()
+        if not article:
+            return word
+
+        # Avoid duplicate article if the word already starts with it.
+        w = word.lower()
+        a = article.lower()
+        if w.startswith(a + " "):
+            return word
+        return f"{article} {word}"
+
+    @staticmethod
+    def _normalize_answer(text: str) -> str:
+        return " ".join(text.strip().lower().split())
+
     def quiz_filter_definitions(self) -> dict[str, list[tuple[str, str]]]:
-        topics = sorted({
-            row.get("topic", "").strip()
-            for row in self._load_flashcards()
-            if row.get("topic", "").strip()
-        })
+        topics = sorted(
+            {
+                row.get("topic", "").strip()
+                for row in self._load_flashcards()
+                if row.get("topic", "").strip()
+            }
+        )
         return {
             "translate_from": [
                 (self.source_col, f"From {self.source_col.title()} to {self.target_col.title()}"),
@@ -71,23 +118,103 @@ class BaseVocabTopic(Topic):
             self._session_pool = self._cards_for_topic(selected_topic).copy()
             random.shuffle(self._session_pool)
 
-        entry = self._session_pool.pop()
+        if not self._session_pool:
+            return "No words available.", "N/A"
 
+        entry = self._session_pool.pop()
         word_type = entry.get("type", "").strip()
-        type_suffix = f' ({word_type})' if word_type else ""
+        type_suffix = f" ({word_type})" if word_type else ""
 
         if direction == self.source_col:
-            question = f'Translate: {entry[self.source_col]}{type_suffix}'
-            answer = entry[self.target_col]
+            prompt_term = self._term_with_article_if_needed(entry, self.source_col)
+            answer = self._term_with_article_if_needed(entry, self.target_col)
         else:
-            question = f'Translate: {entry[self.target_col]}{type_suffix}'
-            answer = entry[self.source_col]
+            prompt_term = self._term_with_article_if_needed(entry, self.target_col)
+            answer = self._term_with_article_if_needed(entry, self.source_col)
+
+        question = f"Translate: {prompt_term}{type_suffix}"
         return question, answer
 
     def check_answer(self, user: str, correct: str) -> tuple[bool, str]:
         if not user.strip():
             return False, "Please enter an answer."
-        return user.strip() == correct.strip(), ""
+
+        u = self._normalize_answer(user)
+        c = self._normalize_answer(correct)
+
+        if u == c:
+            return True, ""
+
+        # If expected answer has article + noun and user typed only noun.
+        parts = c.split(" ", 1)
+        if len(parts) == 2 and u == parts[1]:
+            return False, "Bitte gib bei Nomen auch den Artikel an."
+
+        return False, ""
+
+    # From here it's about Learning
+    def _learning_label(self, entry: dict[str, str]) -> str:
+        left = self._term_with_article_if_needed(entry, self.source_col)
+        right = self._term_with_article_if_needed(entry, self.target_col)
+        word_type = (entry.get("type") or "").strip()
+        suffix = f" ({word_type})" if word_type else ""
+        return f"{left} -> {right}{suffix}"
+
+    def learning_steps(self) -> list[LearningStep]:
+        cards = self._load_flashcards()
+
+        # 1) Sort by topic, then alphabetically by source_col
+        cards_sorted = sorted(
+            cards,
+            key=lambda c: (
+                (c.get("topic") or "zzz").lower(),
+                (c.get(self.source_col) or "").lower(),
+            ),
+        )
+
+        # 2) group by topic
+        grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
+        for entry in cards_sorted:
+            group = (entry.get("topic") or "General").strip() or "General"
+            grouped[group].append(entry)
+
+        # 3) One LearningStep card per topic with a list view
+        steps: list[LearningStep] = []
+        for topic_name in sorted(grouped.keys(), key=str.lower):
+            rows_html = "".join(
+                "<tr>"
+                f"<td style='padding:8px 10px;border-bottom:1px solid #eee;'>{escape(self._term_with_article_if_needed(e, self.source_col))}</td>"
+                f"<td style='padding:8px 10px;border-bottom:1px solid #eee;'>{escape(self._term_with_article_if_needed(e, self.target_col))}</td>"
+                f"<td style='padding:8px 10px;border-bottom:1px solid #eee;'>{escape((e.get('type') or '').strip())}</td>"
+                "</tr>"
+                for e in grouped[topic_name]
+            )
+
+            table_html = (
+                "<div style='max-height:320px;overflow:auto;width:100%;'>"
+                "<table style='width:100%;border-collapse:collapse;font-size:17px;text-align:left;'>"
+                "<thead>"
+                "<tr style='background:#f6f2ff;'>"
+                f"<th style='padding:10px;border-bottom:2px solid #ddd;'>{escape(self.source_col.title())}</th>"
+                f"<th style='padding:10px;border-bottom:2px solid #ddd;'>{escape(self.target_col.title())}</th>"
+                "<th style='padding:10px;border-bottom:2px solid #ddd;'>Type</th>"
+                "</tr>"
+                "</thead>"
+                f"<tbody>{rows_html}</tbody>"
+                "</table>"
+                "</div>"
+            )
+
+            steps.append(
+                LearningStep(
+                    title=f"Topic: {topic_name}",
+                    main_text=table_html,
+                    secondary_text="",
+                    hint_text="",
+                )
+            )
+
+        return steps
 
 
 class GermanEnglish(BaseVocabTopic):

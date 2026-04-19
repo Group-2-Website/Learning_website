@@ -35,11 +35,15 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
                             ui.html(visual)
 
                         if card.main_text:
-                            ui.html(
-                                f'<p style="margin:6px 0;font-size:20px;font-weight:700;'
-                                f'color:#7B2D8E;text-align:center;line-height:1.6;">'
-                                f'{card.main_text}</p>'
-                            )
+                            text = card.main_text.strip()
+                            if text.startswith("<"):
+                                ui.html(text)  # z.B. table, ul, custom html
+                            else:
+                                ui.html(
+                                    f'<p style="margin:6px 0;font-size:20px;font-weight:700;'
+                                    f'color:#7B2D8E;text-align:center;line-height:1.6;">'
+                                    f'{text}</p>'
+                                )
 
                         if card.secondary_text:
                             ui.html(
