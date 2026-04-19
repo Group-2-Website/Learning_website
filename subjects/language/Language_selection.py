@@ -20,10 +20,11 @@ class BaseVocabTopic(Topic):
     learn_limit: int = 20          # max number of learning steps to show
 
     def __init__(self) -> None:
-        self._session_key: tuple[str, str] | None = None
+        self._session_key: tuple | None = None
         self._session_pool: list[DictionaryWord] = []
-        self._last_word_type: str = ""     # word type of the current question
-        self._last_direction: str = ""     # which column we're translating FROM
+        self._last_word_type: str = ""
+        self._last_direction: str = ""
+        self._last_quiz_type: str = "translate"
 
     # ── helpers ──────────────────────────────────────────────────────
 
@@ -142,6 +143,14 @@ class BaseVocabTopic(Topic):
         topics = self._load_topics()
         return [
             FilterDefinition(
+                "quiz_type",
+                [
+                    FilterOption("translate", "Translate words"),
+                    FilterOption("article", "Choose the correct Article"),
+                ],
+                default="translate",
+            ),
+            FilterDefinition(
                 "translate_from",
                 [
                     FilterOption(self.source_col, f"From {self.source_col.title()} to {self.target_col.title()}"),
@@ -160,18 +169,25 @@ class BaseVocabTopic(Topic):
         cleaned = super().sanitize_quiz_filters(selected)
         chosen_topic = cleaned.get("topic", "all")
         words = self._load_words(chosen_topic)
+        if cleaned.get("quiz_type") == "article":
+            words = [w for w in words if (w.word_type or "").strip().lower() == "noun"]
         cleaned["number of questions"] = str(len(words))
         return cleaned
 
     def _load_question_from_db(self, filters: dict[str, str] | None = None) -> QuizCard:
         effective = self.sanitize_quiz_filters(filters or {})
+        quiz_type = effective.get("quiz_type", "translate")
         direction = effective["translate_from"]
         selected_topic = effective["topic"]
 
-        key = (selected_topic, direction)
+        key = (selected_topic, direction, quiz_type)
         if self._session_key != key or not self._session_pool:
             self._session_key = key
-            self._session_pool = self._load_words(selected_topic).copy()
+            words = self._load_words(selected_topic)
+            if quiz_type == "article":
+                # Only nouns have articles
+                words = [w for w in words if (w.word_type or "").strip().lower() == "noun"]
+            self._session_pool = words.copy()
             random.shuffle(self._session_pool)
 
         if not self._session_pool:
@@ -180,24 +196,54 @@ class BaseVocabTopic(Topic):
         entry = self._session_pool.pop()
 
         word_type = (entry.word_type or "").strip()
-        type_suffix = f' ({word_type})' if word_type else ""
-
-        # Store context for check_answer
         self._last_word_type = word_type.lower()
         self._last_direction = direction
+        self._last_quiz_type = quiz_type
+
+        # ── Article quiz mode ───────────────────────────────────────
+        if quiz_type == "article":
+            article = (getattr(entry, self.article_col, "") or "").strip()
+            source_word = (getattr(entry, self.source_col, "") or "").strip()
+            english_word = (getattr(entry, self.target_col, "") or "").strip()
+            audio_url = self._build_audio_url(f"{article} {source_word}" if article else source_word)
+
+            # Determine article options based on language
+            if self.source_col == "german":
+                options = ["der", "die", "das"]
+            else:
+                options = ["le", "la", "l'", "les"]
+
+            return QuizCard(
+                question=f"Choose the correct Article for:\n{source_word.capitalize()}\n({english_word})",
+                correct_answer=article.lower(),
+                options=options,
+                audio_url=audio_url,
+            )
+
+        # ── Normal translate mode ───────────────────────────────────
+        type_suffix = f' ({word_type})' if word_type else ""
 
         source_val = getattr(entry, self.source_col, "") or ""
         target_val = getattr(entry, self.target_col, "") or ""
+        article = (getattr(entry, self.article_col, "") or "").strip()
+        is_noun = self._last_word_type == "noun"
 
         if direction == self.source_col:
-            question = f'Translate:\n{source_val}'
+            # Showing source (e.g. German) → answer in target (e.g. English)
+            if is_noun and article:
+                question = f'Translate:\n{article} {source_val}'
+            else:
+                question = f'Translate:\n{source_val}'
             answer = target_val
-            spoken = source_val
+            spoken = f"{article} {source_val}" if is_noun and article else source_val
             audio_lang = self.tts_lang
         else:
+            # Showing target (e.g. English) → answer in source (e.g. German)
             question = f'Translate:\n{target_val}'
-            answer = source_val
-            # Audio for the target word being shown
+            if is_noun and article:
+                answer = f"{article} {source_val}"
+            else:
+                answer = source_val
             spoken = target_val
             audio_lang = "en" if self.target_col == "english" else self.tts_lang
 
@@ -217,20 +263,47 @@ class BaseVocabTopic(Topic):
         user_stripped = user.strip()
         correct_stripped = correct.strip()
 
+        # ── Article quiz: simple case-insensitive match ─────────────
+        if self._last_quiz_type == "article":
+            return user_stripped.lower() == correct_stripped.lower(), ""
+
+        # ── Translate quiz: accept with or without article ──────────
+        # Strip known articles from both user and correct for comparison
+        german_articles = {"der", "die", "das"}
+        french_articles = {"le", "la", "l'", "les", "un", "une"}
+        all_articles = german_articles | french_articles
+
+        def strip_article(text: str) -> str:
+            lower = text.lower()
+            for art in sorted(all_articles, key=len, reverse=True):
+                prefix = art if art.endswith("'") else art + " "
+                if lower.startswith(prefix):
+                    return text[len(prefix):].strip()
+            return text
+
+        user_bare = strip_article(user_stripped)
+        correct_bare = strip_article(correct_stripped)
+
         # When the answer is a German noun, require proper capitalization
-        # (German nouns must start with a capital letter)
         answer_is_german = (
             self._last_direction == self.target_col
             and self.source_col == "german"
         )
         if answer_is_german and self._last_word_type == "noun":
-            words_match = user_stripped.lower() == correct_stripped.lower()
-            capitalized = user_stripped == correct_stripped or user_stripped.isupper()
+            # Compare bare words (without article)
+            words_match = user_bare.lower() == correct_bare.lower()
+            # Check capitalization of the bare noun
+            capitalized = user_bare[0:1].isupper() if user_bare else False
             if words_match and not capitalized:
                 return False, f"Almost! German nouns must be capitalized: {correct_stripped}"
             return words_match and capitalized, ""
 
-        return user_stripped.lower() == correct_stripped.lower(), ""
+        # General case: accept with or without article
+        if user_stripped.lower() == correct_stripped.lower():
+            return True, ""
+        if user_bare.lower() == correct_bare.lower():
+            return True, ""
+        return False, ""
 
 
 class GermanEnglish(BaseVocabTopic):

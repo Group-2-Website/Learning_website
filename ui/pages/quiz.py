@@ -22,7 +22,9 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
     if url:
         _apply_bg(url)
 
-    is_mc = getattr(topic, "quiz_mode", "text") == "multiple_choice"
+    _quiz_type_filter = (initial_filters or {}).get("quiz_type", "")
+    is_mc = (getattr(topic, "quiz_mode", "text") == "multiple_choice"
+             or _quiz_type_filter == "article")
 
     active_filters = topic.sanitize_quiz_filters(initial_filters or {})
     num_questions = int(active_filters.get("number of questions", 10))
@@ -183,9 +185,10 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         )
         ui.navigate.to(dest)
 
+    _quiz_title = "Choose the correct Article" if _quiz_type_filter == "article" else f"  {topic.name} Quiz"
     back_dest = f"/{subject.url_slug}/{topic.name.lower()}"
     with ui.element("div").classes("page-content1"):
-        _build_page_header(back_dest, f"Back to {topic.name}", f"  {topic.name} Quiz", "")
+        _build_page_header(back_dest, f"Back to {topic.name}", _quiz_title, "")
 
         with ui.element("div").classes("mode-card").style("max-width:900px;margin:0;"):
             score_label = ui.label("Score: 0").style(
