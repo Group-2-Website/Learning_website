@@ -83,21 +83,17 @@ def build_quiz_filter_page(subject: Subject, topic: Topic) -> None:
         button_icon="rocket.svg",
     )
 
-    # Quiz-specific: conditional visibility for "row" select
-    if "row" in widgets:
-        def _update_visibility() -> None:
-            show_row = (selected.get("operation") == "mul"
-                        and selected.get("difficulty") == "easy")
-            widgets["row"].set_visibility(show_row)
+    # Quiz-specific: conditional visibility rules
+    def _update_visibility() -> None:
+        topic.update_filter_visibility(selected, widgets)
 
-        # Re-wire on_change to also update visibility
-        for name, sel in widgets.items():
-            sel.on_value_change(lambda e, fn=name: (
-                selected.update({fn: e.value}),
-                _update_visibility(),
-            ))
+    for name, sel in widgets.items():
+        sel.on_value_change(lambda e, fn=name: (
+            selected.update({fn: e.value}),
+            _update_visibility(),
+        ))
 
-        _update_visibility()
+    _update_visibility()
 
 
 def build_learn_filter_page(subject: Subject, topic: Topic) -> None:

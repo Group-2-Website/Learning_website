@@ -33,6 +33,13 @@ class Operation(MathTopic):
         result.append(FilterDefinition("row", [FilterOption(str(i), f"Row {i}") for i in range(1, 13)], default="1"))
         return result
 
+    def update_filter_visibility(self, selected: dict[str, str], widgets: dict) -> None:
+        super().update_filter_visibility(selected, widgets)
+        if "row" in widgets:
+            show_row = (selected.get("operation") == "mul"
+                        and selected.get("difficulty") == "easy")
+            widgets["row"].set_visibility(show_row)
+
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
         effective_filters = self.sanitize_quiz_filters(filters or {})
 

@@ -86,6 +86,11 @@ class Topic:
         """Return filter definitions for the quiz settings page."""
         return []
 
+    def update_filter_visibility(self, selected: dict[str, str], widgets: dict) -> None:
+        """Update widget visibility based on current filter selections.
+        Override in subclasses for topic-specific visibility rules."""
+        pass
+
     def learn_filter_definitions(self) -> list[FilterDefinition]:
         """Return filter definitions for the learn settings page."""
         return []

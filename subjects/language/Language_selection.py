@@ -15,9 +15,9 @@ class BaseVocabTopic(Topic):
     quiz_source: str = "database"
     article_col: str = ""          # e.g. "article_german", "article_french"
     learn_topic_filter: str = ""   # DB topic to filter learning cards by
-    learn_subtitle: str = "20 nouns with their articles and meanings"
+    learn_subtitle: str = "Words with their articles and meanings"
     tts_lang: str = ""             # gTTS language code, e.g. "de", "fr"
-    learn_limit: int = 20          # max number of learning steps to show
+    learn_limit: int = 50          # max number of learning steps to show
 
     def __init__(self) -> None:
         self._session_key: tuple | None = None
@@ -25,8 +25,6 @@ class BaseVocabTopic(Topic):
         self._last_word_type: str = ""
         self._last_direction: str = ""
         self._last_quiz_type: str = "translate"
-
-    # ── helpers ──────────────────────────────────────────────────────
 
     @staticmethod
     def _load_words(selected_topic: str) -> list[DictionaryWord]:
@@ -52,16 +50,13 @@ class BaseVocabTopic(Topic):
         return f"/api/tts?text={quote(text)}&lang={lang}"
 
 
-    # ── learning steps ───────────────────────────────────────────────
-
     def learning_steps(self) -> list[LearningStep]:
-        """Return noun learning steps with article + word → English meaning and audio."""
+        """Return learning steps for all words with their meanings and audio."""
         session = Session()
         try:
             query = (
                 session.query(DictionaryWord)
                 .filter(
-                    DictionaryWord.word_type == "noun",
                     DictionaryWord.meanings.isnot(None),
                     DictionaryWord.meanings != "",
                 )
@@ -105,7 +100,7 @@ class BaseVocabTopic(Topic):
                 audio_url=audio_url,
             ))
 
-        return steps if steps else [LearningStep(title="No nouns found in database.")]
+        return steps if steps else [LearningStep(title="No words found in database.")]
 
     def learn_page_subtitle(self) -> str:
         return f"Let's learn about {self.learn_topic_filter}!"
@@ -165,6 +160,32 @@ class BaseVocabTopic(Topic):
             ),
         ]
 
+    def update_filter_visibility(self, selected: dict[str, str], widgets: dict) -> None:
+        is_article = selected.get("quiz_type") == "article"
+        if "translate_from" in widgets:
+            widgets["translate_from"].set_visibility(not is_article)
+        if "topic" in widgets:
+            if is_article:
+                # Only show topics that have at least one noun
+                all_words = self._load_words("all")
+                noun_topics = {
+                    (w.topic or "").strip()
+                    for w in all_words
+                    if (w.word_type or "").strip().lower() == "noun"
+                }
+                opts = {"all": "All topics"}
+                opts.update({t: t for t in sorted(noun_topics) if t})
+                widgets["topic"].options = opts
+                if selected.get("topic") not in opts:
+                    widgets["topic"].value = "all"
+                widgets["topic"].update()
+            else:
+                topics = self._load_topics()
+                opts = {"all": "All topics"}
+                opts.update({t: t for t in topics})
+                widgets["topic"].options = opts
+                widgets["topic"].update()
+
     def sanitize_quiz_filters(self, selected: dict[str, str]) -> dict[str, str]:
         cleaned = super().sanitize_quiz_filters(selected)
         chosen_topic = cleaned.get("topic", "all")
@@ -205,7 +226,7 @@ class BaseVocabTopic(Topic):
             article = (getattr(entry, self.article_col, "") or "").strip()
             source_word = (getattr(entry, self.source_col, "") or "").strip()
             english_word = (getattr(entry, self.target_col, "") or "").strip()
-            audio_url = self._build_audio_url(f"{article} {source_word}" if article else source_word)
+            audio_url = self._build_audio_url(source_word)
 
             # Determine article options based on language
             if self.source_col == "german":
@@ -220,9 +241,7 @@ class BaseVocabTopic(Topic):
                 audio_url=audio_url,
             )
 
-        # ── Normal translate mode ───────────────────────────────────
         type_suffix = f' ({word_type})' if word_type else ""
-
         source_val = getattr(entry, self.source_col, "") or ""
         target_val = getattr(entry, self.target_col, "") or ""
         article = (getattr(entry, self.article_col, "") or "").strip()
@@ -284,24 +303,40 @@ class BaseVocabTopic(Topic):
         user_bare = strip_article(user_stripped)
         correct_bare = strip_article(correct_stripped)
 
+        user_has_article = user_bare.lower() != user_stripped.lower()
+
+        def extract_article(text: str) -> str:
+            lower = text.lower()
+            for art in sorted(all_articles, key=len, reverse=True):
+                prefix = art if art.endswith("'") else art + " "
+                if lower.startswith(prefix):
+                    return art
+            return ""
+
+        user_article = extract_article(user_stripped)
+        correct_article = extract_article(correct_stripped)
+
+        def check_article() -> tuple[bool, str] | None:
+            if user_has_article and correct_article and user_article.lower() != correct_article.lower():
+                return False, f"Wrong article! The correct article is: {correct_article}"
+            return None
+
         # When the answer is a German noun, require proper capitalization
         answer_is_german = (
             self._last_direction == self.target_col
             and self.source_col == "german"
         )
         if answer_is_german and self._last_word_type == "noun":
-            # Compare bare words (without article)
-            words_match = user_bare.lower() == correct_bare.lower()
-            # Check capitalization of the bare noun
-            capitalized = user_bare[0:1].isupper() if user_bare else False
-            if words_match and not capitalized:
+            if user_bare.lower() != correct_bare.lower():
+                return False, ""
+            if not (user_bare[0:1].isupper() if user_bare else False):
                 return False, f"Almost! German nouns must be capitalized: {correct_stripped}"
-            return words_match and capitalized, ""
+            return check_article() or (True, "")
 
-        # General case: accept with or without article
-        if user_stripped.lower() == correct_stripped.lower():
-            return True, ""
         if user_bare.lower() == correct_bare.lower():
+            return check_article() or (True, "")
+
+        if user_stripped.lower() == correct_stripped.lower():
             return True, ""
         return False, ""
 
