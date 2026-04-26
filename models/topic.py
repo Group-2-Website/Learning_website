@@ -102,6 +102,11 @@ class Topic:
             cleaned[fd.name] = fd.sanitize(selected.get(fd.name))
         return cleaned
 
+    def get_num_questions(self, filters: dict[str, str]) -> int:
+        """Return the number of questions for a quiz session."""
+
+        return int(filters.get("number of questions", 10))
+
 
     def apply_learn_filters(self, filters: dict[str, str]) -> None:
         """Apply learn filters before learning_steps() is called."""

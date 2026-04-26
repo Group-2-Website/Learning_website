@@ -27,7 +27,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
              or _quiz_type_filter == "article")
 
     active_filters = topic.sanitize_quiz_filters(initial_filters or {})
-    num_questions = int(active_filters.get("number of questions", 10))
+    num_questions = topic.get_num_questions(active_filters)
 
     # ── Unified question generator ──────────────────────────────────────
     def _generate_question(filters) -> QuizCard:

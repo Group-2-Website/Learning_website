@@ -8,7 +8,6 @@ from models.quiz_card import QuizCard
 from models.learning_card import LearningStep
 from Database.Learning import DictionaryWord, Session
 
-
 class BaseVocabTopic(Topic):
     source_col: str = ""
     target_col: str = ""
@@ -19,12 +18,37 @@ class BaseVocabTopic(Topic):
     tts_lang: str = ""             # gTTS language code, e.g. "de", "fr"
     learn_limit: int = 50          # max number of learning steps to show
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        source_col: str = "",
+        target_col: str = "",
+        article_col: str = "",
+        tts_lang: str = "",
+        learn_topic_filter: str = "",
+        background_image: str = "/images/Alphabet.png",
+    ) -> None:
+        if name:
+            self.name = name
+        if source_col:
+            self.source_col = source_col
+        if target_col:
+            self.target_col = target_col
+        if article_col:
+            self.article_col = article_col
+        if tts_lang:
+            self.tts_lang = tts_lang
+        if learn_topic_filter:
+            self.learn_topic_filter = learn_topic_filter
+        self._background_image = background_image
         self._session_key: tuple | None = None
         self._session_pool: list[DictionaryWord] = []
         self._last_word_type: str = ""
         self._last_direction: str = ""
         self._last_quiz_type: str = "translate"
+
+    def page_background_image(self) -> str:
+        return self._background_image
 
     @staticmethod
     def _load_words(selected_topic: str) -> list[DictionaryWord]:
@@ -186,14 +210,17 @@ class BaseVocabTopic(Topic):
                 widgets["topic"].options = opts
                 widgets["topic"].update()
 
-    def sanitize_quiz_filters(self, selected: dict[str, str]) -> dict[str, str]:
-        cleaned = super().sanitize_quiz_filters(selected)
-        chosen_topic = cleaned.get("topic", "all")
-        words = self._load_words(chosen_topic)
-        if cleaned.get("quiz_type") == "article":
-            words = [w for w in words if (w.word_type or "").strip().lower() == "noun"]
-        cleaned["number of questions"] = str(len(words))
-        return cleaned
+    @staticmethod
+    def _only_nouns(words: list[DictionaryWord]) -> list[DictionaryWord]:
+        return [w for w in words if (w.word_type or "").strip().lower() == "noun"]
+
+    def _load_filtered_words(self, topic: str, quiz_type: str) -> list[DictionaryWord]:
+        words = self._load_words(topic)
+        return self._only_nouns(words) if quiz_type == "article" else words
+
+
+    def get_num_questions(self, filters: dict[str, str]) -> int:
+        return len(self._load_filtered_words(filters.get("topic", "all"), filters.get("quiz_type", "")))
 
     def _load_question_from_db(self, filters: dict[str, str] | None = None) -> QuizCard:
         effective = self.sanitize_quiz_filters(filters or {})
@@ -204,11 +231,7 @@ class BaseVocabTopic(Topic):
         key = (selected_topic, direction, quiz_type)
         if self._session_key != key or not self._session_pool:
             self._session_key = key
-            words = self._load_words(selected_topic)
-            if quiz_type == "article":
-                # Only nouns have articles
-                words = [w for w in words if (w.word_type or "").strip().lower() == "noun"]
-            self._session_pool = words.copy()
+            self._session_pool = self._load_filtered_words(selected_topic, quiz_type).copy()
             random.shuffle(self._session_pool)
 
         if not self._session_pool:
@@ -341,37 +364,26 @@ class BaseVocabTopic(Topic):
         return False, ""
 
 
-class GermanEnglish(BaseVocabTopic):
-    name = "German-English"
-    source_col = "german"
-    target_col = "english"
-    article_col = "article_german"
-    tts_lang = "de"
-    learn_topic_filter = "People & Professions"
-    learn_subtitle = "Let's learn about People & Professions!"
-
-    def page_background_image(self) -> str:
-        return "/images/Alphabet.png"
-
-
-class FrenchEnglish(BaseVocabTopic):
-    name = "French-English"
-    source_col = "french"
-    target_col = "english"
-    article_col = "article_french"
-    tts_lang = "fr"
-    learn_topic_filter = "Work & Education"
-    learn_subtitle = "Let's learn about Work & Education!"
-
-    def page_background_image(self) -> str:
-        return "/images/Alphabet.png"
-
-
 class Language(Subject):
     name = "Language"
     url_slug = "language"
     icon = "/images/icons/stack-of-books.svg"
-    topics: list[Topic] = [GermanEnglish(), FrenchEnglish()]
+    topics: list[Topic] = [
+        BaseVocabTopic(
+            name="German-English",
+            source_col="german",
+            target_col="english",
+            article_col="article_german",
+            tts_lang="de",
+        ),
+        BaseVocabTopic(
+            name="French-English",
+            source_col="french",
+            target_col="english",
+            article_col="article_french",
+            tts_lang="fr",
+        ),
+    ]
 
     def page_background_image(self) -> str:
         return "/images/Language.jpg"
