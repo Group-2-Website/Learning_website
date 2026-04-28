@@ -170,9 +170,17 @@ class Fractions(MathTopic):
             f'flex-wrap:wrap;margin:8px 0;">{joined}</div>'
         )
 
+    def __init__(self):
+        self.__step_rows = None
+
+    @property
+    def _step_rows(self) -> list:
+        if self.__step_rows is None:
+            self.__step_rows = load_steps_from_db(subject_name="fractions")
+        return self.__step_rows
+
     def learning_steps(self) -> list[LearningStep]:
-        steps = load_steps_from_db(subject_name="fractions")
-        self._step_rows = steps
+        steps = self._step_rows
         if steps:
             self._step_images = [s.image for s in steps]
             return steps
@@ -182,10 +190,7 @@ class Fractions(MathTopic):
     def step_visual_html(self, step_index: int) -> str:
         """Return a DB-driven visual for each learning card."""
         base = super().step_visual_html(step_index)
-        rows = getattr(self, "_step_rows", None)
-        if rows is None:
-            rows = load_steps_from_db(subject_name="fractions")
-            self._step_rows = rows
+        rows = self._step_rows
         if step_index < 0 or step_index >= len(rows):
             return base
 

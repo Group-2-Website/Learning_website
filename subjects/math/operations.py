@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import random
+from fractions import Fraction
 
 from .mathematics import MathTopic, OPERATION_GROUPS, load_steps_from_db, parse_binary_expression
 from models.learning_card import LearningStep
 
 
 def token_to_int(token: str) -> int | None:
-    from fractions import Fraction
     cleaned = (token or "").replace("(", "").replace(")", "").strip()
     if not cleaned:
         return None
@@ -23,6 +23,19 @@ def token_to_int(token: str) -> int | None:
 class Operation(MathTopic):
     name = "Operations"
     has_painting = True
+
+    def __init__(self):
+        self.__step_rows = None
+
+    @property
+    def _step_rows(self) -> list:
+        if self.__step_rows is None:
+            self.__step_rows = load_steps_from_db(subject_name="operations")
+        return self.__step_rows
+
+    @_step_rows.setter
+    def _step_rows(self, value) -> None:
+        self.__step_rows = value
 
     def page_background_image(self) -> str:
         return "/images/operation.jpg"
@@ -242,10 +255,7 @@ class Operation(MathTopic):
 
     def step_visual_html(self, step_index: int) -> str:
         base = super().step_visual_html(step_index)
-        rows = getattr(self, "_step_rows", None)
-        if rows is None:
-            rows = load_steps_from_db(subject_name="operations")
-            self._step_rows = rows
+        rows = self._step_rows
 
         if step_index < 0 or step_index >= len(rows):
             return base
