@@ -129,7 +129,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 128,breakfast,Frühstück,das,petit-déjeuner,le,breakfast,noun,Food & Drinks
 129,foot,Fuss,der,pied,le,foot,noun,Body & Health
 130,floor,Fussboden,der,sol,le,floor,noun,Home
-131,fork,Gabel,der,fourchette,la,fork,noun,Food & Drinks
+131,fork,Gabel,die,fourchette,la,fork,noun,Food & Drinks
 132,garden,Garten,der,jardin,le,garden,noun,Home
 133,area,Gebiet,das,zone,la,area,noun,Nature & Weather
 134,building,Gebäude,das,bâtiment,le,building,noun,Home
@@ -149,7 +149,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 148,group,Gruppe,die,groupe,le,group,noun,People & Professions
 149,cucumber,Gurke,die,concombre,le,cucumber,noun,Food & Drinks
 150,belt,Gürtel,der,ceinture,la,belt,noun,Clothing & Accessories
-151,hair,Haar,der,cheveux,les,hair,noun,Body & Health
+151,hair,Haar,das,cheveux,les,hair,noun,Body & Health
 152,neck,Hals,der,cou,le,neck,noun,Body & Health
 153,necklace,Halskette,die,collier,le,necklace,noun,Clothing & Accessories
 154,hand,Hand,die,main,la,hand,noun,Body & Health
@@ -300,7 +300,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 299,sweater,Pullover,der,pull,le,sweater,noun,Clothing & Accessories
 300,space,Raum,das,espace,l',space,noun,Nature & Weather
 301,bill,Rechnung,die,facture,la,bill,noun,Work & Education
-302,rule,Regel,der,règle,la,rule,noun,Society & Politics
+302,rule,Regel,die,règle,la,rule,noun,Society & Politics
 303,rain,Regen,der,pluie,la,rain,noun,Nature & Weather
 304,umbrella,Regenschirm,der,parapluie,le,umbrella,noun,Nature & Weather
 305,government,Regierung,die,gouvernement,le,government,noun,Society & Politics
@@ -336,10 +336,10 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 335,lake,See,der,lac,le,lake,noun,Nature & Weather
 336,side,Seite,die,côté,le,side,noun,Grammar & Connectors
 337,september,September,der,septembre,,september,noun,Time
-338,shorts,Shorts,der,short,le,shorts,noun,Clothing & Accessories
+338,shorts,Shorts,die,short,le,shorts,noun,Clothing & Accessories
 339,safety,Sicherheit,die,sécurité,la,safety,noun,Society & Politics
 340,situation,Situation,die,situation,la,situation,noun,Work & Education
-341,socks,Socken,der,chaussettes,les,socks,noun,Clothing & Accessories
+341,socks,Socken,die,chaussettes,les,socks,noun,Clothing & Accessories
 342,soldier,Soldat,der,soldat,le,soldier,noun,People & Professions
 343,sun,Sonne,die,soleil,le,sun,noun,Nature & Weather
 344,sunday,Sonntag,der,dimanche,,sunday,noun,Time
@@ -350,21 +350,20 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 349,city,Stadt,die,ville,la,city; town,noun,City & Transport
 350,stone,Stein,der,pierre,la,stone,noun,Nature & Weather
 351,star,Stern,der,étoile,l',star,noun,Nature & Weather
-352,boots,Stiefel,der,bottes,les,boots,noun,Clothing & Accessories
+352,boots,Stiefel,die,bottes,les,boots,noun,Clothing & Accessories
 353,pen,Stift,der,stylo,le,pen; pencil,noun,Work & Education
 354,voice,Stimme,die,voix,la,voice,noun,Communication
 355,beach,Strand,der,plage,la,beach,noun,Nature & Weather
 356,street,Strasse,die,rue,la,street,noun,City & Transport
-357,street,Straße,die,rue,la,street; road,noun,City & Transport
 358,argument,Streit,der,dispute,la,argument,noun,Communication
 359,chair,Stuhl,der,chaise,la,chair,noun,Home
 360,storm,Sturm,der,tempête,la,storm,noun,Nature & Weather
 361,soup,Suppe,die,soupe,la,soup,noun,Food & Drinks
 362,system,System,der,système,le,system,noun,Technology
-363,t-shirt,T-Shirt,der,t-shirt,le,t-shirt,noun,Clothing & Accessories
+363,t-shirt,T-Shirt,das,t-shirt,le,t-shirt,noun,Clothing & Accessories
 364,board,Tafel,die,tableau,le,board,noun,Home
 365,day,Tag,der,jour,le,day,noun,Time
-366,valley,Tal,der,vallée,la,valley,noun,Nature & Weather
+366,valley,Tal,das,vallée,la,valley,noun,Nature & Weather
 367,bag,Tasche,die,sac,le,bag,noun,Clothing & Accessories
 368,cup,Tasse,die,tasse,la,cup,noun,Food & Drinks
 369,keyboard,Tastatur,die,clavier,le,keyboard,noun,Technology
