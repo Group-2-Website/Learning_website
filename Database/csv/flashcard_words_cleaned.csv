@@ -35,8 +35,8 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 34,farmer,Bauer,der,fermier,le,farmer,noun,People & Professions
 35,farm,Bauernhof,der,ferme,la,farm,noun,City & Transport
 36,tree,Baum,der,arbre,l',tree,noun,Nature & Weather
-37,leg,Bein,der,jambe,la,leg,noun,Body & Health
-38,example,Beispiel,der,exemple,l',example,noun,Work & Education
+37,leg,Bein,das,jambe,la,leg,noun,Body & Health
+38,example,Beispiel,das,exemple,l',example,noun,Work & Education
 39,mountain,Berg,der,montagne,la,mountain,noun,Nature & Weather
 40,report,Bericht,der,rapport,le,report,noun,Work & Education
 41,meeting,Besprechung,die,réunion,la,meeting; discussion,noun,Work & Education
@@ -52,7 +52,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 51,blouse,Bluse,die,chemisier,le,blouse,noun,Clothing & Accessories
 52,blood,Blut,das,sang,le,blood,noun,Body & Health
 53,soil,Boden,der,sol,le,soil,noun,Nature & Weather
-54,boat,Boot,der,bateau,le,boat,noun,City & Transport
+54,boat,Boot,das,bateau,le,boat,noun,City & Transport
 55,letter,Brief,der,lettre,la,letter (mail),noun,Communication
 56,stamp,Briefmarke,die,timbre,le,stamp,noun,Communication
 57,glasses,Brille,die,lunettes,les,glasses,noun,Clothing & Accessories
@@ -86,7 +86,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 85,ambition,Ehrgeiz,der,ambition,l',ambition,noun,Work & Education
 86,egg,Ei,das,œuf,l',egg,noun,Food & Drinks
 87,attitude,Einstellung,die,attitude,l',attitude,noun,Work & Education
-88,ice,Eis,der,glace,la,ice,noun,Nature & Weather
+88,ice,Eis,das,glace,la,ice,noun,Nature & Weather
 89,elbow,Ellenbogen,der,coude,le,elbow,noun,Body & Health
 90,parent,Elternteil,der,parent,le,parent,noun,People & Professions
 91,energy,Energie,die,énergie,l',energy,noun,Technology
@@ -97,7 +97,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 96,earth,Erde,die,terre,la,earth,noun,Nature & Weather
 97,experience,Erfahrung,die,expérience,l',experience,noun,Work & Education
 98,success,Erfolg,der,succès,le,success,noun,Work & Education
-99,result,Ergebnis,der,résultat,le,result,noun,Work & Education
+99,result,Ergebnis,das,résultat,le,result,noun,Work & Education
 100,memory,Erinnerung,die,souvenir,le,memory,noun,Body & Health
 101,food,Essen,das,nourriture,la,food; meal,noun,Food & Drinks
 102,vinegar,Essig,der,vinaigre,le,vinegar,noun,Food & Drinks
@@ -111,12 +111,12 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 110,field,Feld,der,champ,le,field,noun,Nature & Weather
 111,rock,Felsen,der,rocher,le,rock,noun,Nature & Weather
 112,window,Fenster,das,fenêtre,la,window,noun,Home
-113,fire,Feuer,der,feu,le,fire,noun,Nature & Weather
+113,fire,Feuer,das,feu,le,fire,noun,Nature & Weather
 114,finger,Finger,der,doigt,le,finger,noun,Body & Health
 115,company,Firma,das,entreprise,l',company,noun,Work & Education
 116,fish,Fisch,der,poisson,le,fish,noun,Food & Drinks
 117,bottle,Flasche,die,bouteille,la,bottle,noun,Food & Drinks
-118,meat,Fleisch,der,viande,la,meat,noun,Food & Drinks
+118,meat,Fleisch,das,viande,la,meat,noun,Food & Drinks
 119,flight,Flug,der,vol,le,flight,noun,City & Transport
 120,airport,Flughafen,der,aéroport,l',airport,noun,City & Transport
 121,river,Fluss,der,rivière,la,river,noun,Nature & Weather
@@ -142,9 +142,9 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 141,history,Geschichte,die,histoire,l',history,noun,Work & Education
 142,store,Geschäft,das,magasin,le,store; shop; business,noun,City & Transport
 143,society,Gesellschaft,die,société,la,society,noun,Society & Politics
-144,law,Gesetz,der,loi,la,law,noun,Society & Politics
+144,law,Gesetz,das,loi,la,law,noun,Society & Politics
 145,habit,Gewohnheit,die,habitude,l',habit,noun,Work & Education
-146,glass,Glas,der,verre,le,glass,noun,Food & Drinks
+146,glass,Glas,das,verre,le,glass,noun,Food & Drinks
 147,reason,Grund,der,raison,la,reason,noun,Grammar & Connectors
 148,group,Gruppe,die,groupe,le,group,noun,People & Professions
 149,cucumber,Gurke,die,concombre,le,cucumber,noun,Food & Drinks
@@ -155,11 +155,11 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 154,hand,Hand,die,main,la,hand,noun,Body & Health
 155,gloves,Handschuhe,die,gants,les,gloves,noun,Clothing & Accessories
 156,phone,Handy,das,téléphone,le,phone; mobile,noun,Technology
-157,capital,Hauptstadt,der,capitale,la,capital,noun,City & Transport
+157,capital,Hauptstadt,die,capitale,la,capital,noun,City & Transport
 158,house,Haus,das,maison,la,house; home (building),noun,Home
 159,skin,Haut,die,peau,la,skin,noun,Body & Health
-160,shirt,Hemd,der,chemise,la,shirt,noun,Clothing & Accessories
-161,heart,Herz,der,cœur,le,heart,noun,Body & Health
+160,shirt,Hemd,das,chemise,la,shirt,noun,Clothing & Accessories
+161,heart,Herz,das,cœur,le,heart,noun,Body & Health
 162,help,Hilfe,die,aide,l',help; assistance,noun,Communication
 163,sky,Himmel,der,ciel,le,sky,noun,Nature & Weather
 164,honey,Honig,der,miel,le,honey,noun,Food & Drinks
@@ -173,7 +173,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 172,information,Information,die,information,l',information,noun,Communication
 173,engineer,Ingenieur,der,ingénieur,l',engineer,noun,People & Professions
 174,island,Insel,die,île,l',island,noun,Nature & Weather
-175,interest,Interesse,die,intérêt,l',interest,noun,Work & Education
+175,interest,Interesse,das,intérêt,l',interest,noun,Work & Education
 176,internet,Internet,der,internet,l',internet,noun,Technology
 177,jacket,Jacke,die,veste,la,jacket,noun,Clothing & Accessories
 178,year,Jahr,das,année,l',year,noun,Time
@@ -196,7 +196,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 195,child,Kind,das,enfant,l',child; kid,noun,People & Professions
 196,church,Kirche,die,église,l',church,noun,City & Transport
 197,cherry,Kirsche,die,cerise,la,cherry,noun,Food & Drinks
-198,pillow,Kissen,der,oreiller,l',pillow,noun,Home
+198,pillow,Kissen,das,oreiller,l',pillow,noun,Home
 199,box,Kiste,die,boîte,la,box,noun,Home
 200,class,Klasse,die,classe,la,class,noun,Work & Education
 201,dress,Kleid,das,robe,la,dress,noun,Clothing & Accessories
@@ -212,7 +212,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 211,head,Kopf,der,tête,la,head,noun,Body & Health
 212,copy,Kopie,die,copie,la,copy,noun,Communication
 213,hospital,Krankenhaus,das,hôpital,l',hospital,noun,Body & Health
-214,nurse,Krankenschwester,der,infirmière,l',nurse,noun,People & Professions
+214,nurse,Krankenschwester,die,infirmière,l',nurse,noun,People & Professions
 215,disease,Krankheit,die,maladie,la,disease,noun,Body & Health
 216,war,Krieg,der,guerre,la,war,noun,Society & Politics
 217,cake,Kuchen,das,gâteau,le,cake,noun,Food & Drinks
@@ -230,7 +230,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 229,performance,Leistung,die,performance,la,performance,noun,Work & Education
 230,spoon,Löffel,der,cuillère,la,spoon,noun,Food & Drinks
 231,solution,Lösung,die,solution,la,solution,noun,Work & Education
-232,power,Macht,der,pouvoir,le,power,noun,Society & Politics
+232,power,Macht,die,pouvoir,le,power,noun,Society & Politics
 233,stomach,Magen,der,estomac,l',stomach,noun,Body & Health
 234,may,Mai,der,mai,,may,noun,Time
 235,manager,Manager,der,manager,le,manager,noun,People & Professions
@@ -241,11 +241,11 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 240,material,Material,der,matériau,le,material,noun,Work & Education
 241,mouse,Maus,die,souris,la,mouse,noun,Technology
 242,medicine,Medizin,die,médicament,le,medicine,noun,Body & Health
-243,sea,Meer,der,mer,la,sea,noun,Nature & Weather
+243,sea,Meer,das,mer,la,sea,noun,Nature & Weather
 244,opinion,Meinung,die,opinion,l',opinion,noun,Communication
 245,melon,Melone,die,melon,le,melon,noun,Food & Drinks
 246,people,Menschen,die,gens,les,people,noun,People & Professions
-247,knife,Messer,der,couteau,le,knife,noun,Food & Drinks
+247,knife,Messer,das,couteau,le,knife,noun,Food & Drinks
 248,milk,Milch,die,lait,le,milk,noun,Food & Drinks
 249,lunch,Mittagessen,das,déjeuner,le,lunch,noun,Food & Drinks
 250,wednesday,Mittwoch,der,mercredi,,wednesday,noun,Time
@@ -267,10 +267,10 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 266,nose,Nase,die,nez,le,nose,noun,Body & Health
 267,nature,Natur,die,nature,la,nature,noun,Nature & Weather
 268,fog,Nebel,der,brouillard,le,fog,noun,Nature & Weather
-269,level,Niveau,der,niveau,le,level,noun,Work & Education
+269,level,Niveau,das,niveau,le,level,noun,Work & Education
 270,november,November,der,novembre,,november,noun,Time
-271,pasta,Nudeln,der,pâtes,les,pasta,noun,Food & Drinks
-272,ear,Ohr,der,oreille,l',ear,noun,Body & Health
+271,pasta,Nudeln,die,pâtes,les,pasta,noun,Food & Drinks
+272,ear,Ohr,das,oreille,l',ear,noun,Body & Health
 273,earring,Ohrring,der,boucle d'oreille,la,earring,noun,Clothing & Accessories
 274,october,Oktober,der,octobre,,october,noun,Time
 275,operation,Operation,die,opération,l',operation,noun,Body & Health
@@ -309,13 +309,13 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 308,restaurant,Restaurant,das,restaurant,le,restaurant,noun,City & Transport
 309,judge,Richter,der,juge,le,judge,noun,People & Professions
 310,direction,Richtung,die,direction,la,direction,noun,City & Transport
-311,beef,Rindfleisch,der,bœuf,le,beef,noun,Food & Drinks
+311,beef,Rindfleisch,das,bœuf,le,beef,noun,Food & Drinks
 312,ring,Ring,der,bague,la,ring,noun,Clothing & Accessories
 313,skirt,Rock,der,jupe,la,skirt,noun,Clothing & Accessories
 314,backpack,Rucksack,der,sac à dos,le,backpack,noun,Clothing & Accessories
 315,back,Rücken,der,dos,le,back,noun,Body & Health
 316,salad,Salat,der,salade,la,salad,noun,Food & Drinks
-317,salt,Salz,der,sel,le,salt,noun,Food & Drinks
+317,salt,Salz,das,sel,le,salt,noun,Food & Drinks
 318,saturday,Samstag,der,samedi,,saturday,noun,Time
 319,sand,Sand,der,sable,le,sand,noun,Nature & Weather
 320,damage,Schaden,der,dommage,le,damage,noun,Society & Politics
@@ -330,7 +330,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 329,shoes,Schuhe,die,chaussures,les,shoes,noun,Clothing & Accessories
 330,school,Schule,die,école,l',school,noun,Work & Education
 331,shoulder,Schulter,der,épaule,l',shoulder,noun,Body & Health
-332,pork,Schweinefleisch,der,porc,le,pork,noun,Food & Drinks
+332,pork,Schweinefleisch,das,porc,le,pork,noun,Food & Drinks
 333,sister,Schwester,die,sœur,la,sister,noun,People & Professions
 334,student,Schüler,der,élève,l',student,noun,People & Professions
 335,lake,See,der,lac,le,lake,noun,Nature & Weather
@@ -375,7 +375,7 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 374,temperature,Temperatur,die,température,la,temperature,noun,Nature & Weather
 375,appointment,Termin,der,rendez-vous,le,appointment; date,noun,Time
 376,ticket,Ticket,das,billet,le,ticket; pass,noun,City & Transport
-377,animal,Tier,der,animal,l',animal,noun,Nature & Weather
+377,animal,Tier,das,animal,l',animal,noun,Nature & Weather
 378,table,Tisch,der,table,la,table; desk,noun,Home
 379,tomato,Tomate,die,tomate,la,tomato,noun,Food & Drinks
 380,pot,Topf,der,casserole,la,pot,noun,Food & Drinks
@@ -410,8 +410,8 @@ id,english,german,article_german,french,article_french,meanings,type,topic
 409,week,Woche,die,semaine,la,week,noun,Time
 410,apartment,Wohnung,die,appartement,l',apartment; flat,noun,Home
 411,cloud,Wolke,die,nuage,le,cloud,noun,Nature & Weather
-412,word,Wort,der,mot,le,word,noun,Communication
-413,sausage,Wurst,der,saucisse,la,sausage,noun,Food & Drinks
+412,word,Wort,das,mot,le,word,noun,Communication
+413,sausage,Wurst,die,saucisse,la,sausage,noun,Food & Drinks
 414,payment,Zahlung,die,paiement,le,payment,noun,Work & Education
 415,tooth,Zahn,der,dent,la,tooth,noun,Body & Health
 416,crosswalk,Zebrastreifen,der,passage piéton,le,crosswalk,noun,City & Transport
