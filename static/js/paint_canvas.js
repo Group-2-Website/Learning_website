@@ -149,8 +149,8 @@
       var cloned = target.cloneNode(true);
       if (isOverview) cloned.style.transform = 'translateX(18px)';
       cloned.querySelectorAll('img').forEach(function (img) {
-        img.style.width = 'min(92%,720px)';
-        img.style.maxWidth = '720px';
+        img.style.width = 'min(90%,720px)';
+        img.style.maxWidth = '680px';
         img.style.height = 'auto';
       });
       slot.appendChild(cloned);
@@ -219,7 +219,7 @@
     function setPos(left, top) {
       var r = palette.getBoundingClientRect();
       palette.style.left  = clamp(left, 0, Math.max(0, innerWidth  - r.width))  + 'px';
-      palette.style.top   = clamp(top,  0, Math.max(0, innerHeight - r.height)) + 'px';
+      palette.style.top   = clamp(top, 210, Math.max(210, innerHeight - r.height)) + 'px';
       palette.style.right = 'auto';
       palette.style.transform = 'none';
     }

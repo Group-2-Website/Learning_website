@@ -12,29 +12,32 @@ from models.topic import Topic, FilterOption, FilterDefinition
 from models.quiz_card import QuizCard
 
 
-def _placeholder_paint_pages(topic_name: str) -> str:
+def _build_science_paint_pages(
+    targets: list[str],
+    hints: list[str],
+    titles: list[str],
+) -> str:
     pages = []
-    for idx in range(1, 4):
+    for idx, image_path in enumerate(targets, start=1):
+        hint_html = ""
+        if hints[idx - 1]:
+            hint_html = (
+                '<div class="paint-hint" style="display:none;">'
+                f'<img src="{hints[idx - 1]}" alt="hint {idx}" style="max-width:400px;height:auto;" />'
+                "</div>"
+            )
         pages.append(
             f'<div class="paint-page" data-page="{idx}" '
-            'style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0;">'
+            f'style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0;">'
             '<div style="font-size:20px;font-weight:800;color:#60435F;text-align:center;">'
-            f'{topic_name} Painting {idx}'
-            '</div>'
-            '<div data-target-num="" data-target-den="" '
-            'style="width:220px;height:220px;border:4px dashed #60435F;border-radius:24px;'
-            'display:flex;align-items:center;justify-content:center;background:#ffffff;color:#60435F;'
-            'font-weight:700;text-align:center;padding:16px;">'
-            'Painting content will be added later.'
-            '</div>'
-            '<div class="paint-hint" style="display:none;">'
-            '<div style="font-weight:700;color:#60435F;text-align:center;">'
-            'Painting is not added yet.'
-            '</div>'
-            '</div>'
-            '</div>'
+            f'Color the {titles[idx - 1]}!'
+            "</div>"
+            f'<div data-target-num="" data-target-den="">'
+            f'<img src="{image_path}" alt="painting {idx}" style="max-width:220px;height:auto;" />'
+            "</div>"
+            f"{hint_html}"
+            "</div>"
         )
-
     return (
         '<div class="science-paint-pages" '
         'style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;">'
@@ -51,19 +54,19 @@ class ScienceTopic(Topic):
     def page_background_image(self) -> str:
         return "/images/science.png"
 
-    def paint_visual_html(self) -> str:
-        return _placeholder_paint_pages(self.name)
-
     def paint_page_subtitle(self) -> str:
-        return f"Painting for {self.name} will be added later."
+        return f"Color and explore {self.name}!"
 
 
 class DatabaseScienceTopic(ScienceTopic):
-    quiz_mode: str = "multiple_choice"
     quiz_source: str = "database"
     category_filter_name = "category"
     source_model = None
     source_options: list[FilterOption] = []
+
+    paint_targets: list[str] = []
+    paint_hints: list[str] = []
+    paint_titles: list[str] = []
 
     def quiz_filter_definitions(self) -> list[FilterDefinition]:
         return [FilterDefinition(self.category_filter_name, self.source_options)]
@@ -97,6 +100,13 @@ class DatabaseScienceTopic(ScienceTopic):
             topic=self.name,
         )
 
+    def paint_visual_html(self) -> str:
+        return _build_science_paint_pages(
+            targets=self.paint_targets,
+            hints=self.paint_hints,
+            titles=self.paint_titles,
+        )
+
 
 class Geography(DatabaseScienceTopic):
     name = "Geography"
@@ -106,6 +116,9 @@ class Geography(DatabaseScienceTopic):
         FilterOption("continants", "Continents"),
         FilterOption("water in the earth", "Water In The Earth"),
     ]
+    paint_targets = ["/images/swiss.png", "/images/continent.png", "/images/globe.png"]
+    paint_hints  = ["/images/swiss_colored.png", "/images/continent_colored.png", "/images/globe_colored.png"]
+    paint_titles = ["Map", "Continents", "Globe"]
 
 
 class Biology(DatabaseScienceTopic):
@@ -116,6 +129,9 @@ class Biology(DatabaseScienceTopic):
         FilterOption("plant", "Plant"),
         FilterOption("animals", "Animals"),
     ]
+    paint_targets = ["/images/human-body.png", "/images/happy_rabbit.png", "/images/flower.png"]
+    paint_hints  = ["/images/human_body_colored.png", "/images/Animal-Colored.png", "/images/flower_colored.png"]
+    paint_titles = ["Human Body", "This Happy Rabbit", " This Nice Flower"]
 
 
 class Science(Subject):
