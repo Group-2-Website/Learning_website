@@ -18,7 +18,7 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
             topic.learn_page_subtitle(), ""
         )
 
-        ui.html('<div class="learn-overlay" id="learn-overlay"></div>')
+        ui.html('<div class="learn-overlay" id="learn-overlay"></div>', sanitize=False)
 
         cards = topic.learning_steps()
         if cards:
@@ -29,40 +29,43 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
                     visual = topic.step_visual_html(i - 1)
                     with ui.element("div").classes("mode-card").style("gap:26px;"):
                         ui.html(
-                            f'<strong style="font-size:24px;">{card.title}</strong>'
+                            f'<strong style="font-size:24px;">{card.title}</strong>',
+                            sanitize=False
                         )
                         if visual:
-                            ui.html(visual)
+                            ui.html(visual, sanitize=False)
 
                         if card.main_text:
                             text = card.main_text.strip()
                             if text.startswith("<"):
-                                ui.html(text)  # z.B. table, ul, custom html
+                                ui.html(text, sanitize=False)  # z.B. table, ul, custom html
                             else:
                                 ui.html(
                                     f'<p style="margin:6px 0;font-size:20px;font-weight:700;'
                                     f'color:#7B2D8E;text-align:center;line-height:1.6;">'
-                                    f'{text}</p>'
+                                    f'{text}</p>',
+                                    sanitize=False
                                 )
 
                         if card.secondary_text:
                             ui.html(
                                 f'<p style="margin:6px 0;font-size:20px;font-weight:700;'
                                 f'color:#E8820C;text-align:center;line-height:1.4;">'
-                                f'{card.secondary_text}</p>'
+                                f'{card.secondary_text}</p>',
+                                sanitize=False
                             )
                         if card.audio_url:
                             ui.html(
                                 f'<div style="display:flex;justify-content:center;">'
                                 f'{audio_button_html(card.audio_url, size="large")}'
-                                f'</div>'
+                                f'</div>',sanitize=False
                             )
                         if card.hint_text:
                             ui.label(f"Answer: {card.hint_text}").style(
                                 "margin-top:2px;color:#1a7f37;font-size:15px;line-height:1.4;text-align:center;"
                             )
 
-        # ── JS: shared audio handler ─────────────────────────────────────
+
         add_audio_player_script()
 
         ui.add_body_html("""

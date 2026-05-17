@@ -63,7 +63,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         html = audio_button_html(state["card"].audio_url)
         if html:
             with container:
-                ui.html(html)
+                ui.html(html, sanitize=False)
 
     def show_feedback(message: str, style_class: str) -> None:
         """Show feedback briefly and clear it after a short delay."""
@@ -209,7 +209,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
             initial_visual = topic.question_visual_html(state["card"].question)
             if initial_visual:
-                visual_holder.append(ui.html(initial_visual))
+                visual_holder.append(ui.html(initial_visual, sanitize=False))
 
             if is_mc:
                 mc_buttons_holder.append(

@@ -19,8 +19,10 @@ def build_topbar():
 
 def add_global_css():
     ui.add_head_html("""
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="shortcut icon" type="image/png" href="/static/favicon.png">
+    <link rel="apple-touch-icon" href="/static/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap" rel="stylesheet">
-    
     <style>
 
       body {
@@ -206,7 +208,7 @@ def add_global_css():
 
       .mode-card {
         flex: 1;
-        min-width: 650px;
+        min-width: 600px;
         min-height:300px;
         max-width: 90%;
         background: #f3f1f1;

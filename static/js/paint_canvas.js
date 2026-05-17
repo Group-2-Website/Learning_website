@@ -279,38 +279,40 @@
   }
 
   /* ── Stroke style (brush / eraser) ──────────────────────────────────────
-     ERASER FIX: The old code used destination-out on an un-baked canvas,
-     which erases to transparent — invisible unless you had already drawn
-     something. Instead we always paint white on un-baked canvases, which
-     covers strokes and looks correct against the white canvas background.
-     After a fill bake we restore using the saved background pattern as before. */
-  function applyStroke(ctx, e, canvas) {
-    var pressure;
-    if (e.pressure > 0) {
-      pressure = e.pressure;
-    } else if (e.pointerType === 'pen' && isEdge) {
-      pressure = 0.5;
-    } else {
-      pressure = 0.5;
-    }
-    ctx.lineWidth = Number(window.__brushSize) * (0.6 + pressure);
+     applyStrokeOnCtx works on any context — used for both the stroke
+     offscreen canvas (brush/eraser) and baked-canvas erasing.
+
+     ERASER on un-baked canvas: uses destination-out on the *stroke layer*
+     (strokeCanvas), which is separate from the main canvas. The main canvas
+     only contains user strokes, not the background image. So destination-out
+     correctly punches holes through painted pixels revealing the image below,
+     without ever touching the image itself. The image stays visible because
+     the slot div (z-index 1) is still visible through the now-transparent hole.
+
+     ERASER on baked canvas (after fill): restores the saved background
+     texture using the __baseBg pattern as before. */
+  function applyStrokeOnCtx(targetCtx, e, canvas) {
+    var pressure = (e.pressure > 0) ? e.pressure : 0.5;
+    targetCtx.lineWidth = Number(window.__brushSize) * (0.6 + pressure);
 
     if (window.__paintColor === ERASER_TOKEN) {
-      ctx.globalCompositeOperation = 'source-over';
       if (canvas.dataset.imageBaked === 'true' && canvas.__baseBg) {
-        /* After fill bake: restore the original background texture */
-        if (!canvas.__baseBgPattern) canvas.__baseBgPattern = ctx.createPattern(canvas.__baseBg, 'no-repeat');
-        ctx.strokeStyle = canvas.__baseBgPattern;
+        targetCtx.globalCompositeOperation = 'source-over';
+        if (!canvas.__baseBgPattern) canvas.__baseBgPattern = targetCtx.createPattern(canvas.__baseBg, 'no-repeat');
+        targetCtx.strokeStyle = canvas.__baseBgPattern;
       } else {
-        /* No fill yet: paint white — works immediately without needing
-           a prior stroke, unlike destination-out on a blank transparent canvas. */
-        ctx.strokeStyle = '#FFFFFF';
+        /* Erase on the stroke layer: punch through to transparent */
+        targetCtx.globalCompositeOperation = 'destination-out';
+        targetCtx.strokeStyle = 'rgba(0,0,0,1)';
       }
     } else {
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = window.__paintColor;
+      targetCtx.globalCompositeOperation = 'source-over';
+      targetCtx.strokeStyle = window.__paintColor;
     }
   }
+
+  /* Keep old name as alias so fillOnCanvas's eraser path still works */
+  function applyStroke(ctx, e, canvas) { applyStrokeOnCtx(ctx, e, canvas); }
 
   /* ── Flood fill ── */
   function floodFill(ctx, sx, sy, color, w, h) {
@@ -353,6 +355,7 @@
     var area = safeClosest(canvas, '.paint-area');
     var slot = area ? area.querySelector('.paint-target-slot') : null;
 
+    /* After bake: work directly on the main canvas (image already composited) */
     if (canvas.dataset.imageBaked === 'true') {
       var off = document.createElement('canvas'); off.width = w; off.height = h;
       var oc = get2dCtx(off);
@@ -365,17 +368,23 @@
       return;
     }
 
+    /* First fill: bake the background image + existing brush strokes into
+       the main canvas, then flood-fill. The stroke canvas is also merged in
+       so any brush strokes drawn before the fill are preserved. */
     function doFill(bgImg, dx, dy, dw, dh) {
       var off = document.createElement('canvas'); off.width = w; off.height = h;
       var oc = get2dCtx(off);
       oc.fillStyle = '#FFFFFF'; oc.fillRect(0, 0, w, h);
       if (bgImg && dw && dh) oc.drawImage(bgImg, dx, dy, dw, dh);
 
+      /* Save background (image only, before strokes) for eraser restore */
       var bg = document.createElement('canvas'); bg.width = w; bg.height = h;
       get2dCtx(bg).drawImage(off, 0, 0);
       canvas.__baseBg = bg;
 
+      /* Merge existing brush strokes on top of the background */
       oc.drawImage(canvas, 0, 0);
+
       floodFill(oc, px, py, fillColor, w, h);
 
       var c = get2dCtx(canvas);
@@ -452,54 +461,139 @@
 
       if (isOverview) { canvas.style.pointerEvents = 'none'; return; }
 
-      /* FIX EDGE TOUCH: set touch-action:none directly on the element so
-         Edge on Surface / touch screens doesn't scroll the page while drawing.
-         The JS e.preventDefault() alone is not reliable before the first event. */
+      /* Prevent page scroll while drawing on both Edge and Safari iOS. */
       canvas.style.touchAction = 'none';
 
       var ctx = get2dCtx(canvas);
       if (!ctx) return;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
+
+      /* ── Two-layer architecture ──────────────────────────────────────────
+         The slot image sits under the canvas (z-index 1 vs 2). The canvas
+         must stay transparent so the image shows through.
+
+         strokeCanvas (offscreen): holds only user brush strokes.
+         main canvas: always = composite of strokeCanvas, kept in sync.
+         eraser: uses destination-out on strokeCanvas → punches holes back to
+                 transparent → image below shows through. Works from first use.
+
+         After fill bake: image is merged into main canvas, slot hidden.
+         Strokes then go directly to main canvas. Eraser restores via __baseBg.
+      ── */
+      var strokeCanvas = document.createElement('canvas');
+      strokeCanvas.width  = canvas.width;
+      strokeCanvas.height = canvas.height;
+      var sCtx = get2dCtx(strokeCanvas);
+      sCtx.lineCap  = 'round';
+      sCtx.lineJoin = 'round';
+
+      function activeCtx() {
+        return canvas.dataset.imageBaked === 'true' ? ctx : sCtx;
+      }
+
+      function syncToMain() {
+        if (canvas.dataset.imageBaked === 'true') return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(strokeCanvas, 0, 0);
+      }
+
+      /* drawing flag + last point for path continuity */
       var drawing = false;
+      var lastPt  = null;
+
+      function startStroke(pt, pressure) {
+        drawing = true;
+        lastPt  = pt;
+        var ac = activeCtx();
+        applyStrokeOnCtx(ac, { pressure: pressure }, canvas);
+        ac.beginPath();
+        ac.moveTo(pt.x, pt.y);
+        /* tiny stub so a tap/dot is always visible */
+        ac.lineTo(pt.x + 0.01, pt.y + 0.01);
+        ac.stroke();
+        syncToMain();
+      }
+
+      function continueStroke(pt, pressure) {
+        if (!drawing || !lastPt) return;
+        var ac = activeCtx();
+        applyStrokeOnCtx(ac, { pressure: pressure }, canvas);
+        /* lineTo continues the open path — no beginPath here */
+        ac.lineTo(pt.x, pt.y);
+        ac.stroke();
+        lastPt = pt;
+        syncToMain();
+      }
+
+      function endStroke() {
+        if (!drawing) return;
+        drawing = false;
+        lastPt  = null;
+        activeCtx().closePath();
+      }
+
+      /* ── Use pointer events when available (Chrome, Edge, modern Safari) ──
+         Safari fires BOTH pointer and touch events. We suppress the touch
+         events when pointer events are working by checking pointerType.
+         The `usingPointer` flag is set on pointerdown and cleared on pointerup
+         so touch events are ignored for that gesture. */
+      var usingPointer = false;
 
       canvas.addEventListener('pointerdown', function (e) {
         e.preventDefault();
-
+        usingPointer = true;
         var p = pointFromEvent(canvas, e);
         if (window.__fillMode) {
           fillOnCanvas(canvas, p.x, p.y,
             window.__paintColor === ERASER_TOKEN ? '#FFFFFF' : window.__paintColor);
           return;
         }
-
-        drawing = true;
-
-        /* FIX 6: setPointerCapture BEFORE beginPath for Edge */
-        canvas.setPointerCapture(e.pointerId);
-
-        applyStroke(ctx, e, canvas);
-        ctx.beginPath(); ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p.x + 0.01, p.y + 0.01); ctx.stroke();
+        if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
+        startStroke(p, e.pressure);
       });
 
       canvas.addEventListener('pointermove', function (e) {
         if (!drawing) return;
         e.preventDefault();
-        var p = pointFromEvent(canvas, e);
-        applyStroke(ctx, e, canvas);
-        ctx.lineTo(p.x, p.y); ctx.stroke();
+        continueStroke(pointFromEvent(canvas, e), e.pressure);
       });
 
-      /* FIX 7: No pointerleave handler — Edge fires it before pointerup
-         for pen input, cutting strokes short. Capture keeps events flowing. */
-      function stop(e) {
-        if (!drawing) return;
-        drawing = false; ctx.closePath();
-        if (e && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
-      }
-      canvas.addEventListener('pointerup', stop);
-      canvas.addEventListener('pointercancel', stop);
+      canvas.addEventListener('pointerup', function (e) {
+        usingPointer = false;
+        endStroke();
+        if (canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId))
+          canvas.releasePointerCapture(e.pointerId);
+      });
+      canvas.addEventListener('pointercancel', function (e) {
+        usingPointer = false;
+        endStroke();
+      });
+
+      /* ── Touch fallback (older Safari iOS, or when pointer events absent) ── */
+      canvas.addEventListener('touchstart', function (e) {
+        if (usingPointer) return; /* pointer events already handling this */
+        e.preventDefault();
+        var t = e.touches[0];
+        var p = pointFromEvent(canvas, t);
+        if (window.__fillMode) {
+          fillOnCanvas(canvas, p.x, p.y,
+            window.__paintColor === ERASER_TOKEN ? '#FFFFFF' : window.__paintColor);
+          return;
+        }
+        startStroke(p, 0.5);
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', function (e) {
+        if (usingPointer || !drawing) return;
+        e.preventDefault();
+        continueStroke(pointFromEvent(canvas, e.touches[0]), 0.5);
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', function () {
+        if (usingPointer) return;
+        endStroke();
+      });
     });
   }
 
