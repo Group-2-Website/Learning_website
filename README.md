@@ -3,15 +3,13 @@
 ![Home Page](docs/images/splash-screen.png)
 
 ---
+## Application Requirements
 
-## Problem
+### Problem
 
-Children often need additional practice outside of school to strengthen their skills in subjects such as vocabulary, mathematics, languages, and science. Traditional worksheets or homework exercises can be repetitive and do not provide immediate feedback or progress tracking.
-
-Parents also want simple ways to support their children's learning and understand their progress. However, it can be difficult to monitor learning results or provide structured practice at home.
+Children often need additional practice outside of school to strengthen their skills in subjects such as vocabulary, mathematics, languages, and science. Traditional worksheets or homework exercises can be repetitive and do not provide immediate feedback.
 
 This project aims to provide a simple interactive learning platform where children can practice educational exercises and receive immediate feedback while parents can observe their learning progress.
-
 
 ---
 
@@ -22,7 +20,7 @@ KidsLearn is a browser-based learning application designed for children practisi
 The application allows users to:
 - select a subject (Math, Science, or Language) from the home page
 - choose a topic within that subject (e.g. Fractions, Biology, German Vocabulary)
-- step through step-by-step learning cards with images and explanations
+- step through learning cards with images and explanations
 - take interactive quizzes with real-time feedback and a final score
 - listen to word pronunciation during language learning (text-to-speech)
 - explore creative painting activities linked to Math and Science topics
@@ -31,23 +29,31 @@ The application allows users to:
 
 ##  User Stories
 
-### 1. Choose a Subject
-**As a child, I want to choose a learning subject so that I can practise specific subjects.**
+### 1. View a List of Subjects
+**As a child, I want to see available learning subjects so I can choose one to practise.**
 
-- **Inputs:** subject selection
+- **Inputs:** none
 - **Outputs:** list of available subjects (Math, Science, Language)
 
 ---
 
-### 2. Select a Topic
-**As a child, I want to select a topic within a subject so that I can focus on specific skills.**
+### 2. Select a Subject
+**As a child, I want to select a subject so that I can see its available topics.**
 
-- **Inputs:** topic selection
+- **Inputs:** selected subject  
 - **Outputs:** list of topics for that subject
 
 ---
 
-### 3. Answer Quiz Questions
+### 3. Select a Topic
+**As a child, I want to select a topic within a subject so that I can focus on specific skills.**
+
+- **Inputs:** topic selection
+- **Outputs:** mode options for that topic (Quiz, Learn, Paint)
+
+---
+
+### 4. Answer Quiz Questions
 **As a child, I want to answer questions in quizzes and receive immediate feedback so that I know if my answer is correct.**
 
 - **Inputs:** quiz answer (text or multiple-choice selection)
@@ -55,23 +61,25 @@ The application allows users to:
 
 ---
 
-### 4. Track Score
-**As a child, I want to see my score update as I answer questions so that I can track how well I'm doing.**
+### 5. View Quiz Results
+**As a child, I want to see my results after finishing a quiz so that I 
+know how well I did.**
 
-- **Inputs:** each submitted answer
-- **Outputs:** live score counter, final results page
+- **Inputs:** completed quiz answers
+- **Outputs:** results page with final score
 
 ---
 
-### 5. Step Through Learning Cards
-**As a child, I want to read step-by-step explanations before taking a quiz so that I can prepare.**
+### 6. Browse Learning Cards
+**As a child, I want to browse learning cards for a topic so that I 
+can study before taking a quiz.**
 
 - **Inputs:** topic selection → Learn mode
-- **Outputs:** learning cards with text, images, and hints
+- **Outputs:** learning cards with text, visuals, and audio
 
 ---
 
-### 6. Hear Word Pronunciation
+### 7. Hear Word Pronunciation
 **As a child, I want to hear words pronounced out loud during language learning so that I can learn correct pronunciation.**
 
 - **Inputs:** vocabulary word displayed on a learning card
@@ -79,7 +87,7 @@ The application allows users to:
 
 ---
 
-### 7. Explore Painting Activities
+### 8. Explore Painting Activities
 **As a child, I want to explore painting activities linked to Math and Science topics so that I can be creative while learning.**
 
 - **Inputs:** topic selection → Paint mode
@@ -87,11 +95,19 @@ The application allows users to:
 
 ---
 
-### 8. Consistent Study Material
+### 9. Consistent Study Material
 **As a parent, I want the vocabulary words and learning steps to remain the same every time my child uses the app, so that I can follow along and support them with what they are studying.**
 
 - **Inputs:** child navigates to a learning or vocabulary topic
 - **Outputs:** the same learning cards and vocabulary words are always available across sessions, with no missing or changing study content
+
+---
+
+### 10. Set Quiz Filters
+**As a child, I want to set filters before starting a quiz so that I can practise a specific topic and question type.**
+
+- **Inputs:** selected filter options (topic, quiz type, translate direction)
+- **Outputs:** filtered quiz session with relevant questions only
 
 ---
 ##  Use Cases
@@ -109,6 +125,12 @@ The application allows users to:
 
 ### Actors
 - **Learner** – child user who browses subjects, takes quizzes, and steps through learning cards
+
+---
+### Wireframes / Mockups
+
+![Wireframes – Home/Transactions](docs/images/mockup1.png)
+<img src="docs/images/mockup2.png" style="max-width: 65%; height: auto;">
 
 ---
 
@@ -258,7 +280,7 @@ Learning_website/
         ├── common.py                # Shared styling, topbar, and common UI helpers
         ├── home.py                  # Home page
         ├── learn.py                 # Learning mode page
-        ├── paint.py                 # Drawing/paint page 
+        ├── paint.py                 # Drawing/paint page
         ├── quiz.py                  # Quiz page
         ├── quiz_results.py          # Quiz results page
         ├── subject.py               # Subject page (e.g. Math)
@@ -268,7 +290,7 @@ Learning_website/
 ---
 
 
-## ✅ Data Validation
+##  Data Validation
 
 The application validates all user input to ensure data integrity and a smooth user experience. These checks prevent crashes and guide the user to provide correct input.
 
@@ -336,3 +358,4 @@ python main.py
 ```
 
 The app will be available at **http://localhost:8081**.
+
