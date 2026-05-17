@@ -11,5 +11,5 @@ for _subject in SUBJECTS:
 app.add_static_files('/images', 'images')
 app.add_static_files('/static', 'static')
 
-# Don't pass favicon= here since we're handling it manually above
+
 ui.run(title="E-learning for kids", port=8082, reload=True, favicon='static/favicon.png')

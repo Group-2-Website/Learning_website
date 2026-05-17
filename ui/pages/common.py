@@ -21,7 +21,8 @@ def add_global_css():
     ui.add_head_html("""
     <link rel="icon" type="image/png" href="/static/favicon.png">
     <link rel="shortcut icon" type="image/png" href="/static/favicon.png">
-    <link rel="apple-touch-icon" href="/static/favicon.png">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="apple-touch-icon-precomposed" href="/static/apple-touch-icon-precomposed.png">
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap" rel="stylesheet">
     <style>
 
