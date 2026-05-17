@@ -4,9 +4,8 @@ import random
 
 from sqlalchemy import func
 
-from Database.Learning import Biology as DBBiology
-from Database.Learning import Geography as DBGeography
-from Database.Learning import Session
+from Database.seed import ScienceQuiz as DBScienceQuiz
+from Database.seed import Session
 from models.subject import Subject
 from models.topic import Topic, FilterOption, FilterDefinition
 from models.quiz_card import QuizCard
@@ -61,7 +60,7 @@ class ScienceTopic(Topic):
 class DatabaseScienceTopic(ScienceTopic):
     quiz_source: str = "database"
     category_filter_name = "category"
-    source_model = None
+    db_subject: str = ""          # "biology" or "geography"
     source_options: list[FilterOption] = []
 
     paint_targets: list[str] = []
@@ -74,14 +73,17 @@ class DatabaseScienceTopic(ScienceTopic):
     def _load_question_from_db(self, filters: dict[str, str] | None = None) -> QuizCard | None:
         effective_filters = self.sanitize_quiz_filters(filters or {})
         selected_source = effective_filters.get(self.category_filter_name)
-        if self.source_model is None or not selected_source:
+        if not self.db_subject or not selected_source:
             return None
 
         session = Session()
         try:
             rows = (
-                session.query(self.source_model)
-                .filter(func.lower(self.source_model.source_csv) == selected_source.lower())
+                session.query(DBScienceQuiz)
+                .filter(
+                    func.lower(DBScienceQuiz.subject) == self.db_subject.lower(),
+                    func.lower(DBScienceQuiz.source_csv) == selected_source.lower(),
+                )
                 .all()
             )
         finally:
@@ -110,7 +112,7 @@ class DatabaseScienceTopic(ScienceTopic):
 
 class Geography(DatabaseScienceTopic):
     name = "Geography"
-    source_model = DBGeography
+    db_subject = "geography"
     source_options = [
         FilterOption("countries", "Countries"),
         FilterOption("continants", "Continents"),
@@ -123,7 +125,7 @@ class Geography(DatabaseScienceTopic):
 
 class Biology(DatabaseScienceTopic):
     name = "Biology"
-    source_model = DBBiology
+    db_subject = "biology"
     source_options = [
         FilterOption("human_body", "Human Body"),
         FilterOption("plant", "Plant"),

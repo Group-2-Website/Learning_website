@@ -4,38 +4,33 @@ import re
 
 from sqlalchemy import func
 
-from Database.Learning import Operation as OperationRow, Fraction as FractionRow, Session
+from Database.seed import MathContent as MathContentRow, Session
 from models.learning_card import LearningStep
 from models.subject import Subject
 from models.topic import Topic, FilterOption, FilterDefinition
 
-_SUBJECT_MODEL_MAP = {
-    "operations": OperationRow,
-    "fractions": FractionRow,
-}
+_VALID_SUBJECTS = {"operations", "fractions"}
 
 
 def load_steps_from_db(
     subject_name: str,
     topic_name: str | None = None,
 ) -> list[LearningStep]:
-    """Load learning steps from the dedicated table for *subject_name*.
 
-    *topic_name* optionally filters within that subject.
-    """
-    model = _SUBJECT_MODEL_MAP.get(subject_name.lower())
-    if model is None:
+    if subject_name.lower() not in _VALID_SUBJECTS:
         print(f"[DEBUG] Unknown subject: {subject_name}")
         return []
 
     session = Session()
     try:
-        query = session.query(model)
+        query = session.query(MathContentRow).filter(
+            func.lower(MathContentRow.subject) == subject_name.lower()
+        )
         if topic_name:
             query = query.filter(
-                func.lower(model.topic) == topic_name.lower()
+                func.lower(MathContentRow.topic) == topic_name.lower()
             )
-        rows = query.order_by(model.id).all()
+        rows = query.order_by(MathContentRow.id).all()
 
         return [
             LearningStep(

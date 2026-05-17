@@ -1,5 +1,5 @@
 content_type,topic,item_type,title,explanation,expression,answer,image
-theory,intro,definition,What is an integer?,An integer is a whole number. It can be positive like 5 or negative like -5. Zero is also an integer.,,,abacus.svg
+theory,intro,definition,What is an integer?,An integer is a whole number. It can be positive like 5 or negative like -5. Zero is also an integer.,,,abacus.png
 theory,intro,rule,Positive and negative numbers,Positive numbers are greater than zero. Negative numbers are less than zero.,,,Line2.jpeg
 example,addition,practice,Example 1,Start at 2 and move 3 steps right.,2 + 3,5,
 example,addition,practice,Example 2,Adding a positive number increases the value.,4 + 1,5

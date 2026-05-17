@@ -6,7 +6,7 @@ from models.subject import Subject
 from models.topic import Topic, FilterOption, FilterDefinition
 from models.quiz_card import QuizCard
 from models.learning_card import LearningStep
-from Database.Learning import DictionaryWord, Session
+from Database.seed import DictionaryWord, Session
 
 class BaseVocabTopic(Topic):
     source_col: str = ""

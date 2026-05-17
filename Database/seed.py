@@ -39,35 +39,21 @@ class DictionaryWord(Base):
     topic = Column(String)
 
 
-class Operation(ContentMixin, Base):
-    __tablename__ = "operations"
+class MathContent(ContentMixin, Base):
+
+    __tablename__ = "math_content"
 
     id = Column(Integer, primary_key=True)
+    subject = Column(String)   # "operations" or "fractions"
 
 
-class Fraction(ContentMixin, Base):
-    __tablename__ = "fractions"
+class ScienceQuiz(Base):
 
-    id = Column(Integer, primary_key=True)
-
-
-class Biology(Base):
-    __tablename__ = "biology"
+    __tablename__ = "science_quiz"
 
     id = Column(Integer, primary_key=True)
-    source_csv = Column(String, nullable=False)
-    question = Column(String, nullable=False)
-    option_a = Column(String, nullable=False)
-    option_b = Column(String, nullable=False)
-    option_c = Column(String, nullable=False)
-    correct_answer = Column(String, nullable=False)
-
-
-class Geography(Base):
-    __tablename__ = "geography"
-
-    id = Column(Integer, primary_key=True)
-    source_csv = Column(String, nullable=False)
+    subject = Column(String, nullable=False)   # "biology" or "geography"
+    source= Column(String, nullable=False)
     question = Column(String, nullable=False)
     option_a = Column(String, nullable=False)
     option_b = Column(String, nullable=False)
@@ -90,13 +76,7 @@ def read_csv_rows(file_path):
                 return list(csv.DictReader(file))
         except UnicodeDecodeError:
             continue
-    raise UnicodeDecodeError(
-        "utf-8",
-        b"",
-        0,
-        1,
-        f"Could not decode CSV file: {file_path}",
-    )
+    raise ValueError(f"Could not decode CSV file: {file_path}")
 
 
 def import_dictionary_words():
@@ -133,9 +113,10 @@ def import_operations():
     try:
         rows = read_csv_rows(os.path.join(_CSV_DIR, "operations.csv"))
         # Keep import idempotent across repeated runs.
-        session.query(Operation).delete()
+        session.query(MathContent).filter_by(subject="operations").delete()
         operations = [
-            Operation(
+            MathContent(
+                subject="operations",
                 content_type=row["content_type"],
                 topic=row["topic"],
                 item_type=row["item_type"],
@@ -149,7 +130,7 @@ def import_operations():
         ]
         session.add_all(operations)
         session.commit()
-        print("operations imported")
+        print("operations imported into math_content")
     except Exception:
         session.rollback()
         raise
@@ -162,9 +143,10 @@ def import_fractions():
     try:
         rows = read_csv_rows(os.path.join(_CSV_DIR, "fractions_learning.csv"))
         # Keep import idempotent across repeated runs.
-        session.query(Fraction).delete()
+        session.query(MathContent).filter_by(subject="fractions").delete()
         fractions = [
-            Fraction(
+            MathContent(
+                subject="fractions",
                 content_type=row["content_type"],
                 topic=row["topic"],
                 item_type=row["item_type"],
@@ -178,7 +160,7 @@ def import_fractions():
         ]
         session.add_all(fractions)
         session.commit()
-        print("fractions imported")
+        print("fractions imported into math_content")
     except Exception:
         session.rollback()
         raise
@@ -186,7 +168,8 @@ def import_fractions():
         session.close()
 
 
-def import_grouped_quiz_csvs(model, files):
+def import_grouped_quiz_csvs(subject_name: str, files: list[str]) -> None:
+
     session = Session()
     try:
         for filename in files:
@@ -194,10 +177,13 @@ def import_grouped_quiz_csvs(model, files):
             source_csv = os.path.splitext(filename)[0].strip().lower()
             reader_rows = read_csv_rows(file_path)
             # Replace only rows for this source CSV to keep grouped imports repeatable.
-            session.query(model).filter_by(source_csv=source_csv).delete()
+            session.query(ScienceQuiz).filter_by(
+                subject=subject_name, source=source_csv
+            ).delete()
             rows = [
-                model(
-                    source_csv=source_csv,
+                ScienceQuiz(
+                    subject=subject_name,
+                    source=source_csv,
                     question=row["Question"],
                     option_a=row["Option A"],
                     option_b=row["Option B"],
@@ -209,7 +195,7 @@ def import_grouped_quiz_csvs(model, files):
             session.add_all(rows)
 
         session.commit()
-        print(f"{model.__tablename__} imported")
+        print(f"{subject_name} imported into science_quiz")
     except Exception:
         session.rollback()
         raise
@@ -219,7 +205,7 @@ def import_grouped_quiz_csvs(model, files):
 
 def import_biology():
     import_grouped_quiz_csvs(
-        Biology,
+        "biology",
         [
             "animals.csv",
             "plant.csv",
@@ -230,7 +216,7 @@ def import_biology():
 
 def import_geography():
     import_grouped_quiz_csvs(
-        Geography,
+        "geography",
         [
             "continants.csv",
             "countries.csv",
