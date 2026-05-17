@@ -149,12 +149,12 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         answer = state["card"].correct_answer
         revealed = state["hint_revealed"]
         if revealed >= len(answer):
-            show_feedback(f"💡 Hint: {answer}", "quiz-feedback-hint")
+            show_feedback(f" Hint: {answer}", "quiz-feedback-hint")
             return
         revealed += 1
         state["hint_revealed"] = revealed
         hint_text = answer[:revealed] + " _" * (len(answer) - revealed)
-        show_feedback(f"💡 Hint: {hint_text}  ({len(answer)} character )", "quiz-feedback-hint")
+        show_feedback(f" Hint: {hint_text}  ({len(answer)} character )", "quiz-feedback-hint")
 
     def _advance():
         """Load a new question."""
@@ -228,9 +228,9 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
             with ui.row().style("gap:12px;flex-wrap:wrap;justify-content:center;"):
                 if not is_mc:
-                    _quiz_button("Submit ✓", check_answer,
+                    _quiz_button("Submit ", check_answer,
                                  bg="linear-gradient(135deg,#60435F,#D67AB5)", color="white")
-                _quiz_button("Skip →", next_question,
+                _quiz_button("Skip ", next_question,
                              bg="#f3e8ff", color="#60435F")
                 _quiz_button("   Hint", show_hint,
                              bg="#fffbe6", color="#b45309",

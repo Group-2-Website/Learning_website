@@ -25,7 +25,7 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
                 with ui.element("div").classes("mode-card").on(
                         "click", lambda d=learn_dest: ui.navigate.to(d)
                 ):
-                    ui.html('<img src="/images/icons/read.svg" style="width:80px;height:80px;object-fit:contain;">')
+                    ui.image('/images/icons/read.svg').style('width:80px;height:80px;object-fit:contain;')
                     ui.label("Learning").classes("mode-title")
                     ui.label("Explore and learn at your own pace!").classes("mode-desc")
 
@@ -33,7 +33,7 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
             with ui.element("div").classes("mode-card").on(
                 "click", lambda d=quiz_filter_dest: ui.navigate.to(d)
             ):
-                ui.html('<img src="/images/icons/test.svg" style="width:80px;height:80px;object-fit:contain;">')
+                ui.image('/images/icons/test.svg').style('width:80px;height:80px;object-fit:contain;')
                 ui.label("Quiz").classes("mode-title")
                 ui.label("Answer questions and test yourself!").classes("mode-desc")
 
@@ -42,6 +42,6 @@ def build_topic_mode_page(subject: Subject, topic: Topic) -> None:
                 with ui.element("div").classes("mode-card").on(
                     "click", lambda d=draw_dest: ui.navigate.to(d)
                 ):
-                    ui.html('<img src="/images/icons/paint-palette.svg" style="width:80px;height:80px;object-fit:contain;">')
+                    ui.image('/images/icons/paint-palette.svg').style('width:80px;height:80px;object-fit:contain;')
                     ui.label("Painting").classes("mode-title")
                     ui.label("Get creative and draw what you learned!").classes("mode-desc")

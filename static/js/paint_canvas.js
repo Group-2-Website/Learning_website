@@ -6,15 +6,24 @@
   const COLOR_KEY   = 'kidslearn-paint-color';
   const BRUSH_KEY   = 'kidslearn-brush-size';
 
+  /* ── Edge / browser detection ── */
+  var isEdge = /Edg\//.test(navigator.userAgent);
+
+  /* ── Safe localStorage wrapper (throws in Edge InPrivate mode) ── */
+  var _ls = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (_) {} },
+  };
+
   /* ── Persisted state ── */
-  const savedColor = localStorage.getItem(COLOR_KEY);
-  const savedBrush = Number(localStorage.getItem(BRUSH_KEY));
+  var savedColor = _ls.get(COLOR_KEY);
+  var savedBrush = Number(_ls.get(BRUSH_KEY));
   window.__paintColor = savedColor || window.__paintColor || '#2F2A3A';
   window.__brushSize  = savedBrush > 0 ? savedBrush : (window.__brushSize || 12);
   window.__fillMode   = false;
 
   function getPaintPages() {
-    const src = document.getElementById('paint-visual-source');
+    var src = document.getElementById('paint-visual-source');
     return src ? src.querySelectorAll('.paint-page') : [];
   }
 
@@ -31,11 +40,30 @@
   function clamp(v, lo, hi) { return Math.min(Math.max(v, lo), hi); }
 
   function pointFromEvent(canvas, e) {
-    const r = canvas.getBoundingClientRect();
+    var r = canvas.getBoundingClientRect();
     return {
       x: (e.clientX - r.left) * canvas.width  / (r.width  || 1),
       y: (e.clientY - r.top)  * canvas.height / (r.height || 1),
     };
+  }
+
+  /* ── FIX 1: Safe Element.closest() for Edge + SVG child targets ──
+     Edge can surface SVG sub-elements (path, circle, etc.) as e.target,
+     which may not have .closest() at all if they are raw SVGElement nodes
+     without the full Element interface. Always walk up manually as a fallback. */
+  function safeClosest(el, selector) {
+    if (!el) return null;
+    try {
+      if (typeof el.closest === 'function') return el.closest(selector);
+    } catch (_) { /* fall through */ }
+    var node = el;
+    while (node && node !== document) {
+      try {
+        if (node.matches && node.matches(selector)) return node;
+      } catch (_) { /* keep walking */ }
+      node = node.parentElement || node.parentNode;
+    }
+    return null;
   }
 
   /* ── Palette selection ── */
@@ -58,7 +86,7 @@
                document.querySelector('[data-paint-color]');
       if (!fb) return;
       window.__paintColor = fb.dataset.paintColor;
-      localStorage.setItem(COLOR_KEY, window.__paintColor);
+      _ls.set(COLOR_KEY, window.__paintColor);
       selectPaletteBtn(fb);
     }
   }
@@ -83,7 +111,7 @@
                document.querySelector('[data-brush-size]');
       if (!fb) return;
       window.__brushSize = Number(fb.dataset.brushSize);
-      localStorage.setItem(BRUSH_KEY, String(window.__brushSize));
+      _ls.set(BRUSH_KEY, String(window.__brushSize));
       selectBrushBtn(fb);
     }
   }
@@ -92,21 +120,21 @@
   if (!window.__paintClickBound) {
     window.__paintClickBound = true;
     document.addEventListener('click', function (e) {
-      var palBtn = e.target.closest('[data-paint-color]');
+      var palBtn = safeClosest(e.target, '[data-paint-color]');
       if (palBtn) {
         window.__paintColor = palBtn.dataset.paintColor;
-        localStorage.setItem(COLOR_KEY, window.__paintColor);
+        _ls.set(COLOR_KEY, window.__paintColor);
         selectPaletteBtn(palBtn);
       }
 
-      var brBtn = e.target.closest('[data-brush-size]');
+      var brBtn = safeClosest(e.target, '[data-brush-size]');
       if (brBtn) {
         window.__brushSize = Number(brBtn.dataset.brushSize);
-        localStorage.setItem(BRUSH_KEY, String(window.__brushSize));
+        _ls.set(BRUSH_KEY, String(window.__brushSize));
         selectBrushBtn(brBtn);
       }
 
-      var fillBtn = e.target.closest('#paint-fill-btn');
+      var fillBtn = safeClosest(e.target, '#paint-fill-btn');
       if (fillBtn) {
         window.__fillMode = !window.__fillMode;
         fillBtn.dataset.fillActive = window.__fillMode ? 'true' : 'false';
@@ -120,7 +148,7 @@
         });
       }
 
-      var hintBtn = e.target.closest('.paint-hint-btn');
+      var hintBtn = safeClosest(e.target, '.paint-hint-btn');
       if (hintBtn) {
         var idx = hintBtn.dataset.hintIndex;
         var ov = document.querySelector('[data-hint-overlay="' + idx + '"]');
@@ -231,7 +259,11 @@
       handle.setPointerCapture(e.pointerId);
       e.preventDefault();
     });
-    handle.addEventListener('pointermove', function (e) { if (dragging) setPos(e.clientX - offX, e.clientY - offY); });
+    handle.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      e.preventDefault();
+      setPos(e.clientX - offX, e.clientY - offY);
+    });
 
     function stopDrag(e) {
       if (!dragging) return;
@@ -246,22 +278,33 @@
     });
   }
 
-  /* ── Stroke style (brush / eraser) ── */
+  /* ── Stroke style (brush / eraser) ──────────────────────────────────────
+     ERASER FIX: The old code used destination-out on an un-baked canvas,
+     which erases to transparent — invisible unless you had already drawn
+     something. Instead we always paint white on un-baked canvases, which
+     covers strokes and looks correct against the white canvas background.
+     After a fill bake we restore using the saved background pattern as before. */
   function applyStroke(ctx, e, canvas) {
-    var pressure = (e.pressure > 0) ? e.pressure : 0.5;
+    var pressure;
+    if (e.pressure > 0) {
+      pressure = e.pressure;
+    } else if (e.pointerType === 'pen' && isEdge) {
+      pressure = 0.5;
+    } else {
+      pressure = 0.5;
+    }
     ctx.lineWidth = Number(window.__brushSize) * (0.6 + pressure);
 
     if (window.__paintColor === ERASER_TOKEN) {
+      ctx.globalCompositeOperation = 'source-over';
       if (canvas.dataset.imageBaked === 'true' && canvas.__baseBg) {
-        ctx.globalCompositeOperation = 'source-over';
+        /* After fill bake: restore the original background texture */
         if (!canvas.__baseBgPattern) canvas.__baseBgPattern = ctx.createPattern(canvas.__baseBg, 'no-repeat');
         ctx.strokeStyle = canvas.__baseBgPattern;
-      } else if (canvas.dataset.imageBaked === 'true') {
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.strokeStyle = '#FFFFFF';
       } else {
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        /* No fill yet: paint white — works immediately without needing
+           a prior stroke, unlike destination-out on a blank transparent canvas. */
+        ctx.strokeStyle = '#FFFFFF';
       }
     } else {
       ctx.globalCompositeOperation = 'source-over';
@@ -299,17 +342,23 @@
     ctx.putImageData(imgData, 0, 0);
   }
 
+  /* FIX 3: willReadFrequently so Edge doesn't GPU-optimise the canvas and
+     break getImageData() used by flood fill. */
+  function get2dCtx(canvas) {
+    return canvas.getContext('2d', { willReadFrequently: true });
+  }
+
   function fillOnCanvas(canvas, px, py, fillColor) {
     var w = canvas.width, h = canvas.height;
-    var area = canvas.closest('.paint-area');
+    var area = safeClosest(canvas, '.paint-area');
     var slot = area ? area.querySelector('.paint-target-slot') : null;
 
     if (canvas.dataset.imageBaked === 'true') {
       var off = document.createElement('canvas'); off.width = w; off.height = h;
-      var oc = off.getContext('2d');
+      var oc = get2dCtx(off);
       oc.drawImage(canvas, 0, 0);
       floodFill(oc, px, py, fillColor, w, h);
-      var c = canvas.getContext('2d');
+      var c = get2dCtx(canvas);
       c.globalCompositeOperation = 'source-over';
       c.clearRect(0, 0, w, h);
       c.drawImage(off, 0, 0);
@@ -318,18 +367,18 @@
 
     function doFill(bgImg, dx, dy, dw, dh) {
       var off = document.createElement('canvas'); off.width = w; off.height = h;
-      var oc = off.getContext('2d');
+      var oc = get2dCtx(off);
       oc.fillStyle = '#FFFFFF'; oc.fillRect(0, 0, w, h);
       if (bgImg && dw && dh) oc.drawImage(bgImg, dx, dy, dw, dh);
 
       var bg = document.createElement('canvas'); bg.width = w; bg.height = h;
-      bg.getContext('2d').drawImage(off, 0, 0);
+      get2dCtx(bg).drawImage(off, 0, 0);
       canvas.__baseBg = bg;
 
       oc.drawImage(canvas, 0, 0);
       floodFill(oc, px, py, fillColor, w, h);
 
-      var c = canvas.getContext('2d');
+      var c = get2dCtx(canvas);
       c.globalCompositeOperation = 'source-over';
       c.clearRect(0, 0, w, h);
       c.drawImage(off, 0, 0);
@@ -348,30 +397,35 @@
       return;
     }
 
-    /* Try <svg> */
+    /* Try <svg> — FIX 4: Edge canvas-taint workaround */
     var svgEl = slot.querySelector('svg');
     if (svgEl) {
-      var ar2 = area.getBoundingClientRect(), sr = svgEl.getBoundingClientRect();
+      var ar2 = area.getBoundingClientRect(), sr2 = svgEl.getBoundingClientRect();
       var sx2 = w/(ar2.width||1), sy2 = h/(ar2.height||1);
-      var dxS = (sr.left-ar2.left)*sx2, dyS = (sr.top-ar2.top)*sy2, dwS = sr.width*sx2, dhS = sr.height*sy2;
+      var dxS = (sr2.left-ar2.left)*sx2, dyS = (sr2.top-ar2.top)*sy2, dwS = sr2.width*sx2, dhS = sr2.height*sy2;
 
       var clone = svgEl.cloneNode(true);
-      var blob = new Blob([new XMLSerializer().serializeToString(clone)], {type:'image/svg+xml;charset=utf-8'});
+      if (!clone.getAttribute('width') && dwS) clone.setAttribute('width', Math.round(dwS));
+      if (!clone.getAttribute('height') && dhS) clone.setAttribute('height', Math.round(dhS));
+
+      /* Use plain 'image/svg+xml' — Edge rejects the charset parameter */
+      var blob = new Blob([new XMLSerializer().serializeToString(clone)], {type: 'image/svg+xml'});
       var url = URL.createObjectURL(blob);
       var tmp = new Image();
+      tmp.crossOrigin = 'anonymous';
       tmp.onload = function () {
         var off = document.createElement('canvas'); off.width = w; off.height = h;
-        var oc = off.getContext('2d');
+        var oc = get2dCtx(off);
         oc.fillStyle = '#FFFFFF'; oc.fillRect(0, 0, w, h);
         oc.drawImage(tmp, dxS, dyS, dwS, dhS);
 
         var bg = document.createElement('canvas'); bg.width = w; bg.height = h;
-        bg.getContext('2d').drawImage(off, 0, 0);
+        get2dCtx(bg).drawImage(off, 0, 0);
         canvas.__baseBg = bg;
 
         oc.drawImage(canvas, 0, 0);
         floodFill(oc, px, py, fillColor, w, h);
-        var c = canvas.getContext('2d');
+        var c = get2dCtx(canvas);
         c.globalCompositeOperation = 'source-over';
         c.clearRect(0, 0, w, h);
         c.drawImage(off, 0, 0);
@@ -398,21 +452,32 @@
 
       if (isOverview) { canvas.style.pointerEvents = 'none'; return; }
 
-      var ctx = canvas.getContext('2d');
+      /* FIX EDGE TOUCH: set touch-action:none directly on the element so
+         Edge on Surface / touch screens doesn't scroll the page while drawing.
+         The JS e.preventDefault() alone is not reliable before the first event. */
+      canvas.style.touchAction = 'none';
+
+      var ctx = get2dCtx(canvas);
       if (!ctx) return;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       var drawing = false;
 
       canvas.addEventListener('pointerdown', function (e) {
+        e.preventDefault();
+
         var p = pointFromEvent(canvas, e);
         if (window.__fillMode) {
           fillOnCanvas(canvas, p.x, p.y,
             window.__paintColor === ERASER_TOKEN ? '#FFFFFF' : window.__paintColor);
           return;
         }
+
         drawing = true;
+
+        /* FIX 6: setPointerCapture BEFORE beginPath for Edge */
         canvas.setPointerCapture(e.pointerId);
+
         applyStroke(ctx, e, canvas);
         ctx.beginPath(); ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x + 0.01, p.y + 0.01); ctx.stroke();
@@ -420,11 +485,14 @@
 
       canvas.addEventListener('pointermove', function (e) {
         if (!drawing) return;
+        e.preventDefault();
         var p = pointFromEvent(canvas, e);
         applyStroke(ctx, e, canvas);
         ctx.lineTo(p.x, p.y); ctx.stroke();
       });
 
+      /* FIX 7: No pointerleave handler — Edge fires it before pointerup
+         for pen input, cutting strokes short. Capture keeps events flowing. */
       function stop(e) {
         if (!drawing) return;
         drawing = false; ctx.closePath();
@@ -432,7 +500,6 @@
       }
       canvas.addEventListener('pointerup', stop);
       canvas.addEventListener('pointercancel', stop);
-      canvas.addEventListener('pointerleave', stop);
     });
   }
 
@@ -447,8 +514,9 @@
     bindCanvases();
   }
 
+  window.__paintSetup = setup;
+
   setup();
   requestAnimationFrame(setup);
   setTimeout(setup, 100);
 })();
-

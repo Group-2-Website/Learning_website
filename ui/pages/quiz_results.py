@@ -61,8 +61,8 @@ def build_quiz_results_page(subject: Subject, topic: Topic, score: int, attempts
             )
 
             with ui.row().style("gap:18px;flex-wrap:wrap;justify-content:center;margin-top:8px;"):
-                ui.button("🔄  Try Again", on_click=lambda: ui.navigate.to(quiz_dest)) \
-                    .props('rounded flat color=""') \
+                ui.button("Try Again", on_click=lambda: ui.navigate.to(quiz_dest)) \
+                    .props('rounded flat color="" icon="replay"') \
                     .style(
                     "background:#bb93c4 !important;"
                     "color:white !important;font-weight:700;font-size:15px;"
