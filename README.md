@@ -443,36 +443,62 @@ Learning_website/
 
 ## How to Run
 
-### Project Setup
+### 1. Project Setup
 
-1. Create and activate a virtual environment:
-   - **macOS/Linux:**
-     ```bash
-     python3 -m venv .venv
-     source .venv/bin/activate
-     ```
-   - **Windows:**
-     ```powershell
-     python -m venv .venv
-     .venv\Scripts\Activate
-     ```
+- Python 3.x is required
+- Create and activate a virtual environment:
+  - **macOS/Linux:**
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    ```
+  - **Windows:**
+    ```powershell
+    python -m venv .venv
+    .venv\Scripts\Activate
+    ```
+- Install dependencies:
+  ```bash
+  pip install -r requirements.txt
+  ```
 
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 2. Database Setup
 
-3. (Optional) Populate the vocabulary database:
-   ```bash
-   cd Database
-   python seed.py
-   ```
+Seed the database with all CSV data (dictionary words, math content, science quizzes):
 
-### Launch
+```bash
+cd Database
+python seed.py
+```
+
+This is **idempotent** — safe to re-run at any time.
+
+### 3. Launch
 
 ```bash
 python main.py
 ```
 
-The app will be available at **http://localhost:8081**.
+The app will be available at **http://localhost:8082**.
+
+### 4. Usage
+
+Select a subject:
+1. Open the home page and choose a subject (Math, Science, or Language).
+2. Select a topic within that subject.
+3. Choose a mode — **Quiz**, **Learn**, or **Paint**.
+
+**Quiz mode:**
+1. (Optional) Set filters — topic category, question type, or translation direction.
+2. Answer each question and receive immediate feedback.
+3. View your final score on the results page.
+
+**Learn mode:**
+1. (Optional) Set filters to narrow the study content.
+2. Step through learning cards with images and explanations.
+3. For Language cards, press the speaker button to hear word pronunciation.
+
+**Paint mode:**
+1. Browse subject-themed painting pages.
+2. Use the canvas to draw and colour freely.
 
