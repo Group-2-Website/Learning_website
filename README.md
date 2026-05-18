@@ -138,7 +138,9 @@ can study before taking a quiz.**
 
 ### 3-Tier Layered Architecture
 
-The project is structured as three distinct tiers, each with a single, well-defined responsibility:
+![Architecture](docs/images/archi.png)
+
+TThe project is structured as three distinct tiers, each with a single, well-defined responsibility:
 
 | Tier | Location | Responsibility |
 |---|---|---|
@@ -146,14 +148,19 @@ The project is structured as three distinct tiers, each with a single, well-defi
 | **Domain / Business Logic** | `subjects/`, `models/` | Quiz generation, answer checking, filter sanitisation, and shared data types (`QuizCard`, `LearningStep`, `Subject`, `Topic`) |
 | **Persistence** | `Database/Learning.py` | ORM entity definitions, SQLAlchemy engine and session factory, CSV seeding |
 
-This is a **3-tier layered architecture**, not MVC. MVC does not apply here because NiceGUI is a server-driven framework where the server owns all UI state and pushes updates to a thin browser client. There is no separate Controller layer — each `build_*_page()` function in `ui/pages/` co-locates widget rendering with its event-handling closures (e.g. `check_answer()`, `_advance()`, `finish_quiz()`) as a direct consequence of how NiceGUI works. Separating them into distinct Controller classes would contradict the framework's design without any practical benefit.
-
 Each tier depends only on the tier below it: the presentation tier calls into the domain tier; the domain tier calls into the persistence tier. No layer knows about the layer above it.
+
 
 ### Design Decisions
 - **3-Tier Layered Architecture:** Separating `ui/pages/` (presentation), `subjects/` + `models/` (domain logic), and `Database/` (persistence) keeps each tier independently testable and replaceable. Logic-based topic tests (e.g. `Fractions`, `Operation`) require no database; database tests require no UI.
 - **Template Method Pattern:** The `Topic` base class defines the algorithm skeleton — `get_question()` is the fixed entry point that dispatches to either `generate_question()` (logic-based) or `_load_question_from_db()` (database-backed) depending on `quiz_source`, and `check_answer()`, `learning_steps()`, and `quiz_filter_definitions()` are override hooks. Subclasses (e.g. `Fraction`, `Operation`, `Biology`) override only the hooks relevant to them. `Subject` provides a parallel structure for subject-level attributes (`name`, `url_slug`, `icon`, `topics`).
 - **Facade Pattern (database):** `Database/Learning.py` encapsulates all SQLAlchemy engine creation, table definitions, session management, and CSV seeding. The rest of the application interacts only with simple session queries.
+
+### Why not MVC?
+
+MVC assumes a clear separation between a passive View (renders state), a Controller (handles input), and a Model (owns data). NiceGUI collapses the View and Controller into one: the server owns all UI state and pushes DOM updates to a thin browser client, so widgets and their event callbacks are defined together in the same function. Pulling `check_answer()` or `_advance()` out of the page builder and into a separate Controller class would add indirection with no real benefit — the framework's design already enforces a single point of responsibility per page.
+
+A 3-tier model fits the actual boundary that matters here: *what the user sees* (NiceGUI widgets), *what the app knows* (domain logic), and *where data lives* (SQLite via SQLAlchemy).
 
 ### Routing
 
@@ -191,17 +198,25 @@ All pages and routes are created automatically — no changes to `main.py` neede
 
 ## Database and ORM
 
-The application uses **SQLAlchemy** (with `DeclarativeBase`) as its ORM and stores all persistent data in a local **SQLite** file at `Database/learning.db`. All entity definitions, the engine, the session factory, and the CSV seeding logic live in a single Facade module — `Database/Learning.py` — so the rest of the application never touches raw SQL or SQLAlchemy internals directly.
+The application uses **SQLAlchemy** (with `DeclarativeBase`) as its ORM and stores all persistent data in a local **SQLite** file at `Database/learning.db`. The engine, session factory, ORM models, and CSV seeding logic all live in `Database/seed.py` — subject modules import `Session` and the model classes from there and never touch raw SQL.
 
-### Entities / Tables
+### Entities
+- `DictionaryWord`
+- `MathContent`
+- `ScienceQuiz`
 
-The database contains **three tables**. Two of them consolidate what were originally separate per-subject tables into a single unified table with a discriminator `subject` column, reducing duplication and making it trivial to add new subjects later.
+### Mappings
 
-- **`dictionary_words`** — multilingual vocabulary (English / German / French) used for Language learning and quizzes. Seeded from `Database/csv/flashcard_words_cleaned.csv`.
-- **`math_content`** — unified table for all Math learning-card content. The `subject` column discriminates between `"operations"` and `"fractions"`. Seeded from `operations.csv` and `fractions_learning.csv`.
-- **`science_quiz`** — unified table for all Science multiple-choice quiz questions. The `subject` column discriminates between `"biology"` and `"geography"`; `source_csv` identifies the category within each subject. Seeded from `animals.csv`, `plant.csv`, `human_body.csv`, `continants.csv`, `countries.csv`, and `water in the earth.csv`.
+| ORM Class        | Table              | Seeded From                                                                                      |
+|------------------|--------------------|--------------------------------------------------------------------------------------------------|
+| `DictionaryWord` | `dictionary_words` | `flashcard_words_cleaned.csv`                                                                    |
+| `MathContent`    | `math_content`     | `operations.csv`, `fractions_learning.csv`                                                       |
+| `ScienceQuiz`    | `science_quiz`     | `animals.csv`, `plant.csv`, `human_body.csv`, `continants.csv`, `countries.csv`, `water in the earth.csv` |
 
-All three tables are independent (no foreign-key relationships between them). Each is populated from its own set of CSV files and queried directly by the relevant subject module.
+### Relationships
+- No foreign-key relationships — all three tables are independent
+- `MathContent` uses `subject` (`"operations"` or `"fractions"`) to distinguish Math topics within a single table
+- `ScienceQuiz` uses `subject` (`"biology"` or `"geography"`) and `source` (e.g. `"animals"`, `"plant"`, `"human_body"`, `"continants"`, `"countries"`, `"water in the earth"`) to distinguish Science topics and categories within a single table
 
 ### ER Diagram
 
@@ -209,92 +224,81 @@ All three tables are independent (no foreign-key relationships between them). Ea
 
 ---
 
-### Session Management
+### How Each Subject Queries the Database
 
-`Database/Learning.py` creates a single `engine` and `Session` factory at import time:
+**Science** — filters `science_quiz` by `subject` and `source`, retrieves all matching rows, and picks one at random per question, shuffling its three answer options each time.
 
-```python
-engine = create_engine(f"sqlite:///{_DATABASE_PATH}")
-Base.metadata.create_all(engine)   # creates tables if they don't exist
-Session = sessionmaker(bind=engine)
-```
+**Language** — loads the full filtered word list from `dictionary_words` into memory once per quiz session and pops one word per question, avoiding repeated database hits. The pool is rebuilt only when the filter combination (topic, direction, quiz type) changes. Article quizzes narrow the pool to nouns only. Learning cards query words with a non-empty `meanings` field, ordered by `id`, limited to 50 rows.
 
-Every query in the application opens a fresh session, performs the query, and closes the session in a `finally` block — ensuring connections are never leaked.
-
----
+**Math** — queries `math_content` by `subject` and optional `topic`, mapping rows directly to `LearningStep` objects. Math quiz questions are generated in code and never read from the database.
 
 ### Seeding / Importing Data
 
-Running `python Database/Learning.py` directly populates all tables from the CSV files in `Database/csv/`. Each import function is **idempotent**: it deletes the existing rows for its subject before inserting new ones, so re-running the script is safe.
-
-```bash
-cd Database
-python seed.py
-# dictionary imported
-# operations imported into math_content
-# fractions imported into math_content
-# biology imported into science_quiz
-# geography imported into science_quiz
-```
-
-## Technology
-
-- **Python 3.x**
-- **NiceGUI** — browser-based UI framework
-- **SQLAlchemy** — ORM for the SQLite database
-- **SQLite** — local database (`learning.db`)
-- Environment: macOS / GitHub Codespaces
+Running `python Database/seed.py` populates all tables from the CSV files in `Database/csv/`. Each import is **idempotent** — existing rows for that subject are deleted before re-inserting, so re-running is safe.
 
 ---
 
-##  Repository Structure
+### 1. Browser-based App (NiceGUI)
 
+NiceGUI runs a **server-side Python process** that owns all UI state and pushes DOM updates to a lightweight browser client over a WebSocket. There is no separate JavaScript framework — every widget, event handler, and page route is declared in Python.
+
+#### Page Registration & Routing
+
+Routes are registered at startup in `ui/pages/__init__.py`. The `register_subject()` function iterates over every `Subject` in `SUBJECTS` and calls `@ui.page(...)` decorators at runtime — see the [Routing](#routing) table in Architecture for the full list of URL patterns. Each page function calls `_setup_page()` first, which injects global CSS (`add_global_css()`) and renders the shared top navigation bar (`build_topbar()`).
+
+#### Shared Top Bar & Global CSS
+
+`ui/pages/common.py` is the single source of truth for all shared visual elements:
+
+| Helper | Purpose |
+|---|---|
+| `build_topbar()` | Renders the colourful `KidsLearn` brand bar with the four coloured squares and a home-navigation click handler |
+| `add_global_css()` | Injects one `<style>` block with every CSS class used across all pages (circles, cards, quiz feedback, stars, etc.) |
+| `_apply_bg(url)` | Injects a per-page background image with a semi-transparent white overlay so text always remains readable |
+| `_build_page_header(...)` | Renders the back button + page title + subtitle row reused on every detail page |
+
+#### State Management in Closures
+
+NiceGUI does not provide a built-in reactive state store. State is managed with a plain Python **`dict` inside a closure**. The quiz page is the primary example:
+
+```python
+state = {"card": ..., "score": 0, "attempts": 0, "checked": False, ...}
 ```
-Learning_website/
-├── main.py                          # App entry point
-├── requirements.txt                 # Python dependencies
-├── README.md                        # Project documentation
-│
-├── Database/                        # Database models, data files, and SQLite DB
-│   ├── Learning.py                  # SQLAlchemy models and CSV import logic
-│   ├── flashcard_words_cleaned.csv  # Vocabulary source data
-│   ├── operations.csv               # Additional learning operations data
-│   └── learning.db                  # SQLite database file
-│
-├── images/                          # Backgrounds, icons and other images
-│   └── icons/
-├── models/                          # Core subject/topic data models
-│   ├── subject.py
-│   └── topic.py
-│
-├── subjects/                        # Subject definitions and content
-│   ├── __init__.py                  # Registers available subjects
-│   ├── language/
-│   │   └── GermanEnglish.py         # Language subject content
-│   └── math/
-│       └── mathematics.py           # Math subject content
-│
-└── ui/                              # NiceGUI page builders and shared UI code
-    └── pages/
-        ├── __init__.py              # Registers subject with topics, called from main
-        ├── common.py                # Shared styling, topbar, and common UI helpers
-        ├── home.py                  # Home page
-        ├── learn.py                 # Learning mode page
-        ├── paint.py                 # Drawing/paint page
-        ├── quiz.py                  # Quiz page
-        ├── quiz_results.py          # Quiz results page
-        ├── subject.py               # Subject page (e.g. Math)
-        └── topic.py                 # Topic page (e.g Math > Fractions)
+
+All event handlers (`check_answer`, `_advance`, `show_hint`, `next_question`) close over `state` and mutate it directly. Widget references (`score_label`, `question_label`, `feedback_label`) are also captured in the closure so handlers can update them without re-rendering the entire page.
+
+#### Audio Playback
+
+Audio is handled entirely in the browser. `audio_button_html()` generates an HTML `<button>` element with a `data-audio-url` attribute. `add_audio_player_script()` injects a single delegated `click` listener on `document` that creates an `Audio` object and calls `.play()` — stopping any currently playing audio first. This avoids multiple simultaneous playback streams.
+
+#### Static Files
+
+`main.py` mounts two static file directories before `ui.run()`:
+
+```python
+app.add_static_files('/images', 'images')   # subject icons, backgrounds
+app.add_static_files('/static', 'static')   # favicon, paint_canvas.js
+```
+
+All image `src` and audio `href` values in the UI use these URL prefixes.
+
+#### Entry Point
+
+```python
+# main.py
+tts.init()                          # pre-warm the TTS cache
+for _subject in SUBJECTS:
+    register_subject(_subject)      # dynamic route registration
+ui.run(title="E-learning for kids", port=8082, reload=True, favicon='static/favicon.png')
 ```
 
 ---
 
-
-##  Data Validation
+### 2. Data Validation
 
 The application validates all user input to ensure data integrity and a smooth user experience. These checks prevent crashes and guide the user to provide correct input.
 
-### Quiz Answer Validation
+#### Quiz Answer Validation
 
 Every quiz topic validates the child's answer before accepting it:
 
@@ -304,25 +308,138 @@ Every quiz topic validates the child's answer before accepting it:
 - **Language (translate)** — answers are compared case-insensitively and articles (`der/die/das`, `le/la/l'/les`) can be omitted or included. If the article is present but wrong, targeted feedback is given (e.g. `"Wrong article! The correct article is: die"`). For German nouns the app additionally checks capitalisation and returns `"Almost! German nouns must be capitalized: …"`.
 - **Language (article quiz)** — the selected article is matched case-insensitively against the correct one.
 
-### API / TTS Endpoint Validation
+#### API / TTS Endpoint Validation
 
 - The `/api/tts` endpoint rejects requests with a missing or empty `text` parameter with `HTTP 400 – Missing 'text' parameter`.
 - Unsupported language codes are silently normalised to `"en"` rather than causing a server error.
 
-### Internal / Data-Parsing Validation
+#### Internal / Data-Parsing Validation
 
 - **Token parsing** — helper functions that convert expression tokens (e.g. `"3/4"`, `"6"`) to numbers return `None` on any `ValueError` or `ZeroDivisionError`, so a bad database value never crashes a page.
 - **Expression parsing** — `parse_binary_expression()` returns `None` for any string that does not match the expected `left op right` pattern, allowing the UI to fall back to a plain text display safely.
 - **Unknown subject names** — `load_steps_from_db()` checks whether the requested subject exists in its lookup table and returns an empty list if not, avoiding a database query against a non-existent table.
 - **Page index normalisation** — the paint page index (URL parameter) is converted to an integer via a dedicated helper; any non-numeric or `None` value returns `None` gracefully instead of raising an exception.
 
-### Database Validation
+#### Database Validation
 
 - **File existence** — `read_csv_rows()` raises a clear `FileNotFoundError` with the full path before attempting to open the file.
 - **Encoding fallback** — CSV files are tried first with `utf-8-sig`; if that fails with `UnicodeDecodeError` the reader retries with `cp1252`, and only raises an error when all encodings are exhausted.
 - **Transaction safety** — all database import functions (`import_dictionary_words`, `import_operations`, `import_fractions`, `import_grouped_quiz_csvs`) wrap their work in `try/except/finally` blocks: any exception triggers `session.rollback()` so the database is never left in a partial state, and `session.close()` runs unconditionally in every `finally` clause.
 
 ---
+
+### 3. Database Management
+
+All relevant data is managed via SQLAlchemy ORM. This includes dictionary words, math content, and science quiz questions.
+
+#### Schema & ORM Setup (`Database/seed.py`)
+
+All SQLAlchemy artefacts live in a single file:
+
+| Component | Detail |
+|---|---|
+| `Base` | `DeclarativeBase` subclass — the metadata registry for all tables |
+| `engine` | `create_engine(f"sqlite:///{_DATABASE_PATH}")` — single file at `Database/learning.db` |
+| `Session` | `sessionmaker(bind=engine)` — called as `Session()` to open a new session per query |
+| `Base.metadata.create_all(engine)` | Runs at import time — creates missing tables without dropping existing ones |
+
+Paths are resolved relative to `seed.py`'s own directory (`__file__`), so the app works regardless of the working directory at launch.
+
+#### Session Lifecycle
+
+Every database function follows the same pattern, with no shared or long-lived sessions:
+
+```python
+session = Session()
+try:
+    # ... queries / adds ...
+    session.commit()
+except Exception:
+    session.rollback()   # never leave a partial write
+    raise
+finally:
+    session.close()      # always release the connection
+```
+
+Objects that must outlive the session (e.g. quiz question data) are detached with `session.expunge_all()` before the session closes.
+
+#### Idempotent CSV Seeding
+
+Running `python Database/seed.py` calls five import functions (`import_dictionary_words`, `import_operations`, `import_fractions`, `import_biology`, `import_geography`). Each deletes only its own rows before re-inserting, so re-running never corrupts other subjects' data.
+
+#### CSV Reading
+
+`read_csv_rows(file_path)` handles encoding automatically (tries `utf-8-sig`, falls back to `cp1252`) and raises a clear `FileNotFoundError` if the file is missing.
+
+---
+
+## Implementation
+
+
+### Technology
+
+- **Python 3.x**
+- **NiceGUI** — browser-based UI framework
+- **SQLAlchemy** — ORM for the SQLite database
+- **SQLite** — local database (`learning.db`)
+- Environment: macOS / GitHub Codespaces
+
+---
+
+### Libraries Used
+
+- **nicegui** – browser-based UI framework
+- **sqlalchemy** – ORM and database toolkit
+- **gtts** – text-to-speech audio generation
+- **pytest** – testing
+
+---
+
+### Repository Structure
+
+```
+Learning_website/
+├── main.py
+├── requirements.txt
+├── README.md
+│
+├── Database/
+│   ├── seed.py
+│   ├── learning.db
+│   └── csv/
+│
+├── docs/images/
+│
+├── images/
+│   └── icons/
+│
+├── static/
+│   ├── favicon.png
+│   └── js/
+│       └── paint_canvas.js
+│
+├── models/
+│   ├── subject.py
+│   ├── topic.py
+│   ├── learning_card.py
+│   └── quiz_card.py
+│
+├── subjects/
+│   ├── __init__.py
+│   ├── math/
+│   ├── science/
+│   └── language/
+│
+├── tests/
+│   └── test_mathematics.py
+│
+└── ui/
+    ├── __init__.py
+    └── pages/  (common, home, subject, topic, filter, quiz, quiz_results, learn, paint)
+```
+
+---
+
 
 ## How to Run
 
