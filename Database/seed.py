@@ -1,17 +1,15 @@
 import csv
 import os
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
+from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
-class Base(DeclarativeBase):
-    pass
+from Database.db import Base, db
 
 
 _PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 _DATABASE_DIR = os.path.join(_PROJECT_ROOT, "Database")
 _CSV_DIR = os.path.join(_DATABASE_DIR, "csv")
-_DATABASE_PATH = os.path.join(_DATABASE_DIR, "learning.db")
 
 
 class ContentMixin:
@@ -39,20 +37,46 @@ class DictionaryWord(Base):
     topic = Column(String)
 
 
-class MathContent(ContentMixin, Base):
+class MathSubject(Base):
+    """Lookup table for math subjects (operations / fractions)."""
 
+    __tablename__ = "math_subject"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+
+    contents = relationship(
+        "MathContent", back_populates="subject", cascade="all, delete-orphan"
+    )
+
+
+class MathContent(ContentMixin, Base):
     __tablename__ = "math_content"
 
     id = Column(Integer, primary_key=True)
-    subject = Column(String)   # "operations" or "fractions"
+    subject_id = Column(Integer, ForeignKey("math_subject.id"), nullable=False)
+
+    subject = relationship("MathSubject", back_populates="contents")
+
+
+class ScienceSubject(Base):
+    """Lookup table for science subjects (biology / geography)."""
+
+    __tablename__ = "science_subject"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+
+    quizzes = relationship(
+        "ScienceQuiz", back_populates="subject", cascade="all, delete-orphan"
+    )
 
 
 class ScienceQuiz(Base):
-
     __tablename__ = "science_quiz"
 
     id = Column(Integer, primary_key=True)
-    subject = Column(String, nullable=False)   # "biology" or "geography"
+    subject_id = Column(Integer, ForeignKey("science_subject.id"), nullable=False)
     source= Column(String, nullable=False)
     question = Column(String, nullable=False)
     option_a = Column(String, nullable=False)
@@ -60,10 +84,21 @@ class ScienceQuiz(Base):
     option_c = Column(String, nullable=False)
     correct_answer = Column(String, nullable=False)
 
+    subject = relationship("ScienceSubject", back_populates="quizzes")
 
-engine = create_engine(f"sqlite:///{_DATABASE_PATH}")
-Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
+
+# Create tables for the models declared above.
+db.init_schema()
+
+
+def _get_or_create(session, model, **fields):
+    """Return an existing row matching *fields* or create one."""
+    instance = session.query(model).filter_by(**fields).first()
+    if instance is None:
+        instance = model(**fields)
+        session.add(instance)
+        session.flush()
+    return instance
 
 
 def read_csv_rows(file_path):
@@ -80,12 +115,11 @@ def read_csv_rows(file_path):
 
 
 def import_dictionary_words():
-    session = Session()
-    try:
+    with db.session_scope() as session:
         rows = read_csv_rows(os.path.join(_CSV_DIR, "flashcard_words_cleaned.csv"))
         # Keep import idempotent across repeated runs.
         session.query(DictionaryWord).delete()
-        words = [
+        session.add_all(
             DictionaryWord(
                 english=row["english"],
                 german=row["german"],
@@ -97,56 +131,19 @@ def import_dictionary_words():
                 topic=row.get("topic", ""),
             )
             for row in rows
-        ]
-        session.add_all(words)
-        session.commit()
-        print("dictionary imported")
-    except Exception:
-        session.rollback()
-        raise
-    finally:
-        session.close()
+        )
+    print("dictionary imported")
 
 
-def import_operations():
-    session = Session()
-    try:
-        rows = read_csv_rows(os.path.join(_CSV_DIR, "operations.csv"))
-        # Keep import idempotent across repeated runs.
-        session.query(MathContent).filter_by(subject="operations").delete()
-        operations = [
+def _import_math_subject(subject_name: str, csv_filename: str) -> None:
+    with db.session_scope() as session:
+        rows = read_csv_rows(os.path.join(_CSV_DIR, csv_filename))
+        subject_row = _get_or_create(session, MathSubject, name=subject_name)
+        # Idempotent: wipe existing rows for this subject only.
+        session.query(MathContent).filter_by(subject_id=subject_row.id).delete()
+        session.add_all(
             MathContent(
-                subject="operations",
-                content_type=row["content_type"],
-                topic=row["topic"],
-                item_type=row["item_type"],
-                title=row["title"],
-                explanation=row["explanation"],
-                expression=row["expression"],
-                answer=row["answer"],
-                image=row["image"],
-            )
-            for row in rows
-        ]
-        session.add_all(operations)
-        session.commit()
-        print("operations imported into math_content")
-    except Exception:
-        session.rollback()
-        raise
-    finally:
-        session.close()
-
-
-def import_fractions():
-    session = Session()
-    try:
-        rows = read_csv_rows(os.path.join(_CSV_DIR, "fractions_learning.csv"))
-        # Keep import idempotent across repeated runs.
-        session.query(MathContent).filter_by(subject="fractions").delete()
-        fractions = [
-            MathContent(
-                subject="fractions",
+                subject=subject_row,
                 content_type=row["content_type"],
                 topic=row["topic"],
                 item_type=row["item_type"],
@@ -157,32 +154,32 @@ def import_fractions():
                 image=row.get("image", ""),
             )
             for row in rows
-        ]
-        session.add_all(fractions)
-        session.commit()
-        print("fractions imported into math_content")
-    except Exception:
-        session.rollback()
-        raise
-    finally:
-        session.close()
+        )
+    print(f"{subject_name} imported into math_content")
+
+
+def import_operations():
+    _import_math_subject("operations", "operations.csv")
+
+
+def import_fractions():
+    _import_math_subject("fractions", "fractions_learning.csv")
 
 
 def import_grouped_quiz_csvs(subject_name: str, files: list[str]) -> None:
-
-    session = Session()
-    try:
+    with db.session_scope() as session:
+        subject_row = _get_or_create(session, ScienceSubject, name=subject_name)
         for filename in files:
             file_path = os.path.join(_CSV_DIR, filename)
             source_csv = os.path.splitext(filename)[0].strip().lower()
             reader_rows = read_csv_rows(file_path)
             # Replace only rows for this source CSV to keep grouped imports repeatable.
             session.query(ScienceQuiz).filter_by(
-                subject=subject_name, source=source_csv
+                subject_id=subject_row.id, source=source_csv
             ).delete()
-            rows = [
+            session.add_all(
                 ScienceQuiz(
-                    subject=subject_name,
+                    subject=subject_row,
                     source=source_csv,
                     question=row["Question"],
                     option_a=row["Option A"],
@@ -191,16 +188,8 @@ def import_grouped_quiz_csvs(subject_name: str, files: list[str]) -> None:
                     correct_answer=row["Correct Answer"],
                 )
                 for row in reader_rows
-            ]
-            session.add_all(rows)
-
-        session.commit()
-        print(f"{subject_name} imported into science_quiz")
-    except Exception:
-        session.rollback()
-        raise
-    finally:
-        session.close()
+            )
+    print(f"{subject_name} imported into science_quiz")
 
 
 def import_biology():
