@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import re
 
-from sqlalchemy import func
-
-from Database.seed import MathContent as MathContentRow, Session
+from Database.dao import MathContentDAO
 from models.learning_card import LearningStep
 from models.subject import Subject
 from models.topic import Topic, FilterOption, FilterDefinition
@@ -21,32 +19,22 @@ def load_steps_from_db(
         print(f"[DEBUG] Unknown subject: {subject_name}")
         return []
 
-    session = Session()
     try:
-        query = session.query(MathContentRow).filter(
-            func.lower(MathContentRow.subject) == subject_name.lower()
-        )
-        if topic_name:
-            query = query.filter(
-                func.lower(MathContentRow.topic) == topic_name.lower()
-            )
-        rows = query.order_by(MathContentRow.id).all()
-
-        return [
-            LearningStep(
-                title=getattr(row, "title", "") or "",
-                image=getattr(row, "image", "") or "",
-                main_text=getattr(row, "explanation", "") or "",
-                secondary_text=getattr(row, "expression", "") or "",
-                hint_text=getattr(row, "answer", "") or "",
-            )
-            for row in rows
-        ]
+        rows = MathContentDAO().list_steps(subject_name, topic_name)
     except Exception as e:
         print(f"[DEBUG] DB error: {e}")
         return []
-    finally:
-        session.close()
+
+    return [
+        LearningStep(
+            title=getattr(row, "title", "") or "",
+            image=getattr(row, "image", "") or "",
+            main_text=getattr(row, "explanation", "") or "",
+            secondary_text=getattr(row, "expression", "") or "",
+            hint_text=getattr(row, "answer", "") or "",
+        )
+        for row in rows
+    ]
 
 
 

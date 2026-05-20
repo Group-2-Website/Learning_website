@@ -1,7 +1,3 @@
-"""Database facade: owns the engine, provides session management.
-
-The rest of the app should not call `create_engine` or `sessionmaker` directly.
-"""
 from __future__ import annotations
 
 import os
@@ -34,7 +30,7 @@ class Database:
         return self._engine
 
     def init_schema(self) -> None:
-        """Create all tables defined on `Base.metadata`."""
+        """Create all tables that don't exist yet (safe to call multiple times)."""
         Base.metadata.create_all(self._engine)
 
     @contextmanager

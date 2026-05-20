@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import random
 
-from sqlalchemy import func
-
-from Database.seed import ScienceQuiz as DBScienceQuiz
-from Database.seed import Session
+from Database.dao import ScienceQuizDAO
 from models.subject import Subject
 from models.topic import Topic, FilterOption, FilterDefinition
 from models.quiz_card import QuizCard
@@ -76,18 +73,7 @@ class DatabaseScienceTopic(ScienceTopic):
         if not self.db_subject or not selected_source:
             return None
 
-        session = Session()
-        try:
-            rows = (
-                session.query(DBScienceQuiz)
-                .filter(
-                    func.lower(DBScienceQuiz.subject) == self.db_subject.lower(),
-                    func.lower(DBScienceQuiz.source_csv) == selected_source.lower(),
-                )
-                .all()
-            )
-        finally:
-            session.close()
+        rows = ScienceQuizDAO().list_questions(self.db_subject, selected_source)
 
         if not rows:
             return None

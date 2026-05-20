@@ -6,7 +6,8 @@ from models.subject import Subject
 from models.topic import Topic, FilterOption, FilterDefinition
 from models.quiz_card import QuizCard
 from models.learning_card import LearningStep
-from Database.seed import DictionaryWord, Session
+from Database.seed import DictionaryWord
+from Database.dao import DictionaryWordDAO
 
 class BaseVocabTopic(Topic):
     source_col: str = ""
@@ -52,16 +53,7 @@ class BaseVocabTopic(Topic):
 
     @staticmethod
     def _load_words(selected_topic: str) -> list[DictionaryWord]:
-        session = Session()
-        try:
-            query = session.query(DictionaryWord)
-            if selected_topic and selected_topic != "all":
-                query = query.filter(DictionaryWord.topic == selected_topic)
-            rows = query.all()
-            session.expunge_all()
-            return rows
-        finally:
-            session.close()
+        return DictionaryWordDAO().list_by_topic(selected_topic)
 
     def _build_audio_url(self, text: str) -> str:
         """Return a /api/tts URL for *text* using this topic's tts_lang."""
@@ -76,21 +68,9 @@ class BaseVocabTopic(Topic):
 
     def learning_steps(self) -> list[LearningStep]:
         """Return learning steps for all words with their meanings and audio."""
-        session = Session()
-        try:
-            query = (
-                session.query(DictionaryWord)
-                .filter(
-                    DictionaryWord.meanings.isnot(None),
-                    DictionaryWord.meanings != "",
-                )
-            )
-            if self.learn_topic_filter:
-                query = query.filter(DictionaryWord.topic == self.learn_topic_filter)
-            nouns = query.order_by(DictionaryWord.id).limit(self.learn_limit).all()
-            session.expunge_all()
-        finally:
-            session.close()
+        nouns = DictionaryWordDAO().list_for_learning(
+            self.learn_topic_filter, self.learn_limit
+        )
 
         steps: list[LearningStep] = []
         for word in nouns:
@@ -131,17 +111,7 @@ class BaseVocabTopic(Topic):
 
     @staticmethod
     def _load_topics() -> list[str]:
-        session = Session()
-        try:
-            rows = (
-                session.query(DictionaryWord.topic)
-                .filter(DictionaryWord.topic.isnot(None), DictionaryWord.topic != "")
-                .distinct()
-                .all()
-            )
-            return sorted(t[0] for t in rows)
-        finally:
-            session.close()
+        return DictionaryWordDAO().list_topics()
 
     def learn_filter_definitions(self) -> list[FilterDefinition]:
         topics = self._load_topics()
