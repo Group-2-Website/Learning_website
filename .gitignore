@@ -1,3 +1,5 @@
 venv
 .idea
 **/audio_cache/*.mp3
+*.pyc
+__pycache__/
