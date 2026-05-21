@@ -21,21 +21,8 @@ def token_to_int(token: str) -> int | None:
 
 
 class Operation(MathTopic):
-    name = "Operations"
-    has_painting = True
-
-    def __init__(self):
-        self.__step_rows = None
-
-    @property
-    def _step_rows(self) -> list:
-        if self.__step_rows is None:
-            self.__step_rows = load_steps_from_db(subject_name="operations")
-        return self.__step_rows
-
-    @_step_rows.setter
-    def _step_rows(self, value) -> None:
-        self.__step_rows = value
+    name: str = "Operations"
+    has_painting: bool = True
 
     def page_background_image(self) -> str:
         return "/images/operation.jpg"

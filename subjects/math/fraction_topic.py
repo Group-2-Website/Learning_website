@@ -83,20 +83,20 @@ def _fraction_svg(numerator: int, denominator: int, size: int = 120, color: str 
 
 
 class Fractions(MathTopic):
-    name = "Fractions"
-    has_learning = True
-    has_painting = True
+    name: str = "Fractions"
+    has_learning: bool = True
+    has_painting: bool = True
 
     def page_background_image(self) -> str:
         return "/images/circle.jpeg"
 
-    _DENOMINATORS = [2, 3, 4, 5, 6, 8, 10]
+    DENOMINATORS: list[int] = [2, 3, 4, 5, 6, 8, 10]
 
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
         effective_filters = self.sanitize_quiz_filters(filters or {})
 
         denominators_by_difficulty = {
-            "mixed": self._DENOMINATORS,
+            "mixed": self.DENOMINATORS,
             "easy": [2, 3, 4, 5],
             "medium": [4, 5, 6, 8],
             "hard": [6, 8, 10],
@@ -123,7 +123,7 @@ class Fractions(MathTopic):
             a_num = random.randint(1, denom - 1)
             a_den = denom
             b_num = random.randint(1, denom - 1)
-            b_den = random.choice([d for d in self._DENOMINATORS if d != denom] or [denom])
+            b_den = random.choice([d for d in self.DENOMINATORS if d != denom] or [denom])
             if op == "×":
                 r_num = a_num * b_num
                 r_den = a_den * b_den

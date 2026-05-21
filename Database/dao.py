@@ -4,10 +4,10 @@ The layer between raw database access and the rest of the app.
 """
 from __future__ import annotations
 
-from sqlalchemy import func
+from sqlmodel import select, func
 
 from Database.db import Database, db
-from Database.seed import (
+from domain.models import (
     DictionaryWord,
     MathContent,
     MathSubject,
@@ -32,15 +32,16 @@ class MathContentDAO(BaseDAO):
         """Return MathContent rows for a subject (and optional topic), ordered by id."""
         with self.db.session_scope() as session:
             query = (
-                session.query(MathContent)
-                .join(MathSubject, MathContent.subject)
-                .filter(func.lower(MathSubject.name) == subject_name.lower())
+                select(MathContent)
+                .join(MathSubject, MathContent.subject_id == MathSubject.id)
+                .where(func.lower(MathSubject.name) == subject_name.lower())
             )
             if topic_name:
-                query = query.filter(
+                query = query.where(
                     func.lower(MathContent.topic) == topic_name.lower()
                 )
-            rows = query.order_by(MathContent.id).all()
+            query = query.order_by(MathContent.id)
+            rows = list(session.exec(query).all())
             session.expunge_all()
             return rows
 
@@ -51,15 +52,15 @@ class ScienceQuizDAO(BaseDAO):
     def list_questions(self, subject_name: str, source: str) -> list[ScienceQuiz]:
         """Return all quiz rows for a (subject, source) pair."""
         with self.db.session_scope() as session:
-            rows = (
-                session.query(ScienceQuiz)
-                .join(ScienceSubject, ScienceQuiz.subject)
-                .filter(
+            query = (
+                select(ScienceQuiz)
+                .join(ScienceSubject, ScienceQuiz.subject_id == ScienceSubject.id)
+                .where(
                     func.lower(ScienceSubject.name) == subject_name.lower(),
                     func.lower(ScienceQuiz.source) == source.lower(),
                 )
-                .all()
             )
+            rows = list(session.exec(query).all())
             session.expunge_all()
             return rows
 
@@ -70,37 +71,36 @@ class DictionaryWordDAO(BaseDAO):
     def list_by_topic(self, topic: str) -> list[DictionaryWord]:
         """Return words for *topic*; pass 'all' (or empty) for every word."""
         with self.db.session_scope() as session:
-            query = session.query(DictionaryWord)
+            query = select(DictionaryWord)
             if topic and topic != "all":
-                query = query.filter(DictionaryWord.topic == topic)
-            rows = query.all()
+                query = query.where(DictionaryWord.topic == topic)
+            rows = list(session.exec(query).all())
             session.expunge_all()
             return rows
 
     def list_topics(self) -> list[str]:
         """Return distinct non-empty topic strings, sorted."""
         with self.db.session_scope() as session:
-            rows = (
-                session.query(DictionaryWord.topic)
-                .filter(DictionaryWord.topic.isnot(None), DictionaryWord.topic != "")
+            query = (
+                select(DictionaryWord.topic)
+                .where(DictionaryWord.topic.isnot(None), DictionaryWord.topic != "")
                 .distinct()
-                .all()
             )
-            return sorted(t[0] for t in rows)
+            rows = session.exec(query).all()
+            return sorted(t for t in rows)
 
     def list_for_learning(
         self, topic_filter: str, limit: int
     ) -> list[DictionaryWord]:
         """Return up to *limit* words (with non-empty meanings) for the given topic."""
         with self.db.session_scope() as session:
-            query = session.query(DictionaryWord).filter(
+            query = select(DictionaryWord).where(
                 DictionaryWord.meanings.isnot(None),
                 DictionaryWord.meanings != "",
             )
             if topic_filter:
-                query = query.filter(DictionaryWord.topic == topic_filter)
-            rows = (
-                query.order_by(DictionaryWord.id).limit(limit).all()
-            )
+                query = query.where(DictionaryWord.topic == topic_filter)
+            query = query.order_by(DictionaryWord.id).limit(limit)
+            rows = list(session.exec(query).all())
             session.expunge_all()
             return rows

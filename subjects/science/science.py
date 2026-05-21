@@ -43,8 +43,8 @@ def _build_science_paint_pages(
 
 
 class ScienceTopic(Topic):
-    has_learning = False
-    has_painting = True
+    has_learning: bool = False
+    has_painting: bool = True
     quiz_mode: str = "multiple_choice"
 
     def page_background_image(self) -> str:
@@ -56,7 +56,7 @@ class ScienceTopic(Topic):
 
 class DatabaseScienceTopic(ScienceTopic):
     quiz_source: str = "database"
-    category_filter_name = "category"
+    category_filter_name: str = "category"
     db_subject: str = ""          # "biology" or "geography"
     source_options: list[FilterOption] = []
 
@@ -97,35 +97,35 @@ class DatabaseScienceTopic(ScienceTopic):
 
 
 class Geography(DatabaseScienceTopic):
-    name = "Geography"
-    db_subject = "geography"
-    source_options = [
+    name: str = "Geography"
+    db_subject: str = "geography"
+    source_options: list[FilterOption] = [
         FilterOption("countries", "Countries"),
         FilterOption("continants", "Continents"),
         FilterOption("water in the earth", "Water In The Earth"),
     ]
-    paint_targets = ["/images/swiss.png", "/images/continent.png", "/images/globe.png"]
-    paint_hints  = ["/images/swiss_colored.png", "/images/continent_colored.png", "/images/globe_colored.png"]
-    paint_titles = ["Map", "Continents", "Globe"]
+    paint_targets: list[str] = ["/images/swiss.png", "/images/continent.png", "/images/globe.png"]
+    paint_hints: list[str] = ["/images/swiss_colored.png", "/images/continent_colored.png", "/images/globe_colored.png"]
+    paint_titles: list[str] = ["Map", "Continents", "Globe"]
 
 
 class Biology(DatabaseScienceTopic):
-    name = "Biology"
-    db_subject = "biology"
-    source_options = [
+    name: str = "Biology"
+    db_subject: str = "biology"
+    source_options: list[FilterOption] = [
         FilterOption("human_body", "Human Body"),
         FilterOption("plant", "Plant"),
         FilterOption("animals", "Animals"),
     ]
-    paint_targets = ["/images/human-body.png", "/images/happy_rabbit.png", "/images/flower.png"]
-    paint_hints  = ["/images/human_body_colored.png", "/images/Animal-Colored.png", "/images/flower_colored.png"]
-    paint_titles = ["Human Body", "This Happy Rabbit", " This Nice Flower"]
+    paint_targets: list[str] = ["/images/human-body.png", "/images/happy_rabbit.png", "/images/flower.png"]
+    paint_hints: list[str] = ["/images/human_body_colored.png", "/images/Animal-Colored.png", "/images/flower_colored.png"]
+    paint_titles: list[str] = ["Human Body", "This Happy Rabbit", " This Nice Flower"]
 
 
 class Science(Subject):
-    name = "Science"
-    url_slug = "science"
-    icon = "/images/icons/laboratory.svg"
+    name: str = "Science"
+    url_slug: str = "science"
+    icon: str = "/images/icons/laboratory.svg"
     topics: list[Topic] = [Geography(), Biology()]
 
     def page_background_image(self) -> str:

@@ -1,4 +1,5 @@
 nicegui
-sqlalchemy
+sqlmodel==0.0.37
+SQLAlchemy==2.0.48
 pytest
 gTTS

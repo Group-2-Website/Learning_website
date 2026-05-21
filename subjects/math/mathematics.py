@@ -100,9 +100,9 @@ from subjects.math.fraction_topic import Fractions
 
 
 class Math(Subject):
-    name = "Math"
-    url_slug = "math"
-    icon = "/images/icons/notebook.svg"
+    name: str = "Math"
+    url_slug: str = "math"
+    icon: str = "/images/icons/notebook.svg"
     topics: list[Topic] = [
         Operation(),
         Fractions(),

@@ -4,9 +4,8 @@ import os
 from contextlib import contextmanager
 from typing import Iterator
 
-from sqlalchemy import create_engine
+from sqlmodel import create_engine, Session, SQLModel
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import DeclarativeBase, Session as OrmSession, sessionmaker
 
 
 _PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
@@ -14,16 +13,16 @@ _DATABASE_DIR = os.path.join(_PROJECT_ROOT, "Database")
 _DATABASE_PATH = os.path.join(_DATABASE_DIR, "learning.db")
 
 
-class Base(DeclarativeBase):
-    """Base class shared by all ORM models."""
-
 class Database:
-    """Base class holding the SQLAlchemy engine and session factory."""
+    """Base class holding the SQLModel engine and session factory."""
 
     def __init__(self, url: str | None = None) -> None:
         self._url = url or f"sqlite:///{_DATABASE_PATH}"
-        self._engine: Engine = create_engine(self._url)
-        self._session_factory = sessionmaker(bind=self._engine)
+        # Add check_same_thread=False for NiceGUI threading compatibility
+        self._engine: Engine = create_engine(
+            self._url,
+            connect_args={"check_same_thread": False}
+        )
 
     @property
     def engine(self) -> Engine:
@@ -31,12 +30,12 @@ class Database:
 
     def init_schema(self) -> None:
         """Create all tables that don't exist yet (safe to call multiple times)."""
-        Base.metadata.create_all(self._engine)
+        SQLModel.metadata.create_all(self._engine)
 
     @contextmanager
-    def session_scope(self) -> Iterator[OrmSession]:
+    def session_scope(self) -> Iterator[Session]:
         """Transactional session: commits on success, rolls back on error."""
-        session = self._session_factory()
+        session = Session(self._engine)
         try:
             yield session
             session.commit()

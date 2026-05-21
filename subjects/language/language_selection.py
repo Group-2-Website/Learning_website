@@ -6,7 +6,7 @@ from models.subject import Subject
 from models.topic import Topic, FilterOption, FilterDefinition
 from models.quiz_card import QuizCard
 from models.learning_card import LearningStep
-from Database.seed import DictionaryWord
+from domain.models import DictionaryWord
 from Database.dao import DictionaryWordDAO
 
 class BaseVocabTopic(Topic):
@@ -29,24 +29,19 @@ class BaseVocabTopic(Topic):
         learn_topic_filter: str = "",
         background_image: str = "/images/Alphabet.png",
     ) -> None:
-        if name:
-            self.name = name
-        if source_col:
-            self.source_col = source_col
-        if target_col:
-            self.target_col = target_col
-        if article_col:
-            self.article_col = article_col
-        if tts_lang:
-            self.tts_lang = tts_lang
-        if learn_topic_filter:
-            self.learn_topic_filter = learn_topic_filter
+        # Set instance attributes directly
+        self.name = name or ""
+        self.source_col = source_col or ""
+        self.target_col = target_col or ""
+        self.article_col = article_col or ""
+        self.tts_lang = tts_lang or ""
+        self.learn_topic_filter = learn_topic_filter or ""
         self._background_image = background_image
-        self._session_key: tuple | None = None
-        self._session_pool: list[DictionaryWord] = []
-        self._last_word_type: str = ""
-        self._last_direction: str = ""
-        self._last_quiz_type: str = "translate"
+        self._session_key = None
+        self._session_pool = []
+        self._last_word_type = ""
+        self._last_direction = ""
+        self._last_quiz_type = "translate"
 
     def page_background_image(self) -> str:
         return self._background_image
@@ -335,9 +330,9 @@ class BaseVocabTopic(Topic):
 
 
 class Language(Subject):
-    name = "Language"
-    url_slug = "language"
-    icon = "/images/icons/stack-of-books.svg"
+    name: str = "Language"
+    url_slug: str = "language"
+    icon: str = "/images/icons/stack-of-books.svg"
     topics: list[Topic] = [
         BaseVocabTopic(
             name="German-English",
