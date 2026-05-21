@@ -146,7 +146,7 @@ TThe project is structured as three distinct tiers, each with a single, well-def
 |---|---|---|
 | **Presentation** | `ui/pages/*.py` | Render NiceGUI widgets and handle user events (button clicks, answer submission, page navigation) |
 | **Domain / Business Logic** | `subjects/`, `models/` | Quiz generation, answer checking, filter sanitisation, and shared data types (`QuizCard`, `LearningStep`, `Subject`, `Topic`) |
-| **Persistence** | `Database/Learning.py` | ORM entity definitions, SQLAlchemy engine and session factory, CSV seeding |
+| **Persistence** | `Database/db.py`, `Database/seed.py`, `Database/dao.py` | SQLAlchemy engine and `session_scope` facade (`db.py`), ORM entity definitions and CSV seeding (`seed.py`), query classes (`dao.py`) |
 
 Each tier depends only on the tier below it: the presentation tier calls into the domain tier; the domain tier calls into the persistence tier. No layer knows about the layer above it.
 
@@ -154,7 +154,7 @@ Each tier depends only on the tier below it: the presentation tier calls into th
 ### Design Decisions
 - **3-Tier Layered Architecture:** Separating `ui/pages/` (presentation), `subjects/` + `models/` (domain logic), and `Database/` (persistence) keeps each tier independently testable and replaceable. Logic-based topic tests (e.g. `Fractions`, `Operation`) require no database; database tests require no UI.
 - **Template Method Pattern:** The `Topic` base class defines the algorithm skeleton — `get_question()` is the fixed entry point that dispatches to either `generate_question()` (logic-based) or `_load_question_from_db()` (database-backed) depending on `quiz_source`, and `check_answer()`, `learning_steps()`, and `quiz_filter_definitions()` are override hooks. Subclasses (e.g. `Fraction`, `Operation`, `Biology`) override only the hooks relevant to them. `Subject` provides a parallel structure for subject-level attributes (`name`, `url_slug`, `icon`, `topics`).
-- **Facade Pattern (database):** `Database/Learning.py` encapsulates all SQLAlchemy engine creation, table definitions, session management, and CSV seeding. The rest of the application interacts only with simple session queries.
+- **Facade Pattern (database):** `Database/db.py` exposes a `Database` class that owns the engine and provides a transactional `session_scope()` context manager. ORM models live in `Database/seed.py`, and all queries are encapsulated in DAO classes in `Database/dao.py`. The rest of the application calls the DAOs and never opens a session directly.
 
 ### Why not MVC?
 
@@ -198,25 +198,38 @@ All pages and routes are created automatically — no changes to `main.py` neede
 
 ## Database and ORM
 
-The application uses **SQLAlchemy** (with `DeclarativeBase`) as its ORM and stores all persistent data in a local **SQLite** file at `Database/learning.db`. The engine, session factory, ORM models, and CSV seeding logic all live in `Database/seed.py` — subject modules import `Session` and the model classes from there and never touch raw SQL.
+The application uses **SQLAlchemy** (with `DeclarativeBase`) as its ORM and stores all persistent data in a local **SQLite** file at `Database/learning.db`. Responsibilities are split across three files inside `Database/`:
+
+| File | Role |
+|---|---|
+| `db.py` | `Database` facade — owns the engine, exposes `init_schema()` and a `session_scope()` context manager |
+| `seed.py` | ORM model definitions and CSV import functions |
+| `dao.py` | `MathContentDAO`, `ScienceQuizDAO`, `DictionaryWordDAO` — encapsulate all queries |
+
+Subject modules call DAO methods and never touch sessions or raw SQL.
 
 ### Entities
 - `DictionaryWord`
+- `MathSubject` *(lookup)*
 - `MathContent`
+- `ScienceSubject` *(lookup)*
 - `ScienceQuiz`
 
 ### Mappings
 
-| ORM Class        | Table              | Seeded From                                                                                      |
-|------------------|--------------------|--------------------------------------------------------------------------------------------------|
-| `DictionaryWord` | `dictionary_words` | `flashcard_words_cleaned.csv`                                                                    |
-| `MathContent`    | `math_content`     | `operations.csv`, `fractions_learning.csv`                                                       |
-| `ScienceQuiz`    | `science_quiz`     | `animals.csv`, `plant.csv`, `human_body.csv`, `continants.csv`, `countries.csv`, `water in the earth.csv` |
+| ORM Class         | Table              | Seeded From                                                                                      |
+|-------------------|--------------------|--------------------------------------------------------------------------------------------------|
+| `DictionaryWord`  | `dictionary_words` | `flashcard_words_cleaned.csv`                                                                    |
+| `MathSubject`     | `math_subject`     | populated implicitly when math content is imported                                               |
+| `MathContent`     | `math_content`     | `operations.csv`, `fractions_learning.csv`                                                       |
+| `ScienceSubject`  | `science_subject`  | populated implicitly when science content is imported                                            |
+| `ScienceQuiz`     | `science_quiz`     | `animals.csv`, `plant.csv`, `human_body.csv`, `continants.csv`, `countries.csv`, `water in the earth.csv` |
 
 ### Relationships
-- No foreign-key relationships — all three tables are independent
-- `MathContent` uses `subject` (`"operations"` or `"fractions"`) to distinguish Math topics within a single table
-- `ScienceQuiz` uses `subject` (`"biology"` or `"geography"`) and `source` (e.g. `"animals"`, `"plant"`, `"human_body"`, `"continants"`, `"countries"`, `"water in the earth"`) to distinguish Science topics and categories within a single table
+- `MathSubject` ⇄ `MathContent` — one-to-many via `MathContent.subject_id` (FK → `math_subject.id`), navigable as `content.subject` / `subject.contents`
+- `ScienceSubject` ⇄ `ScienceQuiz` — one-to-many via `ScienceQuiz.subject_id` (FK → `science_subject.id`), navigable as `quiz.subject` / `subject.quizzes`
+- `ScienceQuiz.source` remains a plain string column used as a category filter key (e.g. `"animals"`, `"countries"`)
+- `DictionaryWord` is independent — no foreign keys
 
 ### ER Diagram
 
@@ -226,15 +239,17 @@ The application uses **SQLAlchemy** (with `DeclarativeBase`) as its ORM and stor
 
 ### How Each Subject Queries the Database
 
-**Science** — filters `science_quiz` by `subject` and `source`, retrieves all matching rows, and picks one at random per question, shuffling its three answer options each time.
+All queries go through a DAO in `Database/dao.py`. Subject modules never open a session themselves.
 
-**Language** — loads the full filtered word list from `dictionary_words` into memory once per quiz session and pops one word per question, avoiding repeated database hits. The pool is rebuilt only when the filter combination (topic, direction, quiz type) changes. Article quizzes narrow the pool to nouns only. Learning cards query words with a non-empty `meanings` field, ordered by `id`, limited to 50 rows.
+**Science** — calls `ScienceQuizDAO().list_questions(subject_name, source)` which joins `science_quiz` to `science_subject`, filters by name (case-insensitive) and `source`, and returns all matching rows. The subject module picks one at random per question and shuffles its three answer options.
 
-**Math** — queries `math_content` by `subject` and optional `topic`, mapping rows directly to `LearningStep` objects. Math quiz questions are generated in code and never read from the database.
+**Language** — calls `DictionaryWordDAO.list_by_topic()`, `list_topics()`, and `list_for_learning()`. The full filtered word list is loaded into memory once per quiz session and a word is popped per question, so the DAO is hit only when filters change. Article quizzes narrow the in-memory pool to nouns only. Learning cards use `list_for_learning(topic, limit=50)` which filters for non-empty `meanings` and orders by `id`.
+
+**Math** — calls `MathContentDAO().list_steps(subject_name, topic_name)` which joins `math_content` to `math_subject` and filters by subject name (case-insensitive) and optional topic. Rows are mapped directly to `LearningStep` objects in the subject module. Math quiz questions are generated in code and never read from the database.
 
 ### Seeding / Importing Data
 
-Running `python Database/seed.py` populates all tables from the CSV files in `Database/csv/`. Each import is **idempotent** — existing rows for that subject are deleted before re-inserting, so re-running is safe.
+Running `python -m Database.seed` populates all tables from the CSV files in `Database/csv/`. Each import is **idempotent** — existing rows for that subject are deleted before re-inserting, so re-running is safe. Lookup rows in `math_subject` and `science_subject` are inserted on first run via a small `_get_or_create` helper.
 
 ---
 
@@ -324,7 +339,7 @@ Every quiz topic validates the child's answer before accepting it:
 
 - **File existence** — `read_csv_rows()` raises a clear `FileNotFoundError` with the full path before attempting to open the file.
 - **Encoding fallback** — CSV files are tried first with `utf-8-sig`; if that fails with `UnicodeDecodeError` the reader retries with `cp1252`, and only raises an error when all encodings are exhausted.
-- **Transaction safety** — all database import functions (`import_dictionary_words`, `import_operations`, `import_fractions`, `import_grouped_quiz_csvs`) wrap their work in `try/except/finally` blocks: any exception triggers `session.rollback()` so the database is never left in a partial state, and `session.close()` runs unconditionally in every `finally` clause.
+- **Transaction safety** — all database import functions (`import_dictionary_words`, `import_operations`, `import_fractions`, `import_grouped_quiz_csvs`) run inside `db.session_scope()`, which commits on success and rolls back + re-raises on any exception, so the database is never left in a partial state.
 
 ---
 
@@ -332,40 +347,34 @@ Every quiz topic validates the child's answer before accepting it:
 
 All relevant data is managed via SQLAlchemy ORM. This includes dictionary words, math content, and science quiz questions.
 
-#### Schema & ORM Setup (`Database/seed.py`)
+#### Schema & ORM Setup
 
-All SQLAlchemy artefacts live in a single file:
+SQLAlchemy artefacts are split across two files:
 
-| Component | Detail |
-|---|---|
-| `Base` | `DeclarativeBase` subclass — the metadata registry for all tables |
-| `engine` | `create_engine(f"sqlite:///{_DATABASE_PATH}")` — single file at `Database/learning.db` |
-| `Session` | `sessionmaker(bind=engine)` — called as `Session()` to open a new session per query |
-| `Base.metadata.create_all(engine)` | Runs at import time — creates missing tables without dropping existing ones |
+| Component | Location | Detail |
+|---|---|---|
+| `Base` | `Database/db.py` | `DeclarativeBase` subclass — the metadata registry for all tables |
+| `Database` class | `Database/db.py` | Facade owning the engine (`create_engine(f"sqlite:///{_DATABASE_PATH}")`), a `sessionmaker`, `init_schema()`, and `session_scope()` |
+| `db` | `Database/db.py` | Module-level singleton `Database` instance consumed by `seed.py` and `dao.py` |
+| ORM model classes | `Database/seed.py` | `DictionaryWord`, `MathSubject`, `MathContent`, `ScienceSubject`, `ScienceQuiz` — call `db.init_schema()` at import time |
 
-Paths are resolved relative to `seed.py`'s own directory (`__file__`), so the app works regardless of the working directory at launch.
+Paths are resolved relative to `db.py`'s own directory (`__file__`), so the app works regardless of the working directory at launch.
 
 #### Session Lifecycle
 
-Every database function follows the same pattern, with no shared or long-lived sessions:
+DAO methods and importers use the `session_scope()` context manager — no manual `try/except/finally`, no shared or long-lived sessions:
 
 ```python
-session = Session()
-try:
-    # ... queries / adds ...
-    session.commit()
-except Exception:
-    session.rollback()   # never leave a partial write
-    raise
-finally:
-    session.close()      # always release the connection
+with db.session_scope() as session:
+    rows = session.query(MathContent).all()
+    # commit on clean exit, rollback + re-raise on exception, close always
 ```
 
-Objects that must outlive the session (e.g. quiz question data) are detached with `session.expunge_all()` before the session closes.
+Objects that must outlive the session (e.g. rows returned to the UI) are detached with `session.expunge_all()` before the scope exits.
 
 #### Idempotent CSV Seeding
 
-Running `python Database/seed.py` calls five import functions (`import_dictionary_words`, `import_operations`, `import_fractions`, `import_biology`, `import_geography`). Each deletes only its own rows before re-inserting, so re-running never corrupts other subjects' data.
+Running `python -m Database.seed` calls five import functions (`import_dictionary_words`, `import_operations`, `import_fractions`, `import_biology`, `import_geography`). Each deletes only its own rows before re-inserting, so re-running never corrupts other subjects' data.
 
 #### CSV Reading
 
@@ -404,7 +413,9 @@ Learning_website/
 ├── README.md
 │
 ├── Database/
+│   ├── db.py
 │   ├── seed.py
+│   ├── dao.py
 │   ├── learning.db
 │   └── csv/
 │
@@ -464,11 +475,10 @@ Learning_website/
 
 ### 2. Database Setup
 
-Seed the database with all CSV data (dictionary words, math content, science quizzes):
+Seed the database with all CSV data (dictionary words, math content, science quizzes). Run from the project root so the `Database` package is importable:
 
 ```bash
-cd Database
-python seed.py
+python -m Database.seed
 ```
 
 This is **idempotent** — safe to re-run at any time.
