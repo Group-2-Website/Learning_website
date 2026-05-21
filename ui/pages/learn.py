@@ -11,7 +11,7 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
     if url:
         _apply_bg(url)
     back_dest = f"/{subject.url_slug}/{topic.name.lower()}"
-    quiz_dest = f"/{subject.url_slug}/{topic.name.lower()}/quiz"
+    quiz_filter_dest = f"/{subject.url_slug}/{topic.name.lower()}/filter"
     with ui.element("div").classes("page-content"):
         _build_page_header(
             back_dest, f"Back to {topic.name}",
@@ -100,7 +100,7 @@ def build_learn_page(subject: Subject, topic: Topic) -> None:
         </script>
         """)
 
-        ui.button("Ready? Take the Quiz →", on_click=lambda d=quiz_dest: ui.navigate.to(d)) \
+        ui.button("Ready? Take the Quiz →", on_click=lambda d=quiz_filter_dest: ui.navigate.to(d)) \
             .props("rounded") \
             .style(
                 "background:linear-gradient(135deg,#60435F,#D67AB5);color:#f3f1f1;"
