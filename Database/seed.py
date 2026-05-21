@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import csv
 import os
 
-from sqlmodel import select, delete
+from sqlmodel import Session, select, delete
 
 from Database.db import db
 from domain.models import (
@@ -18,11 +20,7 @@ _DATABASE_DIR = os.path.join(_PROJECT_ROOT, "Database")
 _CSV_DIR = os.path.join(_DATABASE_DIR, "csv")
 
 
-# Create tables for the models declared in domain/models.py
-db.init_schema()
-
-
-def _get_or_create(session, model, **fields):
+def _get_or_create(session: Session, model, **fields):
     """Return an existing row matching *fields* or create one."""
     statement = select(model).filter_by(**fields)
     instance = session.exec(statement).first()
@@ -33,7 +31,7 @@ def _get_or_create(session, model, **fields):
     return instance
 
 
-def read_csv_rows(file_path):
+def read_csv_rows(file_path: str) -> list[dict]:
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"CSV file not found: {file_path}")
 
@@ -46,8 +44,17 @@ def read_csv_rows(file_path):
     raise ValueError(f"Could not decode CSV file: {file_path}")
 
 
-def import_dictionary_words():
-    with db.session_scope() as session:
+class DataSeeder:
+
+    def seed(self, session: Session) -> None:
+        """Import all content from CSV files"""
+        self._seed_dictionary_words(session)
+        self._seed_math_subject(session, "operations", "operations.csv")
+        self._seed_math_subject(session, "fractions", "fractions_learning.csv")
+        self._seed_science_subject(session, "biology", ["animals.csv", "plant.csv", "human_body.csv"])
+        self._seed_science_subject(session, "geography", ["continants.csv", "countries.csv", "water in the earth.csv"])
+
+    def _seed_dictionary_words(self, session: Session) -> None:
         rows = read_csv_rows(os.path.join(_CSV_DIR, "flashcard_words_cleaned.csv"))
         # Keep import idempotent across repeated runs.
         session.exec(delete(DictionaryWord))
@@ -64,11 +71,9 @@ def import_dictionary_words():
             )
             for row in rows
         )
-    print("dictionary imported")
+        print("dictionary imported")
 
-
-def _import_math_subject(subject_name: str, csv_filename: str) -> None:
-    with db.session_scope() as session:
+    def _seed_math_subject(self, session: Session, subject_name: str, csv_filename: str) -> None:
         rows = read_csv_rows(os.path.join(_CSV_DIR, csv_filename))
         subject_row = _get_or_create(session, MathSubject, name=subject_name)
         # Idempotent: wipe existing rows for this subject only.
@@ -87,19 +92,9 @@ def _import_math_subject(subject_name: str, csv_filename: str) -> None:
             )
             for row in rows
         )
-    print(f"{subject_name} imported into math_content")
+        print(f"{subject_name} imported into math_content")
 
-
-def import_operations():
-    _import_math_subject("operations", "operations.csv")
-
-
-def import_fractions():
-    _import_math_subject("fractions", "fractions_learning.csv")
-
-
-def import_grouped_quiz_csvs(subject_name: str, files: list[str]) -> None:
-    with db.session_scope() as session:
+    def _seed_science_subject(self, session: Session, subject_name: str, files: list[str]) -> None:
         subject_row = _get_or_create(session, ScienceSubject, name=subject_name)
         for filename in files:
             file_path = os.path.join(_CSV_DIR, filename)
@@ -109,7 +104,7 @@ def import_grouped_quiz_csvs(subject_name: str, files: list[str]) -> None:
             session.exec(
                 delete(ScienceQuiz).where(
                     ScienceQuiz.subject_id == subject_row.id,
-                    ScienceQuiz.source == source_csv
+                    ScienceQuiz.source == source_csv,
                 )
             )
             session.add_all(
@@ -124,34 +119,10 @@ def import_grouped_quiz_csvs(subject_name: str, files: list[str]) -> None:
                 )
                 for row in reader_rows
             )
-    print(f"{subject_name} imported into science_quiz")
-
-
-def import_biology():
-    import_grouped_quiz_csvs(
-        "biology",
-        [
-            "animals.csv",
-            "plant.csv",
-            "human_body.csv",
-        ],
-    )
-
-
-def import_geography():
-    import_grouped_quiz_csvs(
-        "geography",
-        [
-            "continants.csv",
-            "countries.csv",
-            "water in the earth.csv",
-        ],
-    )
+        print(f"{subject_name} imported into science_quiz")
 
 
 if __name__ == "__main__":
-    import_dictionary_words()
-    import_operations()
-    import_fractions()
-    import_biology()
-    import_geography()
+    db.init_schema()
+    with db.session_scope() as session:
+        DataSeeder().seed(session)
