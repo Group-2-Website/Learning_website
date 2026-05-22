@@ -156,11 +156,11 @@ Each tier depends only on the tier below it: the presentation tier calls into th
 - **Template Method Pattern:** The `Topic` base class defines the algorithm skeleton — `get_question()` is the fixed entry point that dispatches to either `generate_question()` (logic-based) or `_load_question_from_db()` (database-backed) depending on `quiz_source`, and `check_answer()`, `learning_steps()`, and `quiz_filter_definitions()` are override hooks. Subclasses (e.g. `Fraction`, `Operation`, `Biology`) override only the hooks relevant to them. `Subject` provides a parallel structure for subject-level attributes (`name`, `url_slug`, `icon`, `topics`).
 - **Facade Pattern (database):** `Database/db.py` exposes a `Database` class that owns the SQLModel engine and provides a transactional `session_scope()` context manager. SQLModel ORM models live in `domain/models.py`, CSV importers live in `Database/seed.py`, and all queries are encapsulated in DAO classes in `Database/dao.py`. The rest of the application calls the DAOs and never opens a session directly.
 
-### Why not MVC?
+### Relationship to MVC
 
-MVC assumes a clear separation between a passive View (renders state), a Controller (handles input), and a Model (owns data). NiceGUI collapses the View and Controller into one: the server owns all UI state and pushes DOM updates to a thin browser client, so widgets and their event callbacks are defined together in the same function. Pulling `check_answer()` or `_advance()` out of the page builder and into a separate Controller class would add indirection with no real benefit — the framework's design already enforces a single point of responsibility per page.
+Our 3-tier layout maps closely onto **MVC**: the **persistence** tier corresponds to the Model, and the **domain logic** tier corresponds to the Controller (generating questions, checking answers, handling filters). The difference is that we did not introduce a separate Controller class per page. Because each NiceGUI page is small and its event handlers only update widgets on that same page, the widget definitions and their callbacks are kept together in one page function.
 
-A 3-tier model fits the actual boundary that matters here: *what the user sees* (NiceGUI widgets), *what the app knows* (domain logic), and *where data lives* (SQLite via SQLAlchemy).
+The benefit is fewer files and less indirection. The drawback is that a page's UI cannot be replaced without also touching its handlers. For a project of this size we considered that an acceptable compromise.
 
 ### Routing
 
