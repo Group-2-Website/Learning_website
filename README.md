@@ -140,13 +140,13 @@ can study before taking a quiz.**
 
 ![Architecture](docs/images/archi.png)
 
-TThe project is structured as three distinct tiers, each with a single, well-defined responsibility:
+The project is structured as three distinct tiers, each with a single, well-defined responsibility:
 
 | Tier | Location | Responsibility |
 |---|---|---|
 | **Presentation** | `ui/pages/*.py` | Render NiceGUI widgets and handle user events (button clicks, answer submission, page navigation) |
-| **Domain / Business Logic** | `subjects/`, `models/` | Quiz generation, answer checking, filter sanitisation, and shared data types (`QuizCard`, `LearningStep`, `Subject`, `Topic`) |
-| **Persistence** | `Database/db.py`, `Database/seed.py`, `Database/dao.py` | SQLAlchemy engine and `session_scope` facade (`db.py`), ORM entity definitions and CSV seeding (`seed.py`), query classes (`dao.py`) |
+| **Domain / Business Logic** | `subjects/`, `models/`, `domain/models.py` | Quiz generation, answer checking, filter sanitisation, shared data types (`QuizCard`, `LearningStep`, `Subject`, `Topic`) and SQLModel ORM entities |
+| **Persistence** | `Database/db.py`, `Database/seed.py`, `Database/dao.py` | SQLModel engine and `session_scope` facade (`db.py`), CSV seeding (`seed.py`), query classes (`dao.py`) |
 
 Each tier depends only on the tier below it: the presentation tier calls into the domain tier; the domain tier calls into the persistence tier. No layer knows about the layer above it.
 
@@ -154,7 +154,7 @@ Each tier depends only on the tier below it: the presentation tier calls into th
 ### Design Decisions
 - **3-Tier Layered Architecture:** Separating `ui/pages/` (presentation), `subjects/` + `models/` (domain logic), and `Database/` (persistence) keeps each tier independently testable and replaceable. Logic-based topic tests (e.g. `Fractions`, `Operation`) require no database; database tests require no UI.
 - **Template Method Pattern:** The `Topic` base class defines the algorithm skeleton — `get_question()` is the fixed entry point that dispatches to either `generate_question()` (logic-based) or `_load_question_from_db()` (database-backed) depending on `quiz_source`, and `check_answer()`, `learning_steps()`, and `quiz_filter_definitions()` are override hooks. Subclasses (e.g. `Fraction`, `Operation`, `Biology`) override only the hooks relevant to them. `Subject` provides a parallel structure for subject-level attributes (`name`, `url_slug`, `icon`, `topics`).
-- **Facade Pattern (database):** `Database/db.py` exposes a `Database` class that owns the engine and provides a transactional `session_scope()` context manager. ORM models live in `Database/seed.py`, and all queries are encapsulated in DAO classes in `Database/dao.py`. The rest of the application calls the DAOs and never opens a session directly.
+- **Facade Pattern (database):** `Database/db.py` exposes a `Database` class that owns the SQLModel engine and provides a transactional `session_scope()` context manager. SQLModel ORM models live in `domain/models.py`, CSV importers live in `Database/seed.py`, and all queries are encapsulated in DAO classes in `Database/dao.py`. The rest of the application calls the DAOs and never opens a session directly.
 
 ### Why not MVC?
 
@@ -193,18 +193,20 @@ All pages and routes are created automatically — no changes to `main.py` neede
 | Science  | Biology                   | ✅   | ❌       | ✅       |
 | Science  | Geography                 | ✅   | ❌       | ✅       |
 | Language | German–English Vocabulary | ✅   | ✅       | ❌       |
+| Language | French–English Vocabulary | ✅   | ✅       | ❌       |
 
 ---
 
 ## Database and ORM
 
-The application uses **SQLAlchemy** (with `DeclarativeBase`) as its ORM and stores all persistent data in a local **SQLite** file at `Database/learning.db`. Responsibilities are split across three files inside `Database/`:
+The application uses **SQLModel** (a thin wrapper around SQLAlchemy + Pydantic) as its ORM and stores all persistent data in a local **SQLite** file at `Database/learning.db`. Responsibilities are split across four files:
 
 | File | Role |
 |---|---|
-| `db.py` | `Database` facade — owns the engine, exposes `init_schema()` and a `session_scope()` context manager |
-| `seed.py` | ORM model definitions and CSV import functions |
-| `dao.py` | `MathContentDAO`, `ScienceQuizDAO`, `DictionaryWordDAO` — encapsulate all queries |
+| `Database/db.py` | `Database` facade — owns the SQLModel engine, exposes `init_schema()` and a `session_scope()` context manager |
+| `domain/models.py` | SQLModel ORM model classes (`DictionaryWord`, `MathSubject`, `MathContent`, `ScienceSubject`, `ScienceQuiz`) |
+| `Database/seed.py` | CSV import functions (idempotent) — no model definitions |
+| `Database/dao.py` | `MathContentDAO`, `ScienceQuizDAO`, `DictionaryWordDAO` — encapsulate all queries |
 
 Subject modules call DAO methods and never touch sessions or raw SQL.
 
@@ -339,7 +341,7 @@ Every quiz topic validates the child's answer before accepting it:
 
 - **File existence** — `read_csv_rows()` raises a clear `FileNotFoundError` with the full path before attempting to open the file.
 - **Encoding fallback** — CSV files are tried first with `utf-8-sig`; if that fails with `UnicodeDecodeError` the reader retries with `cp1252`, and only raises an error when all encodings are exhausted.
-- **Transaction safety** — all database import functions (`import_dictionary_words`, `import_operations`, `import_fractions`, `import_grouped_quiz_csvs`) run inside `db.session_scope()`, which commits on success and rolls back + re-raises on any exception, so the database is never left in a partial state.
+- **Transaction safety** — `DataSeeder.seed()` is called inside a single `db.session_scope()` block in `__main__`, which commits on success and rolls back + re-raises on any exception, so the database is never left in a partial state.
 
 ---
 
@@ -353,10 +355,10 @@ SQLAlchemy artefacts are split across two files:
 
 | Component | Location | Detail |
 |---|---|---|
-| `Base` | `Database/db.py` | `DeclarativeBase` subclass — the metadata registry for all tables |
-| `Database` class | `Database/db.py` | Facade owning the engine (`create_engine(f"sqlite:///{_DATABASE_PATH}")`), a `sessionmaker`, `init_schema()`, and `session_scope()` |
+| `Database` class | `Database/db.py` | Facade owning the SQLModel engine (`create_engine(f"sqlite:///{_DATABASE_PATH}", connect_args={"check_same_thread": False})`), `init_schema()`, and `session_scope()` |
 | `db` | `Database/db.py` | Module-level singleton `Database` instance consumed by `seed.py` and `dao.py` |
-| ORM model classes | `Database/seed.py` | `DictionaryWord`, `MathSubject`, `MathContent`, `ScienceSubject`, `ScienceQuiz` — call `db.init_schema()` at import time |
+| ORM model classes | `domain/models.py` | `DictionaryWord`, `MathSubject`, `MathContent`, `ScienceSubject`, `ScienceQuiz` — all declared as `class … (SQLModel, table=True)` |
+| `SQLModel.metadata` | implicit registry | Collects every `table=True` model. `db.init_schema()` runs `SQLModel.metadata.create_all(engine)` to create missing tables. Called once at import time from `Database/seed.py`. |
 
 Paths are resolved relative to `db.py`'s own directory (`__file__`), so the app works regardless of the working directory at launch.
 
@@ -366,7 +368,7 @@ DAO methods and importers use the `session_scope()` context manager — no manua
 
 ```python
 with db.session_scope() as session:
-    rows = session.query(MathContent).all()
+    rows = list(session.exec(select(MathContent)).all())
     # commit on clean exit, rollback + re-raise on exception, close always
 ```
 
@@ -374,7 +376,7 @@ Objects that must outlive the session (e.g. rows returned to the UI) are detache
 
 #### Idempotent CSV Seeding
 
-Running `python -m Database.seed` calls five import functions (`import_dictionary_words`, `import_operations`, `import_fractions`, `import_biology`, `import_geography`). Each deletes only its own rows before re-inserting, so re-running never corrupts other subjects' data.
+Running `python -m Database.seed` instantiates `DataSeeder` and calls `seed()`, which delegates to `_seed_dictionary_words()`, `_seed_math_subject()` (once for operations, once for fractions), and `_seed_science_subject()` (once for biology, once for geography). Each method deletes only its own rows before re-inserting, so re-running never corrupts other subjects' data.
 
 #### CSV Reading
 
@@ -389,16 +391,17 @@ Running `python -m Database.seed` calls five import functions (`import_dictionar
 
 - **Python 3.x**
 - **NiceGUI** — browser-based UI framework
-- **SQLAlchemy** — ORM for the SQLite database
+- **SQLModel** — ORM (built on SQLAlchemy + Pydantic) for the SQLite database
 - **SQLite** — local database (`learning.db`)
-- Environment: macOS / GitHub Codespaces
+- Environment: macOS / Windows / GitHub Codespaces
 
 ---
 
 ### Libraries Used
 
 - **nicegui** – browser-based UI framework
-- **sqlalchemy** – ORM and database toolkit
+- **sqlmodel** – ORM (wraps SQLAlchemy + Pydantic)
+- **sqlalchemy** – underlying engine / session / query machinery used by SQLModel
 - **gtts** – text-to-speech audio generation
 - **pytest** – testing
 
@@ -418,6 +421,9 @@ Learning_website/
 │   ├── dao.py
 │   ├── learning.db
 │   └── csv/
+│
+├── domain/
+│   └── models.py        ← SQLModel ORM entities
 │
 ├── docs/images/
 │
@@ -442,7 +448,10 @@ Learning_website/
 │   └── language/
 │
 ├── tests/
-│   └── test_mathematics.py
+│   ├── conftest.py
+│   ├── test_unit.py
+│   ├── test_integration.py
+│   └── test_database.py
 │
 └── ui/
     ├── __init__.py
@@ -473,7 +482,21 @@ Learning_website/
   pip install -r requirements.txt
   ```
 
-### 2. Database Setup
+### 2. Configuration
+
+No configuration is required. The application has no `.env` file, no environment variables, and no command-line flags. The following values are resolved automatically from the project layout:
+
+| Setting | Value | Where it is set |
+|---|---|---|
+| Database file | `Database/learning.db` | `Database/db.py` — derived from `__file__` so it works from any working directory |
+| HTTP port | `8082` | `main.py` → `ui.run(port=8082, ...)` |
+| Static mounts | `/images` and `/static` | `main.py` → `app.add_static_files(...)` |
+| TTS audio cache | `subjects/language/audio_cache/` | `subjects/language/tts.py` |
+| Page title / favicon | `"E-learning for kids"` / `static/favicon.png` | `main.py` → `ui.run(...)` |
+
+To change the port or any of the above, edit the corresponding call directly in `main.py`.
+
+### 3. Database Setup
 
 Seed the database with all CSV data (dictionary words, math content, science quizzes). Run from the project root so the `Database` package is importable:
 
@@ -483,7 +506,7 @@ python -m Database.seed
 
 This is **idempotent** — safe to re-run at any time.
 
-### 3. Launch
+### 4. Launch
 
 ```bash
 python main.py
@@ -491,7 +514,7 @@ python main.py
 
 The app will be available at **http://localhost:8082**.
 
-### 4. Usage
+### 5. Usage
 
 Select a subject:
 1. Open the home page and choose a subject (Math, Science, or Language).
@@ -512,3 +535,10 @@ Select a subject:
 1. Browse subject-themed painting pages.
 2. Use the canvas to draw and colour freely.
 
+---
+
+## 🤝 Contributing
+
+Work was distributed across the team using a **GitHub Project Board**, where every task was tracked as an issue and moved through the *Todo → In Progress → Done* columns. This kept responsibilities transparent and made it easy to see who was working on what at any time.
+
+Project board: <https://github.com/orgs/Group-2-Website/projects/3/views/1>

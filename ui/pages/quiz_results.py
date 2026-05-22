@@ -5,18 +5,13 @@ from models.topic import Topic
 from ui.pages.common import _apply_bg, _build_page_header
 
 
-def build_quiz_results_page(subject: Subject, topic: Topic, score: int, attempts: int) -> None:
-    """Render the quiz results page."""
-    url = topic.page_background_image()
-    if url:
-        _apply_bg(url)
+def calculate_quiz_result(score: int, attempts: int) -> tuple[int, float, str, str]:
+    """Return (percentage, stars, message, color) for a quiz result.
 
-    back_dest = f"/{subject.url_slug}/{topic.name.lower()}"
-    quiz_dest = f"/{subject.url_slug}/{topic.name.lower()}/quiz"
-
+    Stars range from 0–5 in 0.5 increments.
+    """
     pct = round((score / attempts) * 100) if attempts > 0 else 0
     stars = round(pct / 20 * 2) / 2  # 0–5 stars in 0.5 steps
-
 
     if pct == 100:
         msg, color = "Perfect score! Amazing!", "#bde0c9"
@@ -26,6 +21,20 @@ def build_quiz_results_page(subject: Subject, topic: Topic, score: int, attempts
         msg, color = "Good effort! Keep practising.", "#f28a7a"
     else:
         msg, color = "Keep going — practice makes perfect!", "#fc4900"
+
+    return pct, stars, msg, color
+
+
+def build_quiz_results_page(subject: Subject, topic: Topic, score: int, attempts: int) -> None:
+    """Render the quiz results page."""
+    url = topic.page_background_image()
+    if url:
+        _apply_bg(url)
+
+    back_dest = f"/{subject.url_slug}/{topic.name.lower()}"
+    quiz_dest = f"/{subject.url_slug}/{topic.name.lower()}/quiz"
+
+    pct, stars, msg, color = calculate_quiz_result(score, attempts)
 
     with ui.element("div").classes("page-content1"):
         _build_page_header(back_dest, f"Back to {topic.name}", f" Quiz Results", "")
