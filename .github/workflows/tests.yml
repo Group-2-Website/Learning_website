@@ -26,7 +26,7 @@ jobs:
         run: pytest --junit-xml=reports/results.xml
 
       - name: Test report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v3
         if: always()
         with:
           name: pytest results
