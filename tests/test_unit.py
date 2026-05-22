@@ -119,7 +119,7 @@ class TestTopicGetQuestion:
         assert card.correct_answer != ""
 
 
-# ── 6. Quiz result calculation ───────────────────────────────────────────────
+# 6. Quiz result calculation
 
 class TestQuizResultCalculation:
     def test_perfect_score_gives_100_percent_and_5_stars(self):  # TC_001

@@ -549,9 +549,9 @@ The suite contains **42 automated tests** split into unit tests (`tests/test_uni
 
 ### Test Cases
 
-This section documents **8 representative test cases** across three categories.
-Cases TC_001–TC_005 correspond to automated pytest tests.
-Cases TC_007–TC_009 are manual UI tests that cannot be fully automated without a browser testing framework.
+This section documents **15 representative test cases** across four categories.
+Cases TC_001–TC_012 correspond to automated pytest tests (6 unit, 3 database, 3 integration).
+Cases TC_013–TC_015 are manual UI tests that cannot be fully automated without a browser testing framework.
 
 #### Unit Tests
 
@@ -624,13 +624,80 @@ Cases TC_007–TC_009 are manual UI tests that cannot be fully automated without
 | 2 | Call `fractions.check_answer(user_answer, correct_answer)` | `"2/4"`, `"1/2"` |
 | 3 | Assert the first return value (ok) is `True` | `ok == True` |
 
-#### DB Tests
-
-##### TC_004 — Seeded science quiz questions are queryable from the database
+##### TC_004 — Operations quiz rejects a non-integer answer
 
 | Field | Value |
 |---|---|
 | **Test Case ID** | TC_004 |
+| **Title** | Operations quiz rejects a non-integer answer |
+| **Description** | Verify that `Operation.check_answer` rejects a fractional input (e.g. `"1/2"`) when an integer answer is expected and returns a non-empty error message to display to the user. |
+| **Preconditions** | `subjects/math/operations.py` is importable; no database required. |
+| **Test Data** | `user_answer = "1/2"`, `correct_answer = "7"` |
+| **Expected Result** | `ok == False`; `msg` is a non-empty string (the "Only integer numbers allowed!" feedback). |
+| **Actual Result** | `ok == False`; `msg` was non-empty. |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_unit.py :: TestOperationAnswerCheck :: test_non_integer_rejected`. The companion test `test_empty_answer_rejected` covers the empty-input path. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Instantiate `Operation()` | — |
+| 2 | Call `op.check_answer(user_answer, correct_answer)` | `"1/2"`, `"7"` |
+| 3 | Assert the first return value (ok) is `False` | `ok == False` |
+| 4 | Assert the second return value (msg) is non-empty | `bool(msg) == True` |
+
+##### TC_005 — Decimal form accepted as equivalent to a fraction
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_005 |
+| **Title** | Decimal form accepted as equivalent to a fraction |
+| **Description** | Verify that `Fractions.check_answer` accepts a decimal answer (`"0.5"`) when the correct answer is the fractional form `"1/2"`. This ensures children who type either notation are not penalised. |
+| **Preconditions** | `subjects/math/fraction_topic.py` is importable; no database required. |
+| **Test Data** | `user_answer = "0.5"`, `correct_answer = "1/2"` |
+| **Expected Result** | `ok == True` |
+| **Actual Result** | `ok == True` |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_unit.py :: TestFractionAnswerCheck :: test_decimal_accepted`. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Instantiate `Fractions()` | — |
+| 2 | Call `fractions.check_answer(user_answer, correct_answer)` | `"0.5"`, `"1/2"` |
+| 3 | Assert the first return value (ok) is `True` | `ok == True` |
+
+##### TC_006 — Fraction division filter produces the `÷` operator
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_006 |
+| **Title** | Fraction division filter produces the `÷` operator |
+| **Description** | Verify that calling `Fractions.generate_question({"operation": "div"})` produces a question string containing the `÷` symbol, confirming that the operation filter is respected when generating quiz questions. |
+| **Preconditions** | `subjects/math/fraction_topic.py` is importable; no database required. |
+| **Test Data** | Filter `{"operation": "div"}` |
+| **Expected Result** | `"÷"` appears in the generated question string. |
+| **Actual Result** | `"÷"` was present in the generated question. |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_unit.py :: TestFractionQuestionGeneration :: test_div_filter_produces_div_sign`. The companion test `test_add_filter_produces_plus_sign` checks the `+` operator path. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Instantiate `Fractions()` | — |
+| 2 | Call `fractions.generate_question({"operation": "div"})` | — |
+| 3 | Assert `"÷"` is a substring of the returned question | `"÷" in q` |
+
+#### DB Tests
+
+##### TC_007 — Seeded science quiz questions are queryable from the database
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_007 |
 | **Title** | Seeded science quiz questions are queryable from the database |
 | **Description** | Verify that science quiz questions inserted by the seeder (mimicked here by the test fixture) can be retrieved correctly. In the real application all quiz content enters the database through CSV seeding — there is no user-facing "save question" flow. |
 | **Preconditions** | In-memory SQLite database created via the `db` pytest fixture; `ScienceSubject` and `ScienceQuiz` models importable. The fixture inserts two animal quiz rows to simulate a seeded dataset. |
@@ -652,11 +719,11 @@ Cases TC_007–TC_009 are manual UI tests that cannot be fully automated without
 | 6 | Assert row count equals 2 | `len(rows) == 2` |
 | 7 | Assert the set of `correct_answer` values matches expected | `{"Frog", "Eagle"}` |
 
-##### TC_005 — Math subject–contents ORM relationship is navigable
+##### TC_008 — Math subject–contents ORM relationship is navigable
 
 | Field | Value |
 |---|---|
-| **Test Case ID** | TC_005 |
+| **Test Case ID** | TC_008 |
 | **Title** | Math subject–contents ORM relationship is navigable |
 | **Description** | Verify that `MathContent` rows linked to a `MathSubject` are accessible through the ORM relationship attribute `subject.contents`. |
 | **Preconditions** | In-memory SQLite database; `MathSubject` and `MathContent` models importable. |
@@ -677,15 +744,115 @@ Cases TC_007–TC_009 are manual UI tests that cannot be fully automated without
 | 5 | Assert length equals 2 | `len(subject.contents) == 2` |
 | 6 | Assert topic set matches | `{"addition", "subtraction"}` |
 
+##### TC_009 — Deleting a science subject cascades to its quizzes
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_009 |
+| **Title** | Deleting a science subject cascades to its quizzes |
+| **Description** | Verify that removing a `ScienceSubject` row also deletes every `ScienceQuiz` row linked to it via `subject_id`, leaving no orphaned quiz records. This protects referential integrity when a subject is removed during re-seeding. |
+| **Preconditions** | In-memory SQLite database via the `db` fixture; `ScienceSubject` and `ScienceQuiz` models importable. |
+| **Test Data** | One `ScienceSubject` (`name="biology"`) with two `ScienceQuiz` children (`source="animals"`). |
+| **Expected Result** | After `db.delete(subject)` and commit, `select(ScienceQuiz).all()` returns an empty list. |
+| **Actual Result** | All child quizzes were removed; query returned `[]`. |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_database.py :: test_deleting_science_subject_cascades_to_quizzes`. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Obtain a fresh in-memory DB session via the `db` fixture | — |
+| 2 | Insert a `ScienceSubject` and commit | `name="biology"` |
+| 3 | Insert two `ScienceQuiz` rows linked to that subject and commit | `source="animals"` for both |
+| 4 | Delete the subject and commit | `db.delete(subject)` |
+| 5 | Query all rows from `ScienceQuiz` | — |
+| 6 | Assert the resulting list is empty | `remaining == []` |
+
+#### Integration Tests
+
+##### TC_010 — MathContentDAO returns learning steps for a seeded subject
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_010 |
+| **Title** | MathContentDAO returns learning steps for a seeded subject |
+| **Description** | Verify that the `MathContentDAO.list_steps()` query correctly retrieves rows for a subject seeded into the in-memory database. This exercises the join between `math_content` and `math_subject` and confirms that DAO → DB → ORM wiring works end-to-end. |
+| **Preconditions** | In-memory SQLite database created via the `database` fixture and pre-populated by the `seeded_math` fixture with two `MathContent` rows under the `"fractions"` subject. |
+| **Test Data** | Subject `name="fractions"`, two seeded learning rows (`topic="add"`, `topic="mul"`). |
+| **Expected Result** | `dao.list_steps("fractions")` returns 2 rows. |
+| **Actual Result** | DAO returned 2 rows. |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_integration.py :: TestMathContentDAO :: test_list_steps_returns_seeded_rows`. The companion test `test_list_steps_filters_by_topic` further verifies the `topic_name` filter, and `test_list_steps_unknown_subject_returns_empty` covers the empty-result path. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Obtain a fresh in-memory `Database` via the `database` fixture | — |
+| 2 | Trigger the `seeded_math` fixture to insert 2 `MathContent` rows | subject `"fractions"`, topics `"add"`, `"mul"` |
+| 3 | Instantiate `MathContentDAO(database)` | — |
+| 4 | Call `dao.list_steps("fractions")` | — |
+| 5 | Assert the returned list has length 2 | `len(rows) == 2` |
+
+##### TC_011 — ScienceQuizDAO filters questions by source category
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_011 |
+| **Title** | ScienceQuizDAO filters questions by source category |
+| **Description** | Verify that `ScienceQuizDAO.list_questions(subject, source)` returns only quizzes whose `source` column matches the given category. Querying for an unseeded source (e.g. `"plants"`) must return an empty list — not raise or return unrelated rows. |
+| **Preconditions** | In-memory SQLite database; `seeded_science` fixture inserts two `ScienceQuiz` rows under subject `"biology"` with `source="animals"`. |
+| **Test Data** | Subject `name="biology"`, requested `source="plants"` (no matching rows). |
+| **Expected Result** | `dao.list_questions("biology", "plants")` returns an empty list. |
+| **Actual Result** | DAO returned `[]`. |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_integration.py :: TestScienceQuizDAO :: test_list_questions_filters_by_source`. Companion tests verify that `source="animals"` returns 2 rows and that an unknown subject also returns `[]`. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Obtain a fresh in-memory `Database` via the `database` fixture | — |
+| 2 | Trigger the `seeded_science` fixture (inserts 2 `animals` rows for `biology`) | — |
+| 3 | Instantiate `ScienceQuizDAO(database)` | — |
+| 4 | Call `dao.list_questions("biology", "plants")` | — |
+| 5 | Assert the returned list is empty | `rows == []` |
+
+##### TC_012 — Biology topic builds a quiz card from seeded database rows
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_012 |
+| **Title** | Biology topic builds a quiz card from seeded database rows |
+| **Description** | End-to-end check that the `Biology` topic (`subjects/science/science.py`) reads a random question from the database via `ScienceQuizDAO`, packages it as a `QuizCard`, and exposes one of the seeded correct answers. The DAO is rebound to the in-memory test database with `monkeypatch`. |
+| **Preconditions** | In-memory database seeded with two `animals` quizzes whose correct answers are `"Frog"` and `"Eagle"`. `monkeypatch` replaces `subjects.science.science.ScienceQuizDAO` with one bound to the test database. |
+| **Test Data** | Filter `{"category": "animals"}`. |
+| **Expected Result** | Returned object is a `QuizCard` with `topic == "Biology"` and `correct_answer` in `{"Frog", "Eagle"}`. |
+| **Actual Result** | Returned `QuizCard` with topic `"Biology"` and a correct answer drawn from the seeded set. |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_integration.py :: TestScienceQuizEndToEnd :: test_quiz_returns_card_from_seeded_data`. Companion tests verify the card always has 3 options and that an empty database returns a graceful `"No question available."` fallback. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Obtain a fresh in-memory `Database` and trigger `seeded_science` | — |
+| 2 | Monkeypatch `subjects.science.science.ScienceQuizDAO` to use the test DB | — |
+| 3 | Call `Biology().get_question({"category": "animals"})` | — |
+| 4 | Assert the result is a `QuizCard` | `isinstance(card, QuizCard)` |
+| 5 | Assert `card.topic == "Biology"` | — |
+| 6 | Assert `card.correct_answer in {"Frog", "Eagle"}` | — |
+
 #### Manual / UI Tests
 
 > These tests require a running application (`python main.py`) and a web browser. They cannot be fully automated without a browser testing framework such as Playwright or Selenium.
 
-##### TC_007 — User navigates to a subject and sees the topic list
+##### TC_013 — User navigates to a subject and sees the topic list
 
 | Field | Value |
 |---|---|
-| **Test Case ID** | TC_007 |
+| **Test Case ID** | TC_013 |
 | **Title** | User navigates to a subject and sees the topic list |
 | **Description** | Verify that clicking a subject card on the home page loads the subject page and displays all available topics for that subject. |
 | **Preconditions** | Application is running (`python main.py`); database is seeded; browser is open at `http://localhost:8082`. |
@@ -705,11 +872,11 @@ Cases TC_007–TC_009 are manual UI tests that cannot be fully automated without
 | 4 | Verify the subject page loads without errors | — |
 | 5 | Verify at least two topic cards are visible (e.g. "Operations", "Fractions") | — |
 
-##### TC_008 — User completes a quiz and sees the results screen with stars
+##### TC_014 — User completes a quiz and sees the results screen with stars
 
 | Field | Value |
 |---|---|
-| **Test Case ID** | TC_008 |
+| **Test Case ID** | TC_014 |
 | **Title** | User completes a quiz and sees the results screen with stars |
 | **Description** | Verify that after answering all questions in a quiz, the application navigates to the results page and displays the score, star rating, and a feedback message. |
 | **Preconditions** | Application is running; database is seeded; user is on a topic page that has quiz questions. |
@@ -730,11 +897,11 @@ Cases TC_007–TC_009 are manual UI tests that cannot be fully automated without
 | 5 | Verify star icons are rendered corresponding to the score | — |
 | 6 | Verify a feedback message is displayed | e.g. "Great job! Keep it up!" |
 
-##### TC_009 — Difficulty filter limits questions to the selected level
+##### TC_015 — Difficulty filter limits questions to the selected level
 
 | Field | Value |
 |---|---|
-| **Test Case ID** | TC_009 |
+| **Test Case ID** | TC_015 |
 | **Title** | Difficulty filter limits questions to the selected level |
 | **Description** | Verify that changing the difficulty filter on a math topic page causes all subsequent questions to match the selected difficulty level (e.g. only easy multiplications with small numbers). |
 | **Preconditions** | Application is running; user is on the **Operations** topic page; default difficulty is "easy". |
