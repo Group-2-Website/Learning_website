@@ -38,7 +38,7 @@ class TestFractionAnswerCheck:
         ok, _ = self.fractions.check_answer("1/2", "1/2")
         assert ok
 
-    def test_equivalent_fraction_accepted(self):
+    def test_equivalent_fraction_accepted(self):  # TC_003
         ok, _ = self.fractions.check_answer("2/4", "1/2")
         assert ok
 
@@ -122,13 +122,13 @@ class TestTopicGetQuestion:
 # ── 6. Quiz result calculation ───────────────────────────────────────────────
 
 class TestQuizResultCalculation:
-    def test_perfect_score_gives_100_percent_and_5_stars(self):
+    def test_perfect_score_gives_100_percent_and_5_stars(self):  # TC_001
         pct, stars, msg, _ = calculate_quiz_result(10, 10)
         assert pct == 100
         assert stars == 5.0
         assert msg == "Perfect score! Amazing!"
 
-    def test_above_70_percent_gives_great_job_message(self):
+    def test_above_70_percent_gives_great_job_message(self):  # TC_002
         pct, _, msg, _ = calculate_quiz_result(7, 10)
         assert pct == 70
         assert msg == "Great job! Keep it up!"

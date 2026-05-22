@@ -3,7 +3,7 @@ from sqlmodel import select
 from domain.models import DictionaryWord, MathContent, MathSubject, ScienceQuiz, ScienceSubject
 
 
-def test_saving_science_quiz_persists(db):
+def test_saving_science_quiz_persists(db):  # TC_004
     subject = ScienceSubject(name="biology")
     db.add(subject)
     db.commit()
@@ -52,7 +52,7 @@ def test_dictionary_word_stores_translations(db):
     assert word.article_french == "le"
 
 
-def test_math_subject_contents_relationship(db):
+def test_math_subject_contents_relationship(db):  # TC_005
     subject = MathSubject(name="fractions")
     db.add(subject)
     db.commit()

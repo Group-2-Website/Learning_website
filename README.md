@@ -537,6 +537,226 @@ Select a subject:
 
 ---
 
+## Testing
+
+Run the full test suite from the project root:
+
+```bash
+python -m pytest tests/ -v
+```
+
+The suite contains **42 automated tests** split into unit tests (`tests/test_unit.py`), database tests (`tests/test_database.py`), and integration tests (`tests/test_integration.py`). Database tests use an in-memory SQLite database via the `db` pytest fixture in `tests/conftest.py`, so they require no setup.
+
+### Test Cases
+
+This section documents **8 representative test cases** across three categories.
+Cases TC_001–TC_005 correspond to automated pytest tests.
+Cases TC_007–TC_009 are manual UI tests that cannot be fully automated without a browser testing framework.
+
+#### Unit Tests
+
+##### TC_001 — Perfect score gives 100 % and 5 stars
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_001 |
+| **Title** | Perfect score gives 100 % and 5 stars |
+| **Description** | Verify that `calculate_quiz_result` returns 100 %, 5.0 stars and the "Perfect score!" message when every question is answered correctly. |
+| **Preconditions** | `ui/pages/quiz_results.py` is importable; no database required. |
+| **Test Data** | `score = 10`, `attempts = 10` |
+| **Expected Result** | `pct == 100`, `stars == 5.0`, `message == "Perfect score! Amazing!"` |
+| **Actual Result** | `pct == 100`, `stars == 5.0`, `message == "Perfect score! Amazing!"` |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_unit.py :: TestQuizResultCalculation :: test_perfect_score_gives_100_percent_and_5_stars` |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Import `calculate_quiz_result` from `ui.pages.quiz_results` | — |
+| 2 | Call `calculate_quiz_result(score, attempts)` | `score=10`, `attempts=10` |
+| 3 | Assert returned percentage equals 100 | `pct == 100` |
+| 4 | Assert returned stars equals 5.0 | `stars == 5.0` |
+| 5 | Assert returned message equals "Perfect score! Amazing!" | `message == "Perfect score! Amazing!"` |
+
+##### TC_002 — Score of 70 % or higher gives "Great job!" message
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_002 |
+| **Title** | Score of 70 % or higher gives "Great job!" message |
+| **Description** | Verify that a score of exactly 70 % (the lower bound of the bracket) triggers the "Great job! Keep it up!" feedback message and the correct percentage. The branch in `calculate_quiz_result` is `pct >= 70`, so 70 is inclusive. |
+| **Preconditions** | `ui/pages/quiz_results.py` is importable; no database required. |
+| **Test Data** | `score = 7`, `attempts = 10` |
+| **Expected Result** | `pct == 70`, `message == "Great job! Keep it up!"` |
+| **Actual Result** | `pct == 70`, `message == "Great job! Keep it up!"` |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_unit.py :: TestQuizResultCalculation :: test_above_70_percent_gives_great_job_message` |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Import `calculate_quiz_result` from `ui.pages.quiz_results` | — |
+| 2 | Call `calculate_quiz_result(score, attempts)` | `score=7`, `attempts=10` |
+| 3 | Assert returned percentage equals 70 | `pct == 70` |
+| 4 | Assert returned message equals "Great job! Keep it up!" | `message == "Great job! Keep it up!"` |
+
+##### TC_003 — Equivalent fraction accepted as correct answer
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_003 |
+| **Title** | Equivalent fraction accepted as correct answer |
+| **Description** | Verify that `Fractions.check_answer` accepts a mathematically equivalent fraction (e.g. `2/4` when the correct answer is `1/2`) and marks it as correct. |
+| **Preconditions** | `subjects/math/fraction_topic.py` is importable; no database required. |
+| **Test Data** | `user_answer = "2/4"`, `correct_answer = "1/2"` |
+| **Expected Result** | `ok == True` |
+| **Actual Result** | `ok == True` |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_unit.py :: TestFractionAnswerCheck :: test_equivalent_fraction_accepted`. The companion test `test_decimal_accepted` also verifies that the decimal form `0.5` is accepted as equivalent to `1/2`. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Instantiate `Fractions()` | — |
+| 2 | Call `fractions.check_answer(user_answer, correct_answer)` | `"2/4"`, `"1/2"` |
+| 3 | Assert the first return value (ok) is `True` | `ok == True` |
+
+#### DB Tests
+
+##### TC_004 — Seeded science quiz questions are queryable from the database
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_004 |
+| **Title** | Seeded science quiz questions are queryable from the database |
+| **Description** | Verify that science quiz questions inserted by the seeder (mimicked here by the test fixture) can be retrieved correctly. In the real application all quiz content enters the database through CSV seeding — there is no user-facing "save question" flow. |
+| **Preconditions** | In-memory SQLite database created via the `db` pytest fixture; `ScienceSubject` and `ScienceQuiz` models importable. The fixture inserts two animal quiz rows to simulate a seeded dataset. |
+| **Test Data** | Subject `name="biology"`, two rows with `source="animals"`, `correct_answer` values `"Frog"` and `"Eagle"` |
+| **Expected Result** | Query filtered by `source="animals"` returns 2 rows; the set of `correct_answer` values equals `{"Frog", "Eagle"}`. |
+| **Actual Result** | Query returned 2 rows; `correct_answer` values matched expected set. |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_database.py :: test_saving_science_quiz_persists`. The test fixture directly inserts rows the same way the `DataSeeder` does at application startup. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Obtain a fresh in-memory DB session via the `db` fixture | — |
+| 2 | Insert a `ScienceSubject` (simulating the seeder creating the subject) | `name="biology"` |
+| 3 | Insert two `ScienceQuiz` rows linked to that subject (simulating CSV seeding) | `source="animals"` for both |
+| 4 | Commit the session | — |
+| 5 | Query `ScienceQuiz` filtered by `source="animals"` | — |
+| 6 | Assert row count equals 2 | `len(rows) == 2` |
+| 7 | Assert the set of `correct_answer` values matches expected | `{"Frog", "Eagle"}` |
+
+##### TC_005 — Math subject–contents ORM relationship is navigable
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_005 |
+| **Title** | Math subject–contents ORM relationship is navigable |
+| **Description** | Verify that `MathContent` rows linked to a `MathSubject` are accessible through the ORM relationship attribute `subject.contents`. |
+| **Preconditions** | In-memory SQLite database; `MathSubject` and `MathContent` models importable. |
+| **Test Data** | Subject `name="fractions"`, two content rows with `topic="addition"` and `topic="subtraction"` |
+| **Expected Result** | `len(subject.contents) == 2`; topic set equals `{"addition", "subtraction"}`. |
+| **Actual Result** | `len(subject.contents) == 2`; topic set matched. |
+| **Status** | Pass |
+| **Comments** | Automated in `tests/test_database.py :: test_math_subject_contents_relationship` |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Create a `MathSubject`, commit and refresh to obtain its `id` | `name="fractions"` |
+| 2 | Add two `MathContent` rows referencing `subject.id` | `topic="addition"`, `topic="subtraction"` |
+| 3 | Commit the session and refresh the subject | — |
+| 4 | Access `subject.contents` | — |
+| 5 | Assert length equals 2 | `len(subject.contents) == 2` |
+| 6 | Assert topic set matches | `{"addition", "subtraction"}` |
+
+#### Manual / UI Tests
+
+> These tests require a running application (`python main.py`) and a web browser. They cannot be fully automated without a browser testing framework such as Playwright or Selenium.
+
+##### TC_007 — User navigates to a subject and sees the topic list
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_007 |
+| **Title** | User navigates to a subject and sees the topic list |
+| **Description** | Verify that clicking a subject card on the home page loads the subject page and displays all available topics for that subject. |
+| **Preconditions** | Application is running (`python main.py`); database is seeded; browser is open at `http://localhost:8082`. |
+| **Test Data** | Subject: **Mathematics** |
+| **Expected Result** | Subject page loads and shows topic cards (e.g. "Operations", "Fractions"). |
+| **Actual Result** | Subject page loaded and displayed topic cards correctly. |
+| **Status** | Pass |
+| **Comments** | No issues found. Navigation is handled by NiceGUI router in `ui/pages/subject.py`. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Open a browser and navigate to the application home page | `http://localhost:8082` |
+| 2 | Observe the subject cards displayed on screen | — |
+| 3 | Click the **Mathematics** subject card | — |
+| 4 | Verify the subject page loads without errors | — |
+| 5 | Verify at least two topic cards are visible (e.g. "Operations", "Fractions") | — |
+
+##### TC_008 — User completes a quiz and sees the results screen with stars
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_008 |
+| **Title** | User completes a quiz and sees the results screen with stars |
+| **Description** | Verify that after answering all questions in a quiz, the application navigates to the results page and displays the score, star rating, and a feedback message. |
+| **Preconditions** | Application is running; database is seeded; user is on a topic page that has quiz questions. |
+| **Test Data** | Subject: **Mathematics**, Topic: **Operations**, answers: all correct |
+| **Expected Result** | Results page displays percentage score, star icons (0–5), and an appropriate feedback message (e.g. "Great job! Keep it up!"). |
+| **Actual Result** | Results page displayed correctly with score, stars, and feedback message. |
+| **Status** | Pass |
+| **Comments** | Star rating logic is unit-tested in TC_001 and TC_002. This test validates the end-to-end rendering in the UI. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Navigate to **Mathematics → Operations → Quiz** | `http://localhost:8082` |
+| 2 | Answer each question presented and click **Submit** | Correct answers |
+| 3 | After the last question, observe the page transition | — |
+| 4 | Verify the results page shows a numeric score (e.g. "Your score: 8 / 10") | — |
+| 5 | Verify star icons are rendered corresponding to the score | — |
+| 6 | Verify a feedback message is displayed | e.g. "Great job! Keep it up!" |
+
+##### TC_009 — Difficulty filter limits questions to the selected level
+
+| Field | Value |
+|---|---|
+| **Test Case ID** | TC_009 |
+| **Title** | Difficulty filter limits questions to the selected level |
+| **Description** | Verify that changing the difficulty filter on a math topic page causes all subsequent questions to match the selected difficulty level (e.g. only easy multiplications with small numbers). |
+| **Preconditions** | Application is running; user is on the **Operations** topic page; default difficulty is "easy". |
+| **Test Data** | Topic: **Operations**, filter change from `easy` → `hard` |
+| **Expected Result** | After selecting "hard", generated questions use larger numbers / more complex operations consistent with the hard difficulty definition. |
+| **Actual Result** | Questions changed to use larger operands after switching to "hard". |
+| **Status** | Pass |
+| **Comments** | Filter sanitisation is unit-tested by `TestFilterDefinition` in `tests/test_unit.py`. This test validates the filter is applied end-to-end in the UI. |
+
+**Test Steps**
+
+| Step | Action | Value |
+|---|---|---|
+| 1 | Navigate to **Mathematics → Operations** topic page | `http://localhost:8082` |
+| 2 | Observe the default difficulty filter value | `easy` |
+| 3 | Note the style of question displayed (small numbers, simple ops) | — |
+| 4 | Change the difficulty dropdown to **Hard** | `hard` |
+| 5 | Request a new question (click **Next** or refresh question) | — |
+| 6 | Verify the new question uses larger numbers or harder operations | — |
+
+---
+
 ## 🤝 Contributing
 
 Work was distributed across the team using a **GitHub Project Board**, where every task was tracked as an issue and moved through the *Todo → In Progress → Done* columns. This kept responsibilities transparent and made it easy to see who was working on what at any time.
