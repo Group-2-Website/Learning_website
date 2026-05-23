@@ -22,6 +22,7 @@ The application allows users to:
 - choose a topic within that subject (e.g. Fractions, Biology, German Vocabulary)
 - step through learning cards with images and explanations
 - take interactive quizzes with real-time feedback and a final score
+- review previous quiz attempts for any topic (date, score, hints used, percentage) to track progress over time
 - listen to word pronunciation during language learning (text-to-speech)
 - explore creative painting activities linked to Math and Science topics
 
@@ -40,7 +41,7 @@ The application allows users to:
 ### 2. Select a Subject
 **As a child, I want to select a subject so that I can see its available topics.**
 
-- **Inputs:** selected subject  
+- **Inputs:** selected subject
 - **Outputs:** list of topics for that subject
 
 ---
@@ -62,7 +63,7 @@ The application allows users to:
 ---
 
 ### 5. View Quiz Results
-**As a child, I want to see my results after finishing a quiz so that I 
+**As a child, I want to see my results after finishing a quiz so that I
 know how well I did.**
 
 - **Inputs:** completed quiz answers
@@ -71,7 +72,7 @@ know how well I did.**
 ---
 
 ### 6. Browse Learning Cards
-**As a child, I want to browse learning cards for a topic so that I 
+**As a child, I want to browse learning cards for a topic so that I
 can study before taking a quiz.**
 
 - **Inputs:** topic selection → Learn mode
@@ -110,6 +111,14 @@ can study before taking a quiz.**
 - **Outputs:** filtered quiz session with relevant questions only
 
 ---
+
+### 11. View Previous Quiz Attempts
+**As a child (or parent), I want to see my previous quiz attempts for a topic so that I can track my progress and spot the topics where I needed the most help.**
+
+- **Inputs:** click the **"View previous attempts"** button on the quiz filter page
+- **Outputs:** history page listing each finished quiz with date, score, hints used and percentage
+
+---
 ##  Use Cases
 
 ![Use Case Diagram](docs/images/use-case-diagram.png)
@@ -122,6 +131,7 @@ can study before taking a quiz.**
 - Listen to Word Pronunciation (Learner) — during Language learning cards
 - View Visual Learning Aids (Learner) — illustrations and diagrams shown during Math learning cards
 - Paint / Draw (Learner) — available for Math and Science topics
+- View Previous Quiz Attempts (Learner) — opens a history page listing each past attempt for the current topic with date, score, and number of hints used
 
 ### Actors
 - **Learner** – child user who browses subjects, takes quizzes, and steps through learning cards
@@ -146,15 +156,20 @@ The project is structured as three distinct tiers, each with a single, well-defi
 |---|---|---|
 | **Presentation** | `ui/pages/*.py` | Render NiceGUI widgets and handle user events (button clicks, answer submission, page navigation) |
 | **Domain / Business Logic** | `subjects/`, `models/`, `domain/models.py` | Quiz generation, answer checking, filter sanitisation, shared data types (`QuizCard`, `LearningStep`, `Subject`, `Topic`) and SQLModel ORM entities |
-| **Persistence** | `Database/db.py`, `Database/seed.py`, `Database/dao.py` | SQLModel engine and `session_scope` facade (`db.py`), CSV seeding (`seed.py`), query classes (`dao.py`) |
+| **Persistence** | `Database/db.py`, `Database/seed.py`, `Database/dao.py` | `Database` facade owning the SQLModel engine and `session_scope()` (`db.py`), idempotent CSV importers (`seed.py`), DAO classes that encapsulate every query against the normalised SQLite schema (`dao.py`) |
 
 Each tier depends only on the tier below it: the presentation tier calls into the domain tier; the domain tier calls into the persistence tier. No layer knows about the layer above it.
 
+#### Quiz history flow
+
+All content (math steps, science questions, dictionary words) and quiz history follow the same layered flow: `ui → topic → DAO → DB`. The page never calls a DAO or opens a session directly — it calls `Topic.record_quiz_attempt(...)` and `Topic.list_quiz_attempts(...)`, which delegate to `QuizAttemptDAO`. If per-subject history rules are ever needed, the `Topic` layer is the right place to add them.
+
 
 ### Design Decisions
-- **3-Tier Layered Architecture:** Separating `ui/pages/` (presentation), `subjects/` + `models/` (domain logic), and `Database/` (persistence) keeps each tier independently testable and replaceable. Logic-based topic tests (e.g. `Fractions`, `Operation`) require no database; database tests require no UI.
 - **Template Method Pattern:** The `Topic` base class defines the algorithm skeleton — `get_question()` is the fixed entry point that dispatches to either `generate_question()` (logic-based) or `_load_question_from_db()` (database-backed) depending on `quiz_source`, and `check_answer()`, `learning_steps()`, and `quiz_filter_definitions()` are override hooks. Subclasses (e.g. `Fraction`, `Operation`, `Biology`) override only the hooks relevant to them. `Subject` provides a parallel structure for subject-level attributes (`name`, `url_slug`, `icon`, `topics`).
-- **Facade Pattern (database):** `Database/db.py` exposes a `Database` class that owns the SQLModel engine and provides a transactional `session_scope()` context manager. SQLModel ORM models live in `domain/models.py`, CSV importers live in `Database/seed.py`, and all queries are encapsulated in DAO classes in `Database/dao.py`. The rest of the application calls the DAOs and never opens a session directly.
+- **Facade Pattern (database):** `Database/db.py` exposes a `Database` class that owns the SQLModel engine and provides a transactional `session_scope()` context manager. The rest of the application calls DAO classes and never opens a session directly.
+- **Data Access Object (DAO) Pattern:** Every query lives in a DAO class in `Database/dao.py`. Subject modules call DAO methods with plain Python arguments and receive ready-to-use app-facing records (`VocabularyWord`, `ScienceQuestion`, `MathLearningEntry`, `QuizAttemptRecord`) rather than live ORM rows — they never see `select(...)`, `join(...)`, or session objects. This keeps UI code detached from session lifetime and makes it easier to change the storage layer later.
+- **Normalised relational schema:** Categorical fields that recur across rows (topic names, word types, articles, science-quiz categories) live in dedicated lookup tables and are referenced by foreign key; multiple-choice options live in a child table rather than as repeating columns. Every parent → child relationship has `cascade="all, delete-orphan"` so removing a subject cleanly removes its dependent rows.
 
 ### Relationship to MVC
 
@@ -171,7 +186,10 @@ Routes are generated automatically at startup. For every `Subject` registered in
 | `/`                         | Home — subject selector         |
 | `/{subject}`                | Topic selector for a subject    |
 | `/{subject}/{topic}`        | Mode selector (Quiz / Learn)    |
+| `/{subject}/{topic}/filter` | Pre-quiz filter selection + "View previous attempts" link |
 | `/{subject}/{topic}/quiz`   | Interactive quiz                |
+| `/{subject}/{topic}/results`| Quiz results (score, stars)     |
+| `/{subject}/{topic}/history`| Previous quiz attempts for the topic (score & hints used) |
 | `/{subject}/{topic}/learn`  | Step-by-step learning page      |
 | `/{subject}/{topic}/paint`  | Creative painting activity      |
 
@@ -203,39 +221,63 @@ The application uses **SQLModel** (a thin wrapper around SQLAlchemy + Pydantic) 
 
 | File | Role |
 |---|---|
-| `Database/db.py` | `Database` facade — owns the SQLModel engine, exposes `init_schema()` and a `session_scope()` context manager |
-| `domain/models.py` | SQLModel ORM model classes (`DictionaryWord`, `MathSubject`, `MathContent`, `ScienceSubject`, `ScienceQuiz`) |
-| `Database/seed.py` | CSV import functions (idempotent) — no model definitions |
-| `Database/dao.py` | `MathContentDAO`, `ScienceQuizDAO`, `DictionaryWordDAO` — encapsulate all queries |
+| `Database/db.py` | `Database` facade — builds the SQLModel engine, exposes `init_schema()` and a transactional `session_scope()` context manager, ensures the SQLite database directory exists, and registers a SQLite `connect` listener that runs `PRAGMA foreign_keys = ON` so FK constraints are actually enforced. |
+| `domain/models.py` | SQLModel ORM model classes (see [Entities](#entities) below) |
+| `Database/seed.py` | CSV import functions (idempotent). Populates content tables and the lookup tables they reference. |
+| `Database/dao.py` | `MathContentDAO`, `ScienceQuizDAO`, `DictionaryWordDAO`, `QuizAttemptDAO` — encapsulate every query and map ORM rows to plain app-facing data records. |
 
-Subject modules call DAO methods and never touch sessions or raw SQL.
 
 ### Entities
-- `DictionaryWord`
-- `MathSubject` *(lookup)*
-- `MathContent`
-- `ScienceSubject` *(lookup)*
-- `ScienceQuiz`
+
+**Content (seeded from CSV):**
+- `DictionaryWord` — vocabulary row; translations (`english` / `german` / `french`) and `meanings` are stored as flat columns
+- `DictionaryTopic` *(lookup)* — distinct word topics (e.g. *Time*, *Food & Drinks*)
+- `WordType` *(lookup)* — distinct word types (e.g. *noun*, *verb*)
+- `Article` *(lookup)* — grammatical articles, scoped by `language` (`"de"` → der/die/das, `"fr"` → le/la/l'/les)
+- `MathSubject` *(lookup)* — *operations*, *fractions*
+- `MathTopic` *(lookup)* — topics within a math subject (e.g. *intro*, *addition*)
+- `MathContent` — a single learning step (title, explanation, expression, answer, image)
+- `ScienceSubject` *(lookup)* — *biology*, *geography*
+- `ScienceTopicRow` *(lookup)* — quiz categories within a science subject (e.g. *animals*, *countries*); named `ScienceTopicRow` to avoid colliding with the UI-level `ScienceTopic` class
+- `ScienceQuiz` — a single multiple-choice question (text only)
+- `ScienceQuizOption` — one row per answer option (`label` = A/B/C, `text`, `is_correct`)
+
+**Runtime / quiz history:**
+- `QuizSubject` *(lookup)* — distinct subject names referenced by quiz attempts
+- `QuizTopic` *(lookup)* — topic name within a `QuizSubject`
+- `QuizAttempt` — one row per finished quiz session: `topic_id`, `score`, `attempts`, `hints_used`, `filters` JSON, `created_at` timestamp. The subject is reachable through `topic.subject`.
 
 ### Mappings
 
-| ORM Class         | Table              | Seeded From                                                                                      |
-|-------------------|--------------------|--------------------------------------------------------------------------------------------------|
-| `DictionaryWord`  | `dictionary_words` | `flashcard_words_cleaned.csv`                                                                    |
-| `MathSubject`     | `math_subject`     | populated implicitly when math content is imported                                               |
-| `MathContent`     | `math_content`     | `operations.csv`, `fractions_learning.csv`                                                       |
-| `ScienceSubject`  | `science_subject`  | populated implicitly when science content is imported                                            |
-| `ScienceQuiz`     | `science_quiz`     | `animals.csv`, `plant.csv`, `human_body.csv`, `continants.csv`, `countries.csv`, `water in the earth.csv` |
+| ORM Class           | Table                 | Seeded From                                                                                              |
+|---------------------|-----------------------|----------------------------------------------------------------------------------------------------------|
+| `DictionaryWord`    | `dictionary_words`    | `flashcard_words_cleaned.csv`                                                                            |
+| `DictionaryTopic`   | `dictionary_topic`    | distinct `topic` values from `flashcard_words_cleaned.csv`                                               |
+| `WordType`          | `word_type`           | distinct `type` values from `flashcard_words_cleaned.csv`                                                |
+| `Article`           | `article`             | distinct `article_german` / `article_french` values from `flashcard_words_cleaned.csv`                   |
+| `MathSubject`       | `math_subject`        | populated implicitly when math content is imported                                                       |
+| `MathTopic`         | `math_topic`          | distinct `topic` values from `operations.csv` / `fractions_learning.csv`                                 |
+| `MathContent`       | `math_content`        | `operations.csv`, `fractions_learning.csv`                                                               |
+| `ScienceSubject`    | `science_subject`     | populated implicitly when science content is imported                                                    |
+| `ScienceTopicRow`   | `science_topic`       | one row per source CSV filename (e.g. `animals`, `countries`)                                            |
+| `ScienceQuiz`       | `science_quiz`        | `animals.csv`, `plant.csv`, `human_body.csv`, `continants.csv`, `countries.csv`, `water in the earth.csv` |
+| `ScienceQuizOption` | `science_quiz_option` | three rows per CSV question (`Option A/B/C`), with `is_correct` set from `Correct Answer`                |
+| `QuizSubject`       | `quiz_subject`        | populated at runtime — first time a quiz is finished for a subject                                       |
+| `QuizTopic`         | `quiz_topic`          | populated at runtime — first time a quiz is finished for a (subject, topic) pair                         |
+| `QuizAttempt`       | `quiz_attempt`        | written at runtime by `QuizAttemptDAO.record()` when the user finishes a quiz                            |
 
 ### Relationships
-- `MathSubject` ⇄ `MathContent` — one-to-many via `MathContent.subject_id` (FK → `math_subject.id`), navigable as `content.subject` / `subject.contents`
-- `ScienceSubject` ⇄ `ScienceQuiz` — one-to-many via `ScienceQuiz.subject_id` (FK → `science_subject.id`), navigable as `quiz.subject` / `subject.quizzes`
-- `ScienceQuiz.source` remains a plain string column used as a category filter key (e.g. `"animals"`, `"countries"`)
-- `DictionaryWord` is independent — no foreign keys
+
+- `MathSubject` ⇄ `MathTopic` ⇄ `MathContent` — chained one-to-many via `MathContent.subject_id` / `MathContent.topic_id`, cascade delete.
+- `ScienceSubject` ⇄ `ScienceTopicRow` ⇄ `ScienceQuiz` ⇄ `ScienceQuizOption` — chained one-to-many with cascade delete at every step; each quiz owns its three answer-option rows.
+- `DictionaryWord` ⇄ `{DictionaryTopic, WordType, Article (×2)}` — many-to-one for each lookup (all four FKs nullable).
+- `QuizSubject` ⇄ `QuizTopic` ⇄ `QuizAttempt` — one-to-many at each step, cascade delete.
+- Every lookup table carries a `UniqueConstraint` on its natural key (`(subject_id, name)` for the topic tables, `(language, text)` for `Article`, `(quiz_id, label)` for `ScienceQuizOption`) so a duplicate insert raises an error instead of silently splitting data.
+
 
 ### ER Diagram
 
-<img src="docs/images/ERD.png" style="max-width: 80%; height: auto;">
+<img src="docs/images/ERD.png" style="max-width: 90%; height: auto;">
 
 ---
 
@@ -243,15 +285,17 @@ Subject modules call DAO methods and never touch sessions or raw SQL.
 
 All queries go through a DAO in `Database/dao.py`. Subject modules never open a session themselves.
 
-**Science** — calls `ScienceQuizDAO().list_questions(subject_name, source)` which joins `science_quiz` to `science_subject`, filters by name (case-insensitive) and `source`, and returns all matching rows. The subject module picks one at random per question and shuffles its three answer options.
+**Science** — calls `ScienceQuizDAO().list_questions(subject_name, source)` which joins `science_quiz → science_subject` and `science_quiz → science_topic`, filters by both names (case-insensitive), and maps the result to `ScienceQuestion` records. The subject module picks one record at random, shuffles its option texts, and uses the option flagged `is_correct=True` as the expected answer.
 
-**Language** — calls `DictionaryWordDAO.list_by_topic()`, `list_topics()`, and `list_for_learning()`. The full filtered word list is loaded into memory once per quiz session and a word is popped per question, so the DAO is hit only when filters change. Article quizzes narrow the in-memory pool to nouns only. Learning cards use `list_for_learning(topic, limit=50)` which filters for non-empty `meanings` and orders by `id`.
+**Language** — calls `DictionaryWordDAO.list_by_topic()`, `list_topics()`, and `list_for_learning()`. Queries that filter by topic join through the `dictionary_topic` lookup and map each result to a `VocabularyWord` record containing the resolved topic / word-type / article text. Article quizzes narrow the in-memory pool to nouns only. Learning cards use `list_for_learning(topic, limit=50)`.
 
-**Math** — calls `MathContentDAO().list_steps(subject_name, topic_name)` which joins `math_content` to `math_subject` and filters by subject name (case-insensitive) and optional topic. Rows are mapped directly to `LearningStep` objects in the subject module. Math quiz questions are generated in code and never read from the database.
+**Math** — calls `MathContentDAO().list_steps(subject_name, topic_name)` which joins `math_content → math_subject` and (when a topic is requested) `math_content → math_topic`, filtering both by name (case-insensitive), then maps rows to `MathLearningEntry` records. The subject module converts those records to `LearningStep` objects for the UI. Math quiz questions are generated in code and never read from the database.
+
+**Quiz history (all subjects)** — when the user finishes any quiz, `ui/pages/quiz.py` calls `Topic.record_quiz_attempt(...)`. That topic-level method delegates to `QuizAttemptDAO().record(subject, topic, score, attempts, hints_used, filters)`. The DAO uses `_get_or_create_subject` / `_get_or_create_topic` helpers to upsert the lookup rows in `quiz_subject` / `quiz_topic`, then inserts a `QuizAttempt` row containing `topic_id`, the score, the number of attempted questions, the count of questions on which the **Hint** button was pressed at least once (`hints_used`), the filter selections (JSON-encoded), and a UTC timestamp. The history page (`ui/pages/history.py`) calls `Topic.list_quiz_attempts(...)`, which delegates to `QuizAttemptDAO().list_for(subject, topic, limit=50)` and returns the most recent attempts newest-first.
 
 ### Seeding / Importing Data
 
-Running `python -m Database.seed` populates all tables from the CSV files in `Database/csv/`. Each import is **idempotent** — existing rows for that subject are deleted before re-inserting, so re-running is safe. Lookup rows in `math_subject` and `science_subject` are inserted on first run via a small `_get_or_create` helper.
+Running `python -m Database.seed` populates all tables from the CSV files in `Database/csv/`. Each import is **idempotent** — existing rows for that subject are deleted before re-inserting, so re-running is safe. Lookup rows are inserted on first encounter with `_get_or_create(...)`, keeping the seeding logic straightforward and easy to follow.
 
 ---
 
@@ -303,10 +347,20 @@ All image `src` and audio `href` values in the UI use these URL prefixes.
 
 ```python
 # main.py
-tts.init()                          # pre-warm the TTS cache
-for _subject in SUBJECTS:
-    register_subject(_subject)      # dynamic route registration
-ui.run(title="E-learning for kids", port=8082, reload=True, favicon='static/favicon.png')
+def main():
+    db.init_schema()                # create any missing tables (incl. quiz_attempt)
+    tts.init()                      # pre-warm the TTS cache
+    for _subject in SUBJECTS:
+        register_subject(_subject)  # dynamic route registration
+    app.add_static_files('/images', 'images')
+    app.add_static_files('/static', 'static')
+    ui.run(title="E-learning for kids", port=8082, reload=False, favicon='static/favicon.png')
+
+
+# NiceGUI's auto-reload spawns a child with __name__ == "__mp_main__",
+# so we accept both names here.
+if __name__ in {"__main__", "__mp_main__"}:
+    main()
 ```
 
 ---
@@ -347,18 +401,7 @@ Every quiz topic validates the child's answer before accepting it:
 
 ### 3. Database Management
 
-All relevant data is managed via SQLAlchemy ORM. This includes dictionary words, math content, and science quiz questions.
-
-#### Schema & ORM Setup
-
-SQLAlchemy artefacts are split across two files:
-
-| Component | Location | Detail |
-|---|---|---|
-| `Database` class | `Database/db.py` | Facade owning the SQLModel engine (`create_engine(f"sqlite:///{_DATABASE_PATH}", connect_args={"check_same_thread": False})`), `init_schema()`, and `session_scope()` |
-| `db` | `Database/db.py` | Module-level singleton `Database` instance consumed by `seed.py` and `dao.py` |
-| ORM model classes | `domain/models.py` | `DictionaryWord`, `MathSubject`, `MathContent`, `ScienceSubject`, `ScienceQuiz` — all declared as `class … (SQLModel, table=True)` |
-| `SQLModel.metadata` | implicit registry | Collects every `table=True` model. `db.init_schema()` runs `SQLModel.metadata.create_all(engine)` to create missing tables. Called once at import time from `Database/seed.py`. |
+All relevant data is managed via SQLAlchemy / SQLModel ORM. This includes dictionary words, math content, science quiz questions, and runtime quiz-attempt history. For the full schema, file responsibilities, and seeding details see the [Database and ORM](#database-and-orm) section above.
 
 Paths are resolved relative to `db.py`'s own directory (`__file__`), so the app works regardless of the working directory at launch.
 
@@ -372,15 +415,8 @@ with db.session_scope() as session:
     # commit on clean exit, rollback + re-raise on exception, close always
 ```
 
-Objects that must outlive the session (e.g. rows returned to the UI) are detached with `session.expunge_all()` before the scope exits.
+Objects that must outlive the session are usually mapped inside the DAO to plain frozen dataclass records before the scope exits, so UI code never depends on detached ORM instances.
 
-#### Idempotent CSV Seeding
-
-Running `python -m Database.seed` instantiates `DataSeeder` and calls `seed()`, which delegates to `_seed_dictionary_words()`, `_seed_math_subject()` (once for operations, once for fractions), and `_seed_science_subject()` (once for biology, once for geography). Each method deletes only its own rows before re-inserting, so re-running never corrupts other subjects' data.
-
-#### CSV Reading
-
-`read_csv_rows(file_path)` handles encoding automatically (tries `utf-8-sig`, falls back to `cp1252`) and raises a clear `FileNotFoundError` if the file is missing.
 
 ---
 
@@ -438,6 +474,7 @@ Learning_website/
 ├── models/
 │   ├── subject.py
 │   ├── topic.py
+│   ├── records.py
 │   ├── learning_card.py
 │   └── quiz_card.py
 │
@@ -455,7 +492,7 @@ Learning_website/
 │
 └── ui/
     ├── __init__.py
-    └── pages/  (common, home, subject, topic, filter, quiz, quiz_results, learn, paint)
+    └── pages/  (common, home, subject, topic, filter, quiz, quiz_results, history, learn, paint)
 ```
 
 ---
@@ -523,8 +560,9 @@ Select a subject:
 
 **Quiz mode:**
 1. (Optional) Set filters — topic category, question type, or translation direction.
-2. Answer each question and receive immediate feedback.
-3. View your final score on the results page.
+2. (Optional) Click **"View previous attempts"** on the filter page to see past scores and how often you used hints for that topic.
+3. Answer each question and receive immediate feedback.
+4. View your final score on the results page — the attempt is automatically saved to the database (`quiz_attempt` table) and will appear in the history.
 
 **Learn mode:**
 1. (Optional) Set filters to narrow the study content.
@@ -699,11 +737,11 @@ Cases TC_013–TC_015 are manual UI tests that cannot be fully automated without
 |---|---|
 | **Test Case ID** | TC_007 |
 | **Title** | Seeded science quiz questions are queryable from the database |
-| **Description** | Verify that science quiz questions inserted by the seeder (mimicked here by the test fixture) can be retrieved correctly. In the real application all quiz content enters the database through CSV seeding — there is no user-facing "save question" flow. |
-| **Preconditions** | In-memory SQLite database created via the `db` pytest fixture; `ScienceSubject` and `ScienceQuiz` models importable. The fixture inserts two animal quiz rows to simulate a seeded dataset. |
-| **Test Data** | Subject `name="biology"`, two rows with `source="animals"`, `correct_answer` values `"Frog"` and `"Eagle"` |
-| **Expected Result** | Query filtered by `source="animals"` returns 2 rows; the set of `correct_answer` values equals `{"Frog", "Eagle"}`. |
-| **Actual Result** | Query returned 2 rows; `correct_answer` values matched expected set. |
+| **Description** | Verify that science quiz questions inserted by the seeder (mimicked here by the test fixture) can be retrieved correctly. In the real application all quiz content enters the database through CSV seeding — there is no user-facing "save question" flow. The test also exercises the normalized schema: each quiz row owns three `ScienceQuizOption` children and the correct answer is the option flagged `is_correct=True`. |
+| **Preconditions** | In-memory SQLite database created via the `db` pytest fixture; `ScienceSubject`, `ScienceTopicRow`, `ScienceQuiz` and `ScienceQuizOption` models importable. The fixture inserts two animal quiz rows (each with three option children) to simulate a seeded dataset. |
+| **Test Data** | Subject `name="biology"`, topic `name="animals"`, two quiz rows whose correct options are `"Frog"` and `"Eagle"` |
+| **Expected Result** | Query filtered through the `science_topic` lookup table by `name="animals"` returns 2 rows; the set of texts from options flagged `is_correct=True` equals `{"Frog", "Eagle"}`. |
+| **Actual Result** | Query returned 2 rows; correct-option texts matched expected set. |
 | **Status** | Pass |
 | **Comments** | Automated in `tests/test_database.py :: test_saving_science_quiz_persists`. The test fixture directly inserts rows the same way the `DataSeeder` does at application startup. |
 
@@ -713,11 +751,12 @@ Cases TC_013–TC_015 are manual UI tests that cannot be fully automated without
 |---|---|---|
 | 1 | Obtain a fresh in-memory DB session via the `db` fixture | — |
 | 2 | Insert a `ScienceSubject` (simulating the seeder creating the subject) | `name="biology"` |
-| 3 | Insert two `ScienceQuiz` rows linked to that subject (simulating CSV seeding) | `source="animals"` for both |
-| 4 | Commit the session | — |
-| 5 | Query `ScienceQuiz` filtered by `source="animals"` | — |
-| 6 | Assert row count equals 2 | `len(rows) == 2` |
-| 7 | Assert the set of `correct_answer` values matches expected | `{"Frog", "Eagle"}` |
+| 3 | Insert a `ScienceTopicRow` (lookup row replacing the old free-string `source`) | `name="animals"` |
+| 4 | Insert two `ScienceQuiz` rows, each with three `ScienceQuizOption` children flagged with `is_correct` | correct options `"Frog"`, `"Eagle"` |
+| 5 | Commit the session | — |
+| 6 | Query `ScienceQuiz` joined to `ScienceTopicRow` filtered by `name="animals"` | — |
+| 7 | Assert row count equals 2 | `len(rows) == 2` |
+| 8 | Assert the set of texts from `is_correct=True` options matches expected | `{"Frog", "Eagle"}` |
 
 ##### TC_008 — Math subject–contents ORM relationship is navigable
 
@@ -725,11 +764,11 @@ Cases TC_013–TC_015 are manual UI tests that cannot be fully automated without
 |---|---|
 | **Test Case ID** | TC_008 |
 | **Title** | Math subject–contents ORM relationship is navigable |
-| **Description** | Verify that `MathContent` rows linked to a `MathSubject` are accessible through the ORM relationship attribute `subject.contents`. |
-| **Preconditions** | In-memory SQLite database; `MathSubject` and `MathContent` models importable. |
-| **Test Data** | Subject `name="fractions"`, two content rows with `topic="addition"` and `topic="subtraction"` |
-| **Expected Result** | `len(subject.contents) == 2`; topic set equals `{"addition", "subtraction"}`. |
-| **Actual Result** | `len(subject.contents) == 2`; topic set matched. |
+| **Description** | Verify that `MathContent` rows linked to a `MathSubject` are accessible through the ORM relationship attribute `subject.contents`, and that each content row remains linked to the correct `MathTopic` through `content.topic_obj`. |
+| **Preconditions** | In-memory SQLite database; `MathSubject`, `MathTopic` and `MathContent` models importable. |
+| **Test Data** | Subject `name="fractions"`, two `MathTopic` rows (`"addition"`, `"subtraction"`), one `MathContent` row per topic |
+| **Expected Result** | `len(subject.contents) == 2`; the set `{c.topic_obj.name for c in subject.contents}` equals `{"addition", "subtraction"}`. |
+| **Actual Result** | `len(subject.contents) == 2`; topic lookup names matched. |
 | **Status** | Pass |
 | **Comments** | Automated in `tests/test_database.py :: test_math_subject_contents_relationship` |
 
@@ -738,11 +777,12 @@ Cases TC_013–TC_015 are manual UI tests that cannot be fully automated without
 | Step | Action | Value |
 |---|---|---|
 | 1 | Create a `MathSubject`, commit and refresh to obtain its `id` | `name="fractions"` |
-| 2 | Add two `MathContent` rows referencing `subject.id` | `topic="addition"`, `topic="subtraction"` |
-| 3 | Commit the session and refresh the subject | — |
-| 4 | Access `subject.contents` | — |
-| 5 | Assert length equals 2 | `len(subject.contents) == 2` |
-| 6 | Assert topic set matches | `{"addition", "subtraction"}` |
+| 2 | Insert two `MathTopic` rows under that subject | `"addition"`, `"subtraction"` |
+| 3 | Add one `MathContent` row per topic, referencing both `subject_id` and `topic_id` | — |
+| 4 | Commit the session and refresh the subject | — |
+| 5 | Access `subject.contents` | — |
+| 6 | Assert length equals 2 | `len(subject.contents) == 2` |
+| 7 | Assert `{c.topic_obj.name for c in subject.contents}` matches | `{"addition", "subtraction"}` |
 
 ##### TC_009 — Deleting a science subject cascades to its quizzes
 
@@ -750,11 +790,11 @@ Cases TC_013–TC_015 are manual UI tests that cannot be fully automated without
 |---|---|
 | **Test Case ID** | TC_009 |
 | **Title** | Deleting a science subject cascades to its quizzes |
-| **Description** | Verify that removing a `ScienceSubject` row also deletes every `ScienceQuiz` row linked to it via `subject_id`, leaving no orphaned quiz records. This protects referential integrity when a subject is removed during re-seeding. |
-| **Preconditions** | In-memory SQLite database via the `db` fixture; `ScienceSubject` and `ScienceQuiz` models importable. |
-| **Test Data** | One `ScienceSubject` (`name="biology"`) with two `ScienceQuiz` children (`source="animals"`). |
-| **Expected Result** | After `db.delete(subject)` and commit, `select(ScienceQuiz).all()` returns an empty list. |
-| **Actual Result** | All child quizzes were removed; query returned `[]`. |
+| **Description** | Verify that removing a `ScienceSubject` row also deletes every `ScienceQuiz` row linked to it via `subject_id` **and** every `ScienceQuizOption` linked to those quizzes, leaving no orphaned rows. This protects referential integrity when a subject is removed during re-seeding and exercises the chained `cascade="all, delete-orphan"` configuration on the options child table. |
+| **Preconditions** | In-memory SQLite database via the `db` fixture; `ScienceSubject`, `ScienceTopicRow`, `ScienceQuiz` and `ScienceQuizOption` models importable. |
+| **Test Data** | One `ScienceSubject` (`name="biology"`) with one `ScienceTopicRow` (`name="animals"`) and two `ScienceQuiz` children, each owning three option rows. |
+| **Expected Result** | After `db.delete(subject)` and commit, both `select(ScienceQuiz).all()` and `select(ScienceQuizOption).all()` return empty lists. |
+| **Actual Result** | All quizzes and their options were removed. |
 | **Status** | Pass |
 | **Comments** | Automated in `tests/test_database.py :: test_deleting_science_subject_cascades_to_quizzes`. |
 
@@ -764,10 +804,11 @@ Cases TC_013–TC_015 are manual UI tests that cannot be fully automated without
 |---|---|---|
 | 1 | Obtain a fresh in-memory DB session via the `db` fixture | — |
 | 2 | Insert a `ScienceSubject` and commit | `name="biology"` |
-| 3 | Insert two `ScienceQuiz` rows linked to that subject and commit | `source="animals"` for both |
-| 4 | Delete the subject and commit | `db.delete(subject)` |
-| 5 | Query all rows from `ScienceQuiz` | — |
-| 6 | Assert the resulting list is empty | `remaining == []` |
+| 3 | Insert a `ScienceTopicRow` under that subject and commit | `name="animals"` |
+| 4 | Insert two `ScienceQuiz` rows (each with three `ScienceQuizOption` children) and commit | — |
+| 5 | Delete the subject and commit | `db.delete(subject)` |
+| 6 | Query all rows from `ScienceQuiz` and `ScienceQuizOption` | — |
+| 7 | Assert both result lists are empty | `quizzes == []`, `options == []` |
 
 #### Integration Tests
 
@@ -801,8 +842,8 @@ Cases TC_013–TC_015 are manual UI tests that cannot be fully automated without
 |---|---|
 | **Test Case ID** | TC_011 |
 | **Title** | ScienceQuizDAO filters questions by source category |
-| **Description** | Verify that `ScienceQuizDAO.list_questions(subject, source)` returns only quizzes whose `source` column matches the given category. Querying for an unseeded source (e.g. `"plants"`) must return an empty list — not raise or return unrelated rows. |
-| **Preconditions** | In-memory SQLite database; `seeded_science` fixture inserts two `ScienceQuiz` rows under subject `"biology"` with `source="animals"`. |
+| **Description** | Verify that `ScienceQuizDAO.list_questions(subject, source)` returns only quizzes whose related `ScienceTopicRow.name` matches the given category. Querying for an unseeded source (e.g. `"plants"`) must return an empty list — not raise or return unrelated rows. Internally the DAO now joins `science_quiz → science_topic` and filters by the lookup table's `name`. |
+| **Preconditions** | In-memory SQLite database; `seeded_science` fixture inserts two `ScienceQuiz` rows under subject `"biology"` and topic `"animals"`. |
 | **Test Data** | Subject `name="biology"`, requested `source="plants"` (no matching rows). |
 | **Expected Result** | `dao.list_questions("biology", "plants")` returns an empty list. |
 | **Actual Result** | DAO returned `[]`. |

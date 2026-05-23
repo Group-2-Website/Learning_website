@@ -1,8 +1,13 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from models.learning_card import LearningStep
 from models.quiz_card import QuizCard
+from Database import dao as dao_module
+
+if TYPE_CHECKING:
+    from models.records import QuizAttemptRecord
 
 
 @dataclass
@@ -65,7 +70,7 @@ class Topic:
         return QuizCard(question=q, correct_answer=a, topic=self.name)
 
 
-    # ── Override hooks (return simple tuples) ────────────────────────
+    # Override hooks (return simple tuples)
 
     def generate_question(self, filters: dict[str, str] | None = None) -> tuple[str, str]:
         """Return ``(question_text, correct_answer)`` as plain strings.
@@ -106,6 +111,34 @@ class Topic:
         """Return the number of questions for a quiz session."""
 
         return int(filters.get("number of questions", 10))
+
+    def record_quiz_attempt(
+        self,
+        subject_name: str,
+        score: int,
+        attempts: int,
+        hints_used: int = 0,
+        filters: dict[str, str] | None = None,
+    ) -> None:
+        """Persist one completed quiz run for this topic."""
+
+        dao_module.QuizAttemptDAO().record(
+            subject=subject_name,
+            topic=self.name,
+            score=score,
+            attempts=attempts,
+            hints_used=hints_used,
+            filters=filters,
+        )
+
+    def list_quiz_attempts(self, subject_name: str, limit: int = 20) -> list["QuizAttemptRecord"]:
+        """Return recent quiz attempts for this topic, newest first."""
+
+        return dao_module.QuizAttemptDAO().list_for(
+            subject=subject_name,
+            topic=self.name,
+            limit=limit,
+        )
 
 
     def apply_learn_filters(self, filters: dict[str, str]) -> None:

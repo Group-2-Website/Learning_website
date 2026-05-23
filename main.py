@@ -1,10 +1,14 @@
 from nicegui import ui, app
+from Database.db import db
 from subjects import SUBJECTS
 from ui.pages import register_subject
 from subjects.language import tts
 
 
 def main():
+    # Create and seed database if seed.py was not run yet manually
+    db.init_schema()
+    # Create audio endpoint and cache folder
     tts.init()
 
     for _subject in SUBJECTS:

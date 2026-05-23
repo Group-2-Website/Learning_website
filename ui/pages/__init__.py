@@ -12,6 +12,7 @@ from ui.pages.quiz_results import build_quiz_results_page
 from ui.pages.topic import build_topic_mode_page
 from ui.pages.subject import build_subject_page
 from ui.pages.filter import build_quiz_filter_page, build_learn_filter_page
+from ui.pages.history import build_quiz_history_page
 
 
 def _setup_page() -> None:
@@ -62,6 +63,11 @@ def _register_topic(subject, topic):
     def topic_results_page(score: int = 0, attempts: int = 0, _s=subject, _t=topic):
         _setup_page()
         build_quiz_results_page(_s, _t, score, attempts)
+
+    @ui.page(f'/{slug}/{topic_slug}/history')
+    def topic_history_page(_s=subject, _t=topic):
+        _setup_page()
+        build_quiz_history_page(_s, _t)
 
     if topic.has_learning:
         if topic.learn_filter_definitions():

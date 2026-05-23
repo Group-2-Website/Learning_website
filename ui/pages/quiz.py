@@ -29,12 +29,18 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
     active_filters = topic.sanitize_quiz_filters(initial_filters or {})
     num_questions = topic.get_num_questions(active_filters)
 
-    # ── Unified question generator ──────────────────────────────────────
+    # Unified question generator
     def _generate_question(filters) -> QuizCard:
-        """Return a QuizCard regardless of quiz mode."""
+        seen: set = state["seen_questions"] if state else set()
+        for _ in range(20):  # try up to 20 times to get a unique question
+            card = topic.get_question(filters)
+            if card.question not in seen:
+                seen.add(card.question)
+                return card
+        # fallback: return whatever we got even if repeated
         return topic.get_question(filters)
 
-    card = _generate_question(active_filters)
+    card = topic.get_question(active_filters)
 
     state = {
         "card":     card,
@@ -47,6 +53,9 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
         "feedback_token": 0,
         "selected_option": "",
         "hint_revealed": 0,
+        "hint_used_this_q": False,
+        "hints_used": 0,
+        "seen_questions": {card.question},
     }
 
     visual_holder: list = []
@@ -78,7 +87,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
         ui.timer(feedback_seconds, clear_feedback_if_latest, once=True)
 
-    # ── User-input helpers ──────────────────────────────────────────────
+    # User-input helpers
     def _get_user_answer() -> str:
         if is_mc:
             return state["selected_option"]
@@ -124,7 +133,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
             answer_input_holder[0].value = ""
             answer_input_holder[0].run_method("focus")
 
-    # ── Core quiz logic ─────────────────────────────────────────────────
+    # Core quiz logic
     def check_answer():
         if state["checked"]:
             return
@@ -147,6 +156,9 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
     def show_hint():
         answer = state["card"].correct_answer
+        if not state["hint_used_this_q"]:
+            state["hint_used_this_q"] = True
+            state["hints_used"] += 1
         revealed = state["hint_revealed"]
         if revealed >= len(answer):
             show_feedback(f" Hint: {answer}", "quiz-feedback-hint")
@@ -165,6 +177,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
         state["card"] = _generate_question(state["filters"])
         state["hint_revealed"] = 0
+        state["hint_used_this_q"] = False
         question_label.text = state["card"].question
         type_hint_label.text = state["card"].type_hint
         _update_audio_button()
@@ -179,6 +192,16 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
 
     def finish_quiz():
         check_answer()
+        try:
+            topic.record_quiz_attempt(
+                subject_name=subject.name,
+                score=state["score"],
+                attempts=state["attempts"],
+                hints_used=state["hints_used"],
+                filters=state["filters"],
+            )
+        except Exception as exc:  # pragma: no cover - persistence must not break UX
+            print(f"[quiz] failed to record attempt: {exc}")
         dest = (
             f"/{subject.url_slug}/{topic.name.lower()}/results"
             f"?score={state['score']}&attempts={state['attempts']}"
@@ -201,7 +224,7 @@ def build_quiz_page(subject: Subject, topic: Topic, initial_filters: dict[str, s
                 "font-size:18px;color:#D67AB5;font-weight:600;text-align:center;width:100%;"
             )
 
-            # ── Audio listen button ─────────────────────────────────────
+            # Audio listen button
             audio_btn_holder.append(
                 ui.element("div").style("display:flex;justify-content:center;margin:6px 0;")
             )

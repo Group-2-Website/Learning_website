@@ -79,7 +79,7 @@ class DatabaseScienceTopic(ScienceTopic):
             return None
 
         row = random.choice(rows)
-        options = [row.option_a, row.option_b, row.option_c]
+        options = row.options.copy()
         random.shuffle(options)
         return QuizCard(
             question=row.question,

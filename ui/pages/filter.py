@@ -83,6 +83,18 @@ def build_quiz_filter_page(subject: Subject, topic: Topic) -> None:
         button_icon="rocket.svg",
     )
 
+    history_dest = f"/{subject.url_slug}/{topic.name.lower()}/history"
+    with ui.element("div").style(
+        "width:800px;margin:16px auto 0;display:flex;justify-content:center;"
+    ):
+        ui.button(
+            "View previous attempts",
+            on_click=lambda: ui.navigate.to(history_dest),
+        ).props("rounded flat no-caps icon=history").style(
+            "background:#f3e8ff;color:#60435F;font-weight:700;"
+            "padding:10px 24px;"
+        )
+
     # Quiz-specific: conditional visibility rules
     def _update_visibility() -> None:
         topic.update_filter_visibility(selected, widgets)

@@ -49,7 +49,7 @@ def build_paint_page(
         ui.element("div").props("id=paint-palette-anchor")  # palette mounts here
         ui.element("div").props("id=paint-grid-anchor")     # card grid mounts here
 
-    # ── Hidden visual source (data store for JS) ─────────────────────────────
+    # Hidden visual source (data store for JS)
     visual = topic.paint_visual_html()
     if visual:
         ui.add_body_html(
@@ -58,19 +58,19 @@ def build_paint_page(
             f'{visual}</div>'
         )
 
-    # ── Palette (detail mode only) ───────────────────────────────────────────
+    # Palette (detail mode only)
     if detail_mode:
         ui.add_body_html(_build_palette_html())
 
-    # ── Card grid ────────────────────────────────────────────────────────────
+    # Card grid
     ui.add_body_html(_build_card_grid_html(base_url, active_indices, detail_mode))
 
-    # ── Extra topic body HTML ─────────────────────────────────────────────────
+    # Extra topic body HTML
     body_html = topic.paint_body_html()
     if body_html:
         ui.add_body_html(body_html)
 
-    # ── Mount script: move elements into anchors, then load paint_canvas.js ──
+    # Mount script: move elements into anchors, then load paint_canvas.js
     # HTML injected by add_body_html lands at the end of <body>. This inline
     # script moves each piece into its anchor div (preserving layout position)
     # and then dynamically loads paint_canvas.js only after Vue has flushed.
@@ -134,7 +134,7 @@ def _normalise_page_index(raw: int | str | None) -> int | None:
         return None
 
 
-# ── Pure-string HTML builders (no NiceGUI elements) ──────────────────────────
+# Pure-string HTML builders (no NiceGUI elements)
 
 def _build_palette_html() -> str:
     return (

@@ -6,14 +6,14 @@ from models.subject import Subject
 from models.topic import Topic, FilterOption, FilterDefinition
 from models.quiz_card import QuizCard
 from models.learning_card import LearningStep
-from domain.models import DictionaryWord
+from models.records import VocabularyWord
 from Database.dao import DictionaryWordDAO
 
 class BaseVocabTopic(Topic):
     source_col: str = ""
     target_col: str = ""
     quiz_source: str = "database"
-    article_col: str = ""          # e.g. "article_german", "article_french"
+    article_attr: str = ""         # e.g. "article_german", "article_french"
     learn_topic_filter: str = ""   # DB topic to filter learning cards by
     learn_subtitle: str = "Words with their articles and meanings"
     tts_lang: str = ""             # gTTS language code, e.g. "de", "fr"
@@ -24,7 +24,7 @@ class BaseVocabTopic(Topic):
         name: str = "",
         source_col: str = "",
         target_col: str = "",
-        article_col: str = "",
+        article_attr: str = "",
         tts_lang: str = "",
         learn_topic_filter: str = "",
         background_image: str = "/images/Alphabet.png",
@@ -33,7 +33,7 @@ class BaseVocabTopic(Topic):
         self.name = name or ""
         self.source_col = source_col or ""
         self.target_col = target_col or ""
-        self.article_col = article_col or ""
+        self.article_attr = article_attr or ""
         self.tts_lang = tts_lang or ""
         self.learn_topic_filter = learn_topic_filter or ""
         self._background_image = background_image
@@ -47,8 +47,19 @@ class BaseVocabTopic(Topic):
         return self._background_image
 
     @staticmethod
-    def _load_words(selected_topic: str) -> list[DictionaryWord]:
+    def _load_words(selected_topic: str) -> list[VocabularyWord]:
         return DictionaryWordDAO().list_by_topic(selected_topic)
+
+    @staticmethod
+    def _word_type_name(word: VocabularyWord) -> str:
+        return word.word_type or ""
+
+    @staticmethod
+    def _topic_name(word: VocabularyWord) -> str:
+        return word.topic or ""
+
+    def _article_text(self, word: VocabularyWord) -> str:
+        return getattr(word, self.article_attr, "") or ""
 
     def _build_audio_url(self, text: str) -> str:
         """Return a /api/tts URL for *text* using this topic's tts_lang."""
@@ -69,10 +80,10 @@ class BaseVocabTopic(Topic):
 
         steps: list[LearningStep] = []
         for word in nouns:
-            article = (getattr(word, self.article_col, "") or "").strip()
+            article = self._article_text(word).strip()
             foreign_word = (getattr(word, self.source_col, "") or "").strip()
             meanings = (word.meanings or "").strip()
-            word_type = (word.word_type or "").strip()
+            word_type = self._word_type_name(word).strip()
 
             if article:
                 title = f"{article.capitalize()} {foreign_word.capitalize()}"
@@ -158,9 +169,9 @@ class BaseVocabTopic(Topic):
                 # Only show topics that have at least one noun
                 all_words = self._load_words("all")
                 noun_topics = {
-                    (w.topic or "").strip()
+                    self._topic_name(w).strip()
                     for w in all_words
-                    if (w.word_type or "").strip().lower() == "noun"
+                    if self._word_type_name(w).strip().lower() == "noun"
                 }
                 opts = {"all": "All topics"}
                 opts.update({t: t for t in sorted(noun_topics) if t})
@@ -176,10 +187,10 @@ class BaseVocabTopic(Topic):
                 widgets["topic"].update()
 
     @staticmethod
-    def _only_nouns(words: list[DictionaryWord]) -> list[DictionaryWord]:
-        return [w for w in words if (w.word_type or "").strip().lower() == "noun"]
+    def _only_nouns(words: list[VocabularyWord]) -> list[VocabularyWord]:
+        return [w for w in words if BaseVocabTopic._word_type_name(w).strip().lower() == "noun"]
 
-    def _load_filtered_words(self, topic: str, quiz_type: str) -> list[DictionaryWord]:
+    def _load_filtered_words(self, topic: str, quiz_type: str) -> list[VocabularyWord]:
         words = self._load_words(topic)
         return self._only_nouns(words) if quiz_type == "article" else words
 
@@ -204,14 +215,14 @@ class BaseVocabTopic(Topic):
 
         entry = self._session_pool.pop()
 
-        word_type = (entry.word_type or "").strip()
+        word_type = self._word_type_name(entry).strip()
         self._last_word_type = word_type.lower()
         self._last_direction = direction
         self._last_quiz_type = quiz_type
 
-        # ── Article quiz mode ───────────────────────────────────────
+        # Article quiz mode
         if quiz_type == "article":
-            article = (getattr(entry, self.article_col, "") or "").strip()
+            article = self._article_text(entry).strip()
             source_word = (getattr(entry, self.source_col, "") or "").strip()
             english_word = (getattr(entry, self.target_col, "") or "").strip()
             audio_url = self._build_audio_url(source_word)
@@ -232,7 +243,7 @@ class BaseVocabTopic(Topic):
         type_suffix = f' ({word_type})' if word_type else ""
         source_val = getattr(entry, self.source_col, "") or ""
         target_val = getattr(entry, self.target_col, "") or ""
-        article = (getattr(entry, self.article_col, "") or "").strip()
+        article = self._article_text(entry).strip()
         is_noun = self._last_word_type == "noun"
 
         if direction == self.source_col:
@@ -270,11 +281,11 @@ class BaseVocabTopic(Topic):
         user_stripped = user.strip()
         correct_stripped = correct.strip()
 
-        # ── Article quiz: simple case-insensitive match ─────────────
+        # Article quiz: simple case-insensitive match
         if self._last_quiz_type == "article":
             return user_stripped.lower() == correct_stripped.lower(), ""
 
-        # ── Translate quiz: accept with or without article ──────────
+        # Translate quiz: accept with or without article
         # Strip known articles from both user and correct for comparison
         german_articles = {"der", "die", "das"}
         french_articles = {"le", "la", "l'", "les", "un", "une"}
@@ -338,14 +349,14 @@ class Language(Subject):
             name="German-English",
             source_col="german",
             target_col="english",
-            article_col="article_german",
+            article_attr="article_german",
             tts_lang="de",
         ),
         BaseVocabTopic(
             name="French-English",
             source_col="french",
             target_col="english",
-            article_col="article_french",
+            article_attr="article_french",
             tts_lang="fr",
         ),
     ]

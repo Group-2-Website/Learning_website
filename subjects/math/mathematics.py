@@ -27,11 +27,11 @@ def load_steps_from_db(
 
     return [
         LearningStep(
-            title=getattr(row, "title", "") or "",
-            image=getattr(row, "image", "") or "",
-            main_text=getattr(row, "explanation", "") or "",
-            secondary_text=getattr(row, "expression", "") or "",
-            hint_text=getattr(row, "answer", "") or "",
+            title=row.title or "",
+            image=row.image or "",
+            main_text=row.explanation or "",
+            secondary_text=row.expression or "",
+            hint_text=row.answer or "",
         )
         for row in rows
     ]
@@ -51,7 +51,7 @@ def parse_binary_expression(expression: str) -> tuple[str, str, str] | None:
     return left.strip(), op_normalized, right.strip()
 
 
-# ── Shared operation/difficulty filter data used by all math topics ──────────
+# Shared operation/difficulty filter data used by all math topics
 OPERATION_GROUPS: dict[str, list[str]] = {
     "all": ["+", "-", "×", "÷"],
     "add_sub": ["+", "-"],
@@ -111,6 +111,5 @@ class Math(Subject):
 
     def page_background_image(self) -> str:
         return "/images/operation.jpg"
-
 
 

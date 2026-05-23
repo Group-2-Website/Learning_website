@@ -147,3 +147,49 @@ class TestQuizResultCalculation:
         pct, stars, _, _ = calculate_quiz_result(0, 0)
         assert pct == 0
         assert stars == 0.0
+
+
+class TestTopicQuizAttemptDelegation:
+    def setup_method(self):
+        self.topic = Operation()
+
+    def test_record_quiz_attempt_delegates_to_quiz_attempt_dao(self, monkeypatch):
+        captured = {}
+
+        class _FakeQuizAttemptDAO:
+            def record(self, **kwargs):
+                captured.update(kwargs)
+
+        monkeypatch.setattr("Database.dao.QuizAttemptDAO", _FakeQuizAttemptDAO)
+
+        self.topic.record_quiz_attempt(
+            subject_name="Math",
+            score=7,
+            attempts=10,
+            hints_used=2,
+            filters={"difficulty": "easy"},
+        )
+
+        assert captured == {
+            "subject": "Math",
+            "topic": "Operations",
+            "score": 7,
+            "attempts": 10,
+            "hints_used": 2,
+            "filters": {"difficulty": "easy"},
+        }
+
+    def test_list_quiz_attempts_delegates_to_quiz_attempt_dao(self, monkeypatch):
+        expected = ["attempt-1", "attempt-2"]
+
+        class _FakeQuizAttemptDAO:
+            def list_for(self, **kwargs):
+                assert kwargs == {"subject": "Math", "topic": "Operations", "limit": 5}
+                return expected
+
+        monkeypatch.setattr("Database.dao.QuizAttemptDAO", _FakeQuizAttemptDAO)
+
+        rows = self.topic.list_quiz_attempts(subject_name="Math", limit=5)
+
+        assert rows == expected
+
