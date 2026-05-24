@@ -16,7 +16,7 @@ This project aims to provide a simple interactive learning platform where childr
 ### Scenario
 
 KidsLearn is a browser-based learning application designed for children practising school subjects at home.
-
+ 
 The application allows users to:
 - select a subject (Math, Science, or Language) from the home page
 - choose a topic within that subject (e.g. Fractions, Biology, German Vocabulary)
