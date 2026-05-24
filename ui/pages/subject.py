@@ -1,6 +1,6 @@
 from __future__ import annotations
 from nicegui import ui
-from models.subject import Subject
+from core.subject import Subject
 from ui.pages.common import _apply_bg, _build_page_header
 
 

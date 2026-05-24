@@ -155,8 +155,7 @@ The project is structured as three distinct tiers, each with a single, well-defi
 | Tier | Location | Responsibility |
 |---|---|---|
 | **Presentation** | `ui/pages/*.py` | Render NiceGUI widgets and handle user events (button clicks, answer submission, page navigation) |
-| **Domain / Business Logic** | `subjects/`, `models/`, `domain/models.py` | Quiz generation, answer checking, filter sanitisation, shared data types (`QuizCard`, `LearningStep`, `Subject`, `Topic`) and SQLModel ORM entities |
-| **Persistence** | `Database/db.py`, `Database/seed.py`, `Database/dao.py` | `Database` facade owning the SQLModel engine and `session_scope()` (`db.py`), idempotent CSV importers (`seed.py`), DAO classes that encapsulate every query against the normalised SQLite schema (`dao.py`) |
+| **Persistence** | `database/db.py`, `database/seed.py`, `database/dao.py` | `database` facade owning the SQLModel engine and `session_scope()` (`db.py`), idempotent CSV importers (`seed.py`), DAO classes that encapsulate every query against the normalised SQLite schema (`dao.py`) |
 
 Each tier depends only on the tier below it: the presentation tier calls into the domain tier; the domain tier calls into the persistence tier. No layer knows about the layer above it.
 
@@ -167,8 +166,8 @@ All content (math steps, science questions, dictionary words) and quiz history f
 
 ### Design Decisions
 - **Template Method Pattern:** The `Topic` base class defines the algorithm skeleton — `get_question()` is the fixed entry point that dispatches to either `generate_question()` (logic-based) or `_load_question_from_db()` (database-backed) depending on `quiz_source`, and `check_answer()`, `learning_steps()`, and `quiz_filter_definitions()` are override hooks. Subclasses (e.g. `Fraction`, `Operation`, `Biology`) override only the hooks relevant to them. `Subject` provides a parallel structure for subject-level attributes (`name`, `url_slug`, `icon`, `topics`).
-- **Facade Pattern (database):** `Database/db.py` exposes a `Database` class that owns the SQLModel engine and provides a transactional `session_scope()` context manager. The rest of the application calls DAO classes and never opens a session directly.
-- **Data Access Object (DAO) Pattern:** Every query lives in a DAO class in `Database/dao.py`. Subject modules call DAO methods with plain Python arguments and receive ready-to-use app-facing records (`VocabularyWord`, `ScienceQuestion`, `MathLearningEntry`, `QuizAttemptRecord`) rather than live ORM rows — they never see `select(...)`, `join(...)`, or session objects. This keeps UI code detached from session lifetime and makes it easier to change the storage layer later.
+- **Facade Pattern (database):** `database/db.py` exposes a `Database` class that owns the SQLModel engine and provides a transactional `session_scope()` context manager. The rest of the application calls DAO classes and never opens a session directly.
+- **Data Access Object (DAO) Pattern:** Every query lives in a DAO class in `database/dao.py`. Subject modules call DAO methods with plain Python arguments and receive ready-to-use app-facing records (`VocabularyWord`, `ScienceQuestion`, `MathLearningEntry`, `QuizAttemptRecord`) rather than live ORM rows — they never see `select(...)`, `join(...)`, or session objects. This keeps UI code detached from session lifetime and makes it easier to change the storage layer later.
 - **Normalised relational schema:** Categorical fields that recur across rows (topic names, word types, articles, science-quiz categories) live in dedicated lookup tables and are referenced by foreign key; multiple-choice options live in a child table rather than as repeating columns. Every parent → child relationship has `cascade="all, delete-orphan"` so removing a subject cleanly removes its dependent rows.
 
 ### Relationship to MVC
@@ -217,14 +216,14 @@ All pages and routes are created automatically — no changes to `main.py` neede
 
 ## Database and ORM
 
-The application uses **SQLModel** (a thin wrapper around SQLAlchemy + Pydantic) as its ORM and stores all persistent data in a local **SQLite** file at `Database/learning.db`. Responsibilities are split across four files:
+The application uses **SQLModel** (a thin wrapper around SQLAlchemy + Pydantic) as its ORM and stores all persistent data in a local **SQLite** file at `database/learning.db`. Responsibilities are split across four files:
 
 | File | Role |
 |---|---|
-| `Database/db.py` | `Database` facade — builds the SQLModel engine, exposes `init_schema()` and a transactional `session_scope()` context manager, ensures the SQLite database directory exists, and registers a SQLite `connect` listener that runs `PRAGMA foreign_keys = ON` so FK constraints are actually enforced. |
+| `database/db.py` | `Database` facade — builds the SQLModel engine, exposes `init_schema()` and a transactional `session_scope()` context manager, ensures the SQLite database directory exists, and registers a SQLite `connect` listener that runs `PRAGMA foreign_keys = ON` so FK constraints are actually enforced. |
 | `domain/models.py` | SQLModel ORM model classes (see [Entities](#entities) below) |
-| `Database/seed.py` | CSV import functions (idempotent). Populates content tables and the lookup tables they reference. |
-| `Database/dao.py` | `MathContentDAO`, `ScienceQuizDAO`, `DictionaryWordDAO`, `QuizAttemptDAO` — encapsulate every query and map ORM rows to plain app-facing data records. |
+| `database/seed.py` | CSV import functions (idempotent). Populates content tables and the lookup tables they reference. |
+| `database/dao.py` | `MathContentDAO`, `ScienceQuizDAO`, `DictionaryWordDAO`, `QuizAttemptDAO` — encapsulate every query and map ORM rows to plain app-facing data records. |
 
 
 ### Entities
@@ -283,7 +282,7 @@ The application uses **SQLModel** (a thin wrapper around SQLAlchemy + Pydantic) 
 
 ### How Each Subject Queries the Database
 
-All queries go through a DAO in `Database/dao.py`. Subject modules never open a session themselves.
+All queries go through a DAO in `database/dao.py`. Subject modules never open a session themselves.
 
 **Science** — calls `ScienceQuizDAO().list_questions(subject_name, source)` which joins `science_quiz → science_subject` and `science_quiz → science_topic`, filters by both names (case-insensitive), and maps the result to `ScienceQuestion` records. The subject module picks one record at random, shuffles its option texts, and uses the option flagged `is_correct=True` as the expected answer.
 
@@ -295,7 +294,7 @@ All queries go through a DAO in `Database/dao.py`. Subject modules never open a 
 
 ### Seeding / Importing Data
 
-Running `python -m Database.seed` populates all tables from the CSV files in `Database/csv/`. Each import is **idempotent** — existing rows for that subject are deleted before re-inserting, so re-running is safe. Lookup rows are inserted on first encounter with `_get_or_create(...)`, keeping the seeding logic straightforward and easy to follow.
+Running `python -m database.seed` populates all tables from the CSV files in `seed-data/csv/`. Each import is **idempotent** — existing rows for that subject are deleted before re-inserting, so re-running is safe. Lookup rows are inserted on first encounter with `_get_or_create(...)`, keeping the seeding logic straightforward and easy to follow.
 
 ---
 
@@ -451,7 +450,7 @@ Learning_website/
 ├── requirements.txt
 ├── README.md
 │
-├── Database/
+├── database/
 │   ├── db.py
 │   ├── seed.py
 │   ├── dao.py
@@ -471,7 +470,7 @@ Learning_website/
 │   └── js/
 │       └── paint_canvas.js
 │
-├── models/
+├── core/
 │   ├── subject.py
 │   ├── topic.py
 │   ├── records.py
@@ -525,7 +524,7 @@ No configuration is required. The application has no `.env` file, no environment
 
 | Setting | Value | Where it is set |
 |---|---|---|
-| Database file | `Database/learning.db` | `Database/db.py` — derived from `__file__` so it works from any working directory |
+| Database file | `database/learning.db` | `database/db.py` — derived from `__file__` so it works from any working directory |
 | HTTP port | `8082` | `main.py` → `ui.run(port=8082, ...)` |
 | Static mounts | `/images` and `/static` | `main.py` → `app.add_static_files(...)` |
 | TTS audio cache | `subjects/language/audio_cache/` | `subjects/language/tts.py` |
@@ -538,7 +537,7 @@ To change the port or any of the above, edit the corresponding call directly in 
 Seed the database with all CSV data (dictionary words, math content, science quizzes). Run from the project root so the `Database` package is importable:
 
 ```bash
-python -m Database.seed
+python -m database.seed
 ```
 
 This is **idempotent** — safe to re-run at any time.

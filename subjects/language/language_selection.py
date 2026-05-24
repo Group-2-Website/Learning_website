@@ -2,12 +2,12 @@ from __future__ import annotations
 import random
 from urllib.parse import quote
 
-from models.subject import Subject
-from models.topic import Topic, FilterOption, FilterDefinition
-from models.quiz_card import QuizCard
-from models.learning_card import LearningStep
-from models.records import VocabularyWord
-from Database.dao import DictionaryWordDAO
+from core.subject import Subject
+from core.topic import Topic, FilterOption, FilterDefinition
+from core.quiz_card import QuizCard
+from core.learning_card import LearningStep
+from core.records import VocabularyWord
+from database.dao import DictionaryWordDAO
 
 class BaseVocabTopic(Topic):
     source_col: str = ""

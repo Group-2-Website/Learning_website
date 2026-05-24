@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from models.topic import Topic
+from core.topic import Topic
 
 
 class Subject(ABC):

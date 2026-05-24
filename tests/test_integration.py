@@ -1,5 +1,5 @@
-from Database.dao import DictionaryWordDAO, MathContentDAO, ScienceQuizDAO
-from models.quiz_card import QuizCard
+from database.dao import DictionaryWordDAO, MathContentDAO, ScienceQuizDAO
+from core.quiz_card import QuizCard
 from subjects.science.science import Biology
 
 

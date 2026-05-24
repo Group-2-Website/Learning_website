@@ -1,7 +1,7 @@
 import pytest
 from sqlmodel import Session, SQLModel
 
-from Database.db import Database
+from database.db import Database
 from domain.models import (
     Article,
     DictionaryTopic,

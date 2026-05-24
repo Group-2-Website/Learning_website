@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import random
 
-from Database.dao import ScienceQuizDAO
-from models.subject import Subject
-from models.topic import Topic, FilterOption, FilterDefinition
-from models.quiz_card import QuizCard
+from database.dao import ScienceQuizDAO
+from core.subject import Subject
+from core.topic import Topic, FilterOption, FilterDefinition
+from core.quiz_card import QuizCard
 
 
 def _build_science_paint_pages(

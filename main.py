@@ -1,5 +1,5 @@
 from nicegui import ui, app
-from Database.db import db
+from database.db import db
 from subjects import SUBJECTS
 from ui.pages import register_subject
 from subjects.language import tts

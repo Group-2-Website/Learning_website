@@ -2,12 +2,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from models.learning_card import LearningStep
-from models.quiz_card import QuizCard
-from Database import dao as dao_module
+from core.learning_card import LearningStep
+from core.quiz_card import QuizCard
+from database import dao as dao_module
 
 if TYPE_CHECKING:
-    from models.records import QuizAttemptRecord
+    from core.records import QuizAttemptRecord
 
 
 @dataclass

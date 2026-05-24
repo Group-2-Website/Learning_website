@@ -10,8 +10,8 @@ from __future__ import annotations
 
 from nicegui import ui
 
-from models.subject import Subject
-from models.topic import Topic
+from core.subject import Subject
+from core.topic import Topic
 from ui.pages.common import _build_page_header
 
 PALETTE_COLOR_GROUPS: list[list[tuple[str, bool]]] = [

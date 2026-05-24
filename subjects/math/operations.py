@@ -4,7 +4,7 @@ import random
 from fractions import Fraction
 
 from .mathematics import MathTopic, OPERATION_GROUPS, load_steps_from_db, parse_binary_expression
-from models.learning_card import LearningStep
+from core.learning_card import LearningStep
 
 
 def token_to_int(token: str) -> int | None:
@@ -28,7 +28,7 @@ class Operation(MathTopic):
         return "/images/operation.jpg"
 
     def quiz_filter_definitions(self) -> list:
-        from models.topic import FilterOption, FilterDefinition
+        from core.topic import FilterOption, FilterDefinition
         result = super().quiz_filter_definitions()
         result.append(FilterDefinition("row", [FilterOption(str(i), f"Row {i}") for i in range(1, 13)], default="1"))
         return result
@@ -89,7 +89,7 @@ class Operation(MathTopic):
         return int(user) == int(correct), ""
 
     def learn_filter_definitions(self) -> list:
-        from models.topic import FilterOption, FilterDefinition
+        from core.topic import FilterOption, FilterDefinition
         topic_options = [
             FilterOption("all", "Introduction (All Operations)"),
         ] + [FilterOption(f"row_{i}", f"Multiplication Row {i}") for i in range(1, 13)]

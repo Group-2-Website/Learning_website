@@ -1,7 +1,7 @@
 from __future__ import annotations
 from nicegui import ui
-from models.subject import Subject
-from models.topic import Topic
+from core.subject import Subject
+from core.topic import Topic
 from ui.pages.common import _apply_bg, _build_page_header, audio_button_html, add_audio_player_script
 
 

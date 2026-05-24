@@ -6,7 +6,7 @@ import re
 from fractions import Fraction
 
 from .mathematics import MathTopic, OPERATION_GROUPS, load_steps_from_db, parse_binary_expression
-from models.learning_card import LearningStep
+from core.learning_card import LearningStep
 
 
 def _token_to_fraction(token: str) -> Fraction | None:

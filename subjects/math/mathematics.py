@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import re
 
-from Database.dao import MathContentDAO
-from models.learning_card import LearningStep
-from models.subject import Subject
-from models.topic import Topic, FilterOption, FilterDefinition
+from database.dao import MathContentDAO
+from core.learning_card import LearningStep
+from core.subject import Subject
+from core.topic import Topic, FilterOption, FilterDefinition
 
 _VALID_SUBJECTS = {"operations", "fractions"}
 

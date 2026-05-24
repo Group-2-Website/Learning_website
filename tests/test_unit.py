@@ -1,7 +1,7 @@
 from fractions import Fraction
 
-from models.quiz_card import QuizCard
-from models.topic import FilterDefinition, FilterOption
+from core.quiz_card import QuizCard
+from core.topic import FilterDefinition, FilterOption
 from subjects.math.fraction_topic import Fractions
 from ui.pages.quiz_results import calculate_quiz_result
 from subjects.math.operations import Operation
@@ -160,7 +160,7 @@ class TestTopicQuizAttemptDelegation:
             def record(self, **kwargs):
                 captured.update(kwargs)
 
-        monkeypatch.setattr("Database.dao.QuizAttemptDAO", _FakeQuizAttemptDAO)
+        monkeypatch.setattr("database.dao.QuizAttemptDAO", _FakeQuizAttemptDAO)
 
         self.topic.record_quiz_attempt(
             subject_name="Math",
@@ -187,7 +187,7 @@ class TestTopicQuizAttemptDelegation:
                 assert kwargs == {"subject": "Math", "topic": "Operations", "limit": 5}
                 return expected
 
-        monkeypatch.setattr("Database.dao.QuizAttemptDAO", _FakeQuizAttemptDAO)
+        monkeypatch.setattr("database.dao.QuizAttemptDAO", _FakeQuizAttemptDAO)
 
         rows = self.topic.list_quiz_attempts(subject_name="Math", limit=5)
 
